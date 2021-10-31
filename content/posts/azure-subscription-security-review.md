@@ -1,5 +1,5 @@
 ---
-title: "From . in regex to SSRF - part 2"
+title: "Azure subscription security review"
 date: 2021-02-01T10:14:47+01:00
 draft: false
 tags: [azure, devops, appsec]
