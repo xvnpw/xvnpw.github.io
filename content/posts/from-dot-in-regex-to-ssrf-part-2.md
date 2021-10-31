@@ -5,7 +5,7 @@ draft: false
 tags: [SSRF, bugbounty]
 ---
 
-In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available [here]{{< ref "/blog/from-dot-in-regex-to-ssrf-part-1.md" >}}).
+In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available [here]({{< ref "/posts/from-dot-in-regex-to-ssrf-part-1.md" >}}).
 
 What is state of the game up to now? I have found service that is vulnerable to SSRF by executing the REST call and by passing domain name check:
 
@@ -19,7 +19,7 @@ First of all I checked what headers are sent to my server:
 
 ```nc -l -n -p 80```
 
-![obraz](https://user-images.githubusercontent.com/17719543/139582215-1ead26ed-3b56-4ff7-9e25-35d901c27653.png)
+{{< figure src="https://user-images.githubusercontent.com/17719543/139582215-1ead26ed-3b56-4ff7-9e25-35d901c27653.png" >}}
 
 What it interesting here is `User-Agent`. Clearly indicating **NodeJS** and **node-fetch** library.
 
@@ -42,7 +42,7 @@ You can check more of my hacking resources in [my public repo](https://github.co
 
 Here is mind map of ideas that I had during exploitation:
 
-![obraz](https://user-images.githubusercontent.com/17719543/139582537-5fe5ba0c-123f-4413-8a0f-9f90194a5415.png)
+{{< figure src="https://user-images.githubusercontent.com/17719543/139582537-5fe5ba0c-123f-4413-8a0f-9f90194a5415.png" >}}
 
 ## SVG payload
 
