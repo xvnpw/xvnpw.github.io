@@ -61,14 +61,14 @@ Test environment from my Kali 2020.1b:
 <p>Lets start with PayloadsAllTheThings. It contains couple of CRLF Injection payloads. I will loop over them and check result in second console:</p>
 <figure><img src=https://user-images.githubusercontent.com/17719543/139583089-ecf56f8e-5c1a-465d-b0ff-01204ef313aa.png>
 </figure>
-<p>None success here. All payloads failed :slightly_frowning_face:</p>
+<p>None success here. All payloads failed 🙁</p>
 <p>Next step is to check payloads from two great articles by Orange Tsai: <a href=https://www.blackhat.com/docs/us-17/thursday/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf>first from Red Hat 2017</a> and <a href=https://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html>second from his blog</a>. It&rsquo;s giving few more options to test:</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>－＊Set-Cookie:injection－＊ (Unicode U+FF0D U+FF0A)
 http://0\r\n SET foo 0 60 5\r\n :6379/
 https://0\r\nSET foo 0 60 5\r\n:6379/
 
 </code></pre></div><p>Still no success here. I seams that this version of Node.js is not vulnerable for CRLF attacks.</p>
-<p>Let&rsquo;s try harder and dig dipper into node-fetch, maybe something interesting will be in code :smiley:</p>
+<p>Let&rsquo;s try harder and dig dipper into node-fetch, maybe something interesting will be in code 😃</p>
 <h2 id=investigation-of-node-fetch-code>Investigation of node-fetch code</h2>
 <p>What am I trying to achieve here? I have in mind two types of possible errors:</p>
 <ol>
@@ -83,7 +83,7 @@ https://0\r\nSET foo 0 60 5\r\n:6379/
 <p>For second problem I needed to do more investigation.</p>
 <p>First of all I will explain why I&rsquo;m interested in processing <em>object</em> instead of <em>string</em>. In many dynamic languages you can make valid request like this:</p>
 <p><code>http://localhost:3000/c?url[href]=localhost&url[method]=POST</code></p>
-<p>This leads to created object instead of string. Could be quite handy for some scenarios. Especially if developers didn&rsquo;t predict it :smiley: See below example of parsing such url in Node.js Express framework.</p>
+<p>This leads to created object instead of string. Could be quite handy for some scenarios. Especially if developers didn&rsquo;t predict it 😃 See below example of parsing such url in Node.js Express framework.</p>
 <figure><img src=https://user-images.githubusercontent.com/17719543/139583272-0e1f3070-7ec9-44a3-8df7-ac9cf858d883.png>
 </figure>
 <p>In node-fetch I have found one possible attacking vector:</p>
