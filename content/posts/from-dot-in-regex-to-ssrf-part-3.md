@@ -22,7 +22,7 @@ Lets start with PayloadsAllTheThings. It contains couple of CRLF Injection paylo
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139583089-ecf56f8e-5c1a-465d-b0ff-01204ef313aa.png" >}}
 
-None success here. All payloads failed :slightly_frowning_face:
+None success here. All payloads failed 🙁
 
 Next step is to check payloads from two great articles by Orange Tsai: [first from Red Hat 2017](https://www.blackhat.com/docs/us-17/thursday/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf) and [second from his blog](https://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html). It's giving few more options to test:
 
@@ -35,7 +35,7 @@ https://0\r\nSET foo 0 60 5\r\n:6379/
 
 Still no success here. I seams that this version of Node.js is not vulnerable for CRLF attacks.
 
-Let's try harder and dig dipper into node-fetch, maybe something interesting will be in code :smiley:
+Let's try harder and dig dipper into node-fetch, maybe something interesting will be in code 😃
 
 ## Investigation of node-fetch code
 
@@ -58,7 +58,7 @@ First of all I will explain why I'm interested in processing *object* instead of
 
 ```http://localhost:3000/c?url[href]=localhost&url[method]=POST```
 
-This leads to created object instead of string. Could be quite handy for some scenarios. Especially if developers didn't predict it :smiley: See below example of parsing such url in Node.js Express framework.
+This leads to created object instead of string. Could be quite handy for some scenarios. Especially if developers didn't predict it 😃 See below example of parsing such url in Node.js Express framework.
 
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139583272-0e1f3070-7ec9-44a3-8df7-ac9cf858d883.png" >}}

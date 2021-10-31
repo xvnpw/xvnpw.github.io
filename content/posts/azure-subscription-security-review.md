@@ -11,7 +11,7 @@ Lately I have come across task to perform security review of Azure subscription.
 
 ## My methodology
 
-Number of resources to check may vary from project to project. For me best approach is to mix automated tools with manual work. If it's possible I'm using two tools for same purpose. It makes my life easier as I don't need to choose best tool :slightly_smiling_face: It's also improving results.
+Number of resources to check may vary from project to project. For me best approach is to mix automated tools with manual work. If it's possible I'm using two tools for same purpose. It makes my life easier as I don't need to choose best tool 🙂 It's also improving results.
 
 I categorize findings into groups:
 
@@ -106,7 +106,7 @@ Best way to write report is to do it during review. So that you can take screens
 
 ## Summary
 
-I must say that I'm enjoying this kind of tasks in my work :smile: There are good tools and in most cases running smoothly. Biggest problems I had in playing with `anchor` and `ScoutSuite`.
+I must say that I'm enjoying this kind of tasks in my work 🙂 There are good tools and in most cases running smoothly. Biggest problems I had in playing with `anchor` and `ScoutSuite`.
 
 Findings? In my case there were some critical one. Sadly team didn't spot right recommendations in Azure Security Center on time. Monitoring those recommendations manually is not easy for development teams. Good thing is that Azure is giving some options for notifications.
 

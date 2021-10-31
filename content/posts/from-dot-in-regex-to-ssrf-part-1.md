@@ -27,7 +27,7 @@ Then I started digging in what is this error message that I see all the time: `"
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139577018-2487fddb-ef0a-449b-a893-7ad929e4aa0b.png" >}}
 
-In my almost 10 years IT career, I didn't see service implementation like that :wink:
+In my almost 10 years IT career, I didn't see service implementation like that 😉
 
 My positive energy went down, as I realized that there is domain whitelisting implemented. I have picked main domain `www.example.org` and in fact it was working:
 
