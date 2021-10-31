@@ -5,13 +5,13 @@ draft: false
 tags: [SSRF, bugbounty]
 ---
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/139576912-865d0f16-6dc3-4af9-8a39-5e77d7b236c3.png" title="" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/139576912-865d0f16-6dc3-4af9-8a39-5e77d7b236c3.png" class="image-center" >}}
 
 In test of one application I have encountered bug in regex that leaded to Server Side Request Forgery (SSRF). Way of finding it was huge fun and excitement. It was also my first bug on production system ever.
 
 During a recon I have found service called *image-converter*. It was definitely interesting, but not straight forward to exploit. I had no example of usage it and on simple GET request I was just getting:
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/139576933-06cadc0d-6489-4ac1-8e58-292d5fb1baf8.png" title="" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/139576933-06cadc0d-6489-4ac1-8e58-292d5fb1baf8.png" >}}
 
 That was first major problem for me. I was trying with some simple query parameters like:
 
@@ -25,7 +25,7 @@ Then I started digging in what is this error message that I see all the time: `"
 
 ```https://api.example.org/image-converter/width=100/http://google.com```
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/139577018-2487fddb-ef0a-449b-a893-7ad929e4aa0b.png" title="" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/139577018-2487fddb-ef0a-449b-a893-7ad929e4aa0b.png" >}}
 
 In my almost 10 years IT career, I didn't see service implementation like that :wink:
 
@@ -35,7 +35,7 @@ My positive energy went down, as I realized that there is domain whitelisting im
 
 I got response:
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/139577079-083fd93f-3679-4487-9f91-4d7f8fec6be8.png" title="" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/139577079-083fd93f-3679-4487-9f91-4d7f8fec6be8.png" >}}
 
 In this moment I was sure about SSRF, but still had whitelisting to bypass.
 
@@ -49,7 +49,7 @@ Next day with fresh head I took different way. During recon I have noted two oth
 
 I got response:
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/139577185-1b2711fb-6a19-435e-8bd3-015deb803884.png" title="" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/139577185-1b2711fb-6a19-435e-8bd3-015deb803884.png" >}}
 
 Hurray!
 

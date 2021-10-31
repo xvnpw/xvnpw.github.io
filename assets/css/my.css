@@ -1,9 +1,4 @@
-img[src$='#floatleft']
-{
-	float:left;
-}
-
-img[src$='#floatright']
-{
-	float:right;
-}
+.image-center {
+	text-align: center;
+	width: 100%;
+  }
