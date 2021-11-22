@@ -95,9 +95,9 @@ kubectl apply -f https://raw.githubusercontent.com/octarinesec/kube-scan/master/
 kubectl -n kube-scan get service kube-scan-ui
 </code></pre></div><h3 id=5º-dockercheck>5º Docker check</h3>
 <p>Dockerfiles can have misconfiguration and docker container can have vulnerabilities, e.g. outdated system packages.</p>
-<p>For checking Dockerfiles I used <a href=https://github.com/hadolint/hadolint:>https://github.com/hadolint/hadolint:</a></p>
+<p>For checking Dockerfiles I used <a href=https://github.com/hadolint/hadolint>https://github.com/hadolint/hadolint</a>:</p>
 <p><code>docker run --rm -i hadolint/hadolint &lt; Dockerfile</code></p>
-<p>and for docker containers <a href=https://github.com/anchore/anchore-engine:>https://github.com/anchore/anchore-engine:</a></p>
+<p>and for docker containers <a href=https://github.com/anchore/anchore-engine>https://github.com/anchore/anchore-engine</a>:</p>
 <script type=application/javascript src=https://gist.github.com/xvnpw/7e7dda58486e4f661f9b46b51dcbe79c.js></script>
 <h3 id=6º-complex-security-audittool>6º Complex security audit tool</h3>
 <p>Last step in checking is based on tool that is doing complex whole subscription check based on numerous rules, mostly coming from <a href=https://www.cisecurity.org/benchmark/azure/>CIS Benchmarks</a>.</p>
