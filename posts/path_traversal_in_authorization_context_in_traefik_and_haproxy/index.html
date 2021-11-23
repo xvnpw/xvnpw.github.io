@@ -1,12 +1,12 @@
 <!doctype html><html><head>
 <meta charset=utf-8>
 <meta http-equiv=x-ua-compatible content="IE=edge"><title>Path traversal in authorization context in Traefik and HAProxy - xvnpw personal blog</title><meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+<meta name=description content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end I will mention HAProxy ingress controller.
 From docs:
  The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.">
 <meta property="og:image" content>
 <meta property="og:title" content="Path traversal in authorization context in Traefik and HAProxy">
-<meta property="og:description" content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+<meta property="og:description" content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end I will mention HAProxy ingress controller.
 From docs:
  The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.">
 <meta property="og:type" content="article">
@@ -15,7 +15,7 @@ From docs:
 <meta property="article:modified_time" content="2021-11-23T22:38:58+01:00">
 <meta name=twitter:card content="summary">
 <meta name=twitter:title content="Path traversal in authorization context in Traefik and HAProxy">
-<meta name=twitter:description content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+<meta name=twitter:description content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end I will mention HAProxy ingress controller.
 From docs:
  The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.">
 <script src=https://xvnpw.github.io/js/feather.min.js></script>
@@ -45,7 +45,7 @@ From docs:
 <section class=body>
 <figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png>
 </figure>
-<p>In my previous post about <a href=https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>Apache APISIX</a> I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is <a href=https://doc.traefik.io/traefik/providers/kubernetes-ingress/>Traefik</a>. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.</p>
+<p>In my previous post about <a href=https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>Apache APISIX</a> I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is <a href=https://doc.traefik.io/traefik/providers/kubernetes-ingress/>Traefik</a>. It has feature called forward auth. At the end I will mention HAProxy ingress controller.</p>
 <p>From <a href=https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/>docs</a>:</p>
 <blockquote>
 <p>The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed. Otherwise, the response from the authentication server is returned.</p>
