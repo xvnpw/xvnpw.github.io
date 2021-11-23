@@ -35,6 +35,16 @@
 <main class=list>
 <div class=site-description><p>hacking, bug bounty, appsec</p></div>
 <section class=list-item>
+<h1 class=title><a href=/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/>Path traversal in authorization context in Traefik and HAProxy</a></h1>
+<time>Nov 23, 2021</time>
+<br><div class=description>
+In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+From docs:
+The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.&mldr;
+</div>
+<a href=/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/>Read more ⟶</a>
+</section>
+<section class=list-item>
 <h1 class=title><a href=/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable</a></h1>
 <time>Nov 22, 2021</time>
 <br><div class=description>
@@ -64,18 +74,6 @@ Where is it used ?
 Spring Framework: Security, Data, … Any place developers use it by SpEL API For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.&mldr;
 </div>
 <a href=/posts/hacking-spel/>Read more ⟶</a>
-</section>
-<section class=list-item>
-<h1 class=title><a href=/posts/from-dot-in-regex-to-ssrf-part-3/>From . in regex to SSRF - part 3</a></h1>
-<time>Jul 7, 2020</time>
-<br><div class=description>
-This is last part of my stories about exploiting service with SSRF bug. Part 1 is available here, and part 2 here.
-This part is focused on abusing Node.js and node-fetch library. I will try to &ldquo;talk&rdquo; with Redis service using CRLF injection in http parser.
-For convenience Redis service will be simulated by nc -vvlp 6379.
-Test environment from my Kali 2020.1b:
-Node.js version 10.19.0 node-fetch version 2.6.0 CRLF Injection Lets start with PayloadsAllTheThings.&mldr;
-</div>
-<a href=/posts/from-dot-in-regex-to-ssrf-part-3/>Read more ⟶</a>
 </section>
 <ul class=pagination>
 <span class="page-item page-prev">

@@ -1,0 +1,207 @@
+<!doctype html><html><head>
+<meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge"><title>Path traversal in authorization context in Traefik and HAProxy - xvnpw personal blog</title><meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=description content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+From docs:
+ The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.">
+<meta property="og:image" content>
+<meta property="og:title" content="Path traversal in authorization context in Traefik and HAProxy">
+<meta property="og:description" content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+From docs:
+ The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-11-23T22:38:58+01:00">
+<meta property="article:modified_time" content="2021-11-23T22:38:58+01:00">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Path traversal in authorization context in Traefik and HAProxy">
+<meta name=twitter:description content="In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+From docs:
+ The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.">
+<script src=https://xvnpw.github.io/js/feather.min.js></script>
+<link href=https://xvnpw.github.io/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css rel=stylesheet>
+<link rel=stylesheet type=text/css media=screen href=https://xvnpw.github.io/css/main.2f9b5946627215dc1ae7fa5f82bfc9cfcab000329136befeea5733f21e77d68f.css>
+<link id=darkModeStyle rel=stylesheet type=text/css href=https://xvnpw.github.io/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css media="(prefers-color-scheme: dark)">
+<link rel=stylesheet type=text/css href=https://xvnpw.github.io/css/my.6c05193fd59255e7809f44153be743523b36838b781ff558a2ca5c9ce14a756e.css>
+</head>
+<body>
+<div class=content><header>
+<div class=main>
+<a href=https://xvnpw.github.io/>xvnpw personal blog</a>
+</div>
+<nav>
+<a href=/>Home</a>
+<a href=/posts>All posts</a>
+<a href=/about>About</a>
+<a href=/tags>Tags</a>
+</nav>
+</header>
+<main>
+<article>
+<div class=title>
+<h1 class=title>Path traversal in authorization context in Traefik and HAProxy</h1>
+<div class=meta>Posted on Nov 23, 2021</div>
+</div>
+<section class=body>
+<figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png>
+</figure>
+<p>In my previous post about <a href=https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>Apache APISIX</a> I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is <a href=https://doc.traefik.io/traefik/providers/kubernetes-ingress/>Traefik</a>. It has feature called forward auth. At the end of I will mention HAProxy ingress controller.</p>
+<p>From <a href=https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/>docs</a>:</p>
+<blockquote>
+<p>The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed. Otherwise, the response from the authentication server is returned.</p>
+</blockquote>
+<figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139594882-8a3e37fb-fc9f-4f51-9e06-018e5128802c.png>
+</figure>
+<h2 id=setting-thestage>Setting the stage</h2>
+<p>First what we need to do is to install traefik in kubernetes:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>helm repo add traefik https://helm.traefik.io/traefik
+helm repo update
+kubectl create namespace traefik
+helm upgrade --install traefik <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    --namespace traefik <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    --set dashboard.enabled<span style=color:#f92672>=</span>true <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    --set rbac.enabled<span style=color:#f92672>=</span>true <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    --set<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;additionalArguments={--api.dashboard=true,--log.level=INFO,--providers.kubernetesingress.ingressclass=traefik-internal,--serversTransport.insecureSkipVerify=true}&#34;</span> <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    traefik/traefik --version 10.6.2
+</code></pre></div><p>If you need more info about installation check <a href=https://doc.traefik.io/traefik/getting-started/install-traefik/#use-the-helm-chart>here</a> and <a href=https://blog.zachinachshon.com/traefik-ingress/>here</a>.</p>
+<p>Check if it&rsquo;s up and running: <code>kubectl get pods -n traefik</code></p>
+<figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139594927-7ec2ec60-1dca-4541-ac5a-62115fcf5186.png>
+</figure>
+<p>Deployment yaml for ingress look like this:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>kind</span>: <span style=color:#ae81ff>IngressRoute</span>
+<span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>traefik.containo.us/v1alpha1</span>
+<span style=color:#f92672>metadata</span>:
+  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>services</span>
+  <span style=color:#f92672>namespace</span>: <span style=color:#ae81ff>default</span>
+<span style=color:#f92672>spec</span>:
+  <span style=color:#f92672>entryPoints</span>: 
+    - <span style=color:#ae81ff>web</span>
+  <span style=color:#f92672>routes</span>:
+  - <span style=color:#f92672>match</span>: <span style=color:#ae81ff>Host(`app.test`) &amp;&amp; PathPrefix(`/public-service`)</span>
+    <span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Rule</span>
+    <span style=color:#f92672>services</span>:
+    - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-service</span>
+      <span style=color:#f92672>port</span>: <span style=color:#ae81ff>8080</span>
+    <span style=color:#f92672>middlewares</span>:
+      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-stripprefix</span>
+      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>auth-service</span>
+  - <span style=color:#f92672>match</span>: <span style=color:#ae81ff>Host(`app.test`) &amp;&amp; PathPrefix(`/protected-service`)</span>
+    <span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Rule</span>
+    <span style=color:#f92672>services</span>:
+    - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>protected-service</span>
+      <span style=color:#f92672>port</span>: <span style=color:#ae81ff>8080</span>
+    <span style=color:#f92672>middlewares</span>:
+      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>protected-stripprefix</span>
+      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>auth-service</span>
+---
+<span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>traefik.containo.us/v1alpha1</span>
+<span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Middleware</span>
+<span style=color:#f92672>metadata</span>:
+  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>protected-stripprefix</span>
+<span style=color:#f92672>spec</span>:
+  <span style=color:#f92672>stripPrefix</span>:
+    <span style=color:#f92672>prefixes</span>:
+      - <span style=color:#ae81ff>/protected-service</span>
+---
+<span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>traefik.containo.us/v1alpha1</span>
+<span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Middleware</span>
+<span style=color:#f92672>metadata</span>:
+  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-stripprefix</span>
+<span style=color:#f92672>spec</span>:
+  <span style=color:#f92672>stripPrefix</span>:
+    <span style=color:#f92672>prefixes</span>:
+      - <span style=color:#ae81ff>/public-service</span>
+<span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>traefik.containo.us/v1alpha1</span>
+<span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Middleware</span>
+<span style=color:#f92672>metadata</span>:
+  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>auth-service</span>
+<span style=color:#f92672>spec</span>:
+  <span style=color:#f92672>forwardAuth</span>:
+    <span style=color:#f92672>address</span>: <span style=color:#ae81ff>http://auth-service.default.svc.cluster.local:8080/verify</span>
+</code></pre></div><p>It&rsquo;s using middleware that is specifying forwardAuth.</p>
+<p><code>auth-service</code> code is here:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>from</span> flask <span style=color:#f92672>import</span> Flask, Response, request
+<span style=color:#f92672>from</span> http <span style=color:#f92672>import</span> HTTPStatus
+<span style=color:#f92672>import</span> sys
+
+app <span style=color:#f92672>=</span> Flask(__name__)
+
+<span style=color:#a6e22e>@app</span><span style=color:#f92672>.</span>route(<span style=color:#e6db74>&#39;/verify&#39;</span>)
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>verify</span>():
+    print(request<span style=color:#f92672>.</span>headers, file<span style=color:#f92672>=</span>sys<span style=color:#f92672>.</span>stderr)
+    api_key <span style=color:#f92672>=</span> request<span style=color:#f92672>.</span>headers<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;X-Api-Key&#39;</span>)
+    forwarded_prefix <span style=color:#f92672>=</span> request<span style=color:#f92672>.</span>headers<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;X-Forwarded-Prefix&#39;</span>)
+
+    <span style=color:#66d9ef>if</span> forwarded_prefix <span style=color:#f92672>and</span> forwarded_prefix <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;/public-service&#34;</span>:
+        <span style=color:#66d9ef>return</span> Response(status <span style=color:#f92672>=</span> HTTPStatus<span style=color:#f92672>.</span>NO_CONTENT)
+
+    <span style=color:#66d9ef>if</span> api_key <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;secret-api-key&#34;</span>:  
+        <span style=color:#66d9ef>return</span> Response(status <span style=color:#f92672>=</span> HTTPStatus<span style=color:#f92672>.</span>NO_CONTENT)
+
+    <span style=color:#66d9ef>return</span> Response(status <span style=color:#f92672>=</span> HTTPStatus<span style=color:#f92672>.</span>UNAUTHORIZED)
+</code></pre></div><h2 id=test>Test</h2>
+<p>Traefik is using headers in communication with forwardAuth service. </p>
+<h3 id=headers>Headers</h3>
+<p>Those are:</p>
+<ul>
+<li>X-Forwarded-For</li>
+<li>X-Forwarded-Host</li>
+<li>X-Forwarded-Method</li>
+<li>X-Forwarded-Port</li>
+<li>X-Forwarded-Prefix</li>
+<li>X-Forwarded-Proto</li>
+<li>X-Forwarded-Server</li>
+<li>X-Forwarded-Uri</li>
+<li>X-Real-Ip</li>
+</ul>
+<p>Quite a bit, and maybe also some potential for bugs.</p>
+<h2 id=exploitation>Exploitation</h2>
+<p>We are ready now to send some request and check how traefik is handling malicious payloads.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>curl -v http://app.test/public-service/..%2Fprotected-service/protected
+</code></pre></div><figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139594991-5a92f493-bd6f-421c-bda3-d2294c3af76c.png>
+</figure>
+<p>This is interesting. I have got 404. Which is completely different then Apache APISIX. It&rsquo;s returned by Python not traefik. </p>
+<p>But which service got this request. Let&rsquo;s check logs of public-service: <code>kubectl logs public-service-7d56f8589d-59jqg</code></p>
+<figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139595015-cf573ed1-8ac6-42f0-868c-58f9ca81bcd4.png>
+</figure>
+<p>Oh! So <strong>traefik is not normalizing requests</strong> before executing them. That is important observation. </p>
+<p>And now logs from <code>auth-service</code>:</p>
+<figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139595039-e002087c-fb99-49fd-a6ba-3a0f8af6abd7.png>
+</figure>
+<p>The <code>X-Forwarded-Prefix</code> is containing right value: <code>/public-service</code> and <code>X-Forwarded-Uri</code> is not having <code>/public-service</code> at all.</p>
+<p>Good job traefik! 👍</p>
+<p>I checked second payload with: <code>curl --path-as-is -v http://app.test/public-service/../protected-service/protected</code> but no luck.</p>
+<h2 id=haproxy>HAProxy</h2>
+<p>I did similar research for HAProxy based <a href=https://haproxy-ingress.github.io/>haproxy-ingress</a> as it&rsquo;s also having option for external authentication. Results were very similar to those from Traefik. No bypass is possible, as HAProxy is <a href=https://www.haproxy.com/blog/announcing-haproxy-2-4/>not normalizing paths by default</a>.</p>
+<h2 id=summary>Summary</h2>
+<p>Trying with different ingress-controller was quite a fun 😃 However I was hoping for similar effect that I got with Apache APISIX. </p>
+<p>Traefik is not normalizing request paths before executing them. In my exploitation this is defense preventing from bypassing forwardAuth.</p>
+<h3 id=versions-of-components-that-i-wasusing>Versions of components that I was using:</h3>
+<p>minikube v1.23.2 on Microsoft Windows 10 Pro 10.0.19043 Build 19043; Kubernetesa v1.22.2 on Docker 20.10.8; traefik:2.5.3</p>
+<h3 id=other-articles-from-this-series>Other articles from this series</h3>
+<ul>
+<li><a href=https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable</a></li>
+</ul>
+<hr>
+<p>Thanks for reading! You can follow me on <a href=https://twitter.com/xvnpw>Twitter</a>.</p>
+</section>
+<div class=post-tags>
+<nav class="nav tags">
+<ul class=tags>
+<li><a href=/tags/kubernetes>kubernetes</a></li>
+<li><a href=/tags/ingress>ingress</a></li>
+<li><a href=/tags/traefik>traefik</a></li>
+<li><a href=/tags/haproxy>haproxy</a></li>
+<li><a href=/tags/path-traversal>path-traversal</a></li>
+</ul>
+</nav>
+</div>
+</article>
+</main>
+<footer>
+<hr><a class=soc href=https://github.com/xvnpw title=GitHub><i data-feather=github></i></a>|<a class=soc href=https://twitter.com/xvnpw title=Twitter><i data-feather=twitter></i></a>|⚡️
+2021 <a href=https://github.com/athul/archie>Archie Theme</a> | Built with <a href=https://gohugo.io>Hugo</a>
+</footer>
+<script>feather.replace()</script></div>
+</body>
+</html>
