@@ -182,6 +182,10 @@ Apache APISIX is vulnerable for path traversal. It's not affecting any external 
 
 Whole code of this example is here https://github.com/xvnpw/k8s-CVE-2021-43557-poc.
 
+### Other articles from this series
+
+* [Path traversal in authorization context in Traefik and HAProxy]({{< ref "/posts/path_traversal_in_authorization_context_in_Traefik_and_HAProxy.md" >}})
+
 ---
 
 Thanks for reading! You can follow me on [Twitter](https://twitter.com/xvnpw).
