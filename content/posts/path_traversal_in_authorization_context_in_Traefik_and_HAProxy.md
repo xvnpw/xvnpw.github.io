@@ -7,7 +7,7 @@ tags: [kubernetes, ingress, traefik, haproxy, path-traversal]
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png" class="image-center" >}}
 
-In my previous post about [Apache APISIX]({{< ref "/posts/CVE_2021_43557_Apache_APISIX_Path_traversal_in_request_uri_variable.md" >}}) I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is [Traefik](https://doc.traefik.io/traefik/providers/kubernetes-ingress/). It has feature called forward auth. At the end of I will mention HAProxy ingress controller.
+In my previous post about [Apache APISIX]({{< ref "/posts/CVE_2021_43557_Apache_APISIX_Path_traversal_in_request_uri_variable.md" >}}) I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is [Traefik](https://doc.traefik.io/traefik/providers/kubernetes-ingress/). It has feature called forward auth. At the end I will mention HAProxy ingress controller.
 
 From [docs](https://doc.traefik.io/traefik/v2.0/middlewares/forwardauth/):
 
