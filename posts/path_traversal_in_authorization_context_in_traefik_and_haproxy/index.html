@@ -132,7 +132,7 @@ app <span style=color:#f92672>=</span> Flask(__name__)
     api_key <span style=color:#f92672>=</span> request<span style=color:#f92672>.</span>headers<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;X-Api-Key&#39;</span>)
     forwarded_prefix <span style=color:#f92672>=</span> request<span style=color:#f92672>.</span>headers<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;X-Forwarded-Prefix&#39;</span>)
 
-    <span style=color:#66d9ef>if</span> forwarded_prefix <span style=color:#f92672>and</span> forwarded_prefix <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;/public-service&#34;</span>:
+    <span style=color:#66d9ef>if</span> forwarded_prefix <span style=color:#f92672>and</span> forwarded_prefix<span style=color:#f92672>.</span>startswith(<span style=color:#e6db74>&#34;/public-service&#34;</span>):
         <span style=color:#66d9ef>return</span> Response(status <span style=color:#f92672>=</span> HTTPStatus<span style=color:#f92672>.</span>NO_CONTENT)
 
     <span style=color:#66d9ef>if</span> api_key <span style=color:#f92672>==</span> <span style=color:#e6db74>&#34;secret-api-key&#34;</span>:  
