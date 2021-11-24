@@ -185,6 +185,7 @@ Whole code of this example is here https://github.com/xvnpw/k8s-CVE-2021-43557-p
 ### Other articles from this series
 
 * [Path traversal in authorization context in Traefik and HAProxy]({{< ref "/posts/path_traversal_in_authorization_context_in_Traefik_and_HAProxy.md" >}})
+* [Path traversal in authorization context in Emissary]({{< ref "/posts/path_traversal_in_authorization_context_in_Emissary.md" >}})
 
 ---
 

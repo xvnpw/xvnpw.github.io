@@ -183,6 +183,7 @@ minikube v1.23.2 on Microsoft Windows 10 Pro 10.0.19043 Build 19043; Kubernetesa
 ### Other articles from this series
 
 * [CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable]({{< ref "/posts/CVE_2021_43557_Apache_APISIX_Path_traversal_in_request_uri_variable.md" >}})
+* [Path traversal in authorization context in Emissary]({{< ref "/posts/path_traversal_in_authorization_context_in_Emissary.md" >}})
 
 ---
 
