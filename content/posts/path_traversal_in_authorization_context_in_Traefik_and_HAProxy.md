@@ -109,7 +109,7 @@ def verify():
     api_key = request.headers.get('X-Api-Key')
     forwarded_prefix = request.headers.get('X-Forwarded-Prefix')
 
-    if forwarded_prefix and forwarded_prefix == "/public-service":
+    if forwarded_prefix and forwarded_prefix.startswith("/public-service"):
         return Response(status = HTTPStatus.NO_CONTENT)
 
     if api_key == "secret-api-key":  
