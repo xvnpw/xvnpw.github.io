@@ -35,6 +35,17 @@
 <main class=list>
 <div class=site-description><p>hacking, bug bounty, appsec</p></div>
 <section class=list-item>
+<h1 class=title><a href=/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/>Path traversal in authorization context in Kong and F5 NGINX</a></h1>
+<time>Nov 25, 2021</time>
+<br><div class=description>
+In this part I will research another ingress controller based on nginx: 🦍 kong. At the end of article I will mention in short F5 NGINX Ingress Controller.
+In kong there is no explicit feature called external authentication, but developers gave possibility to create it using plugins.
+Here are some links describing this process:
+Custom Authentication and Authorization Framework with Kong aunkenlabs/kong-external-auth - repository with PoC of external-auth. It&rsquo;s old and cannot be run as it with kong 2.&mldr;
+</div>
+<a href=/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/>Read more ⟶</a>
+</section>
+<section class=list-item>
 <h1 class=title><a href=/posts/path_traversal_in_authorization_context_in_emissary/>Path traversal in authorization context in Emissary</a></h1>
 <time>Nov 24, 2021</time>
 <br><div class=description>
@@ -64,15 +75,6 @@ What is APISIX ? From official website:
 Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.&mldr;
 </div>
 <a href=/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>Read more ⟶</a>
-</section>
-<section class=list-item>
-<h1 class=title><a href=/posts/azure-subscription-security-review/>Azure subscription security review</a></h1>
-<time>Feb 1, 2021</time>
-<br><div class=description>
-Lately I have come across task to perform security review of Azure subscription. It was white-box based and I had access to all terraform, Kubernetes and Docker files. I will share with you what checks are worth to do for such review.
-My methodology Number of resources to check may vary from project to project. For me best approach is to mix automated tools with manual work. If it&rsquo;s possible I&rsquo;m using two tools for same purpose.&mldr;
-</div>
-<a href=/posts/azure-subscription-security-review/>Read more ⟶</a>
 </section>
 <ul class=pagination>
 <span class="page-item page-prev">
