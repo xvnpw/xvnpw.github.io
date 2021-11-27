@@ -135,6 +135,7 @@ Here my code if you want to try yourself: https://github.com/xvnpw/k8s-ingress-a
 * [CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable]({{< ref "/posts/CVE_2021_43557_Apache_APISIX_Path_traversal_in_request_uri_variable.md" >}})
 * [Path traversal in authorization context in Traefik and HAProxy]({{< ref "/posts/path_traversal_in_authorization_context_in_Traefik_and_HAProxy.md" >}})
 * [Path traversal in authorization context in Emissary]({{< ref "/posts/path_traversal_in_authorization_context_in_Emissary.md" >}})
+* [Bug bounty tips for nginx $request_uri path traversal bypass]({{< ref "/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass.md" >}})
 
 ---
 

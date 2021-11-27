@@ -165,6 +165,7 @@ minikube v1.23.2 on Microsoft Windows 10 Pro 10.0.19043 Build 19043; Kubernetesa
 * [CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable]({{< ref "/posts/CVE_2021_43557_Apache_APISIX_Path_traversal_in_request_uri_variable.md" >}})
 * [Path traversal in authorization context in Traefik and HAProxy]({{< ref "/posts/path_traversal_in_authorization_context_in_Traefik_and_HAProxy.md" >}})
 * [Path traversal in authorization context in Kong and F5 NGINX]({{< ref "/posts/path_traversal_in_authorization_context_in_Kong_and_F5_NGINX.md" >}})
+* [Bug bounty tips for nginx $request_uri path traversal bypass]({{< ref "/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass.md" >}})
 
 ---
 
