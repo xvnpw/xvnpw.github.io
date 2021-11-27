@@ -35,6 +35,16 @@
 <main class=list>
 <div class=site-description><p>hacking, bug bounty, appsec</p></div>
 <section class=list-item>
+<h1 class=title><a href=/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable</a></h1>
+<time>Nov 22, 2021</time>
+<br><div class=description>
+In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
+What is APISIX ? From official website:
+Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.&mldr;
+</div>
+<a href=/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/>Read more ⟶</a>
+</section>
+<section class=list-item>
 <h1 class=title><a href=/posts/azure-subscription-security-review/>Azure subscription security review</a></h1>
 <time>Feb 1, 2021</time>
 <br><div class=description>
@@ -66,18 +76,6 @@ Test environment from my Kali 2020.1b:
 Node.js version 10.19.0 node-fetch version 2.6.0 CRLF Injection Lets start with PayloadsAllTheThings.&mldr;
 </div>
 <a href=/posts/from-dot-in-regex-to-ssrf-part-3/>Read more ⟶</a>
-</section>
-<section class=list-item>
-<h1 class=title><a href=/posts/from-dot-in-regex-to-ssrf-part-2/>From . in regex to SSRF - part 2</a></h1>
-<time>Jan 14, 2020</time>
-<br><div class=description>
-In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available here.
-What is state of the game up to now? I have found service that is vulnerable to SSRF by executing the REST call and by passing domain name check:
-https://api.example.org/image-converter/https://www-example.org
-I have registered domain name: www-example.org and add for it CNAME record to my EC2 server.
-But wait a second. This is not yet &ldquo;SSRF&rdquo;.&mldr;
-</div>
-<a href=/posts/from-dot-in-regex-to-ssrf-part-2/>Read more ⟶</a>
 </section>
 <ul class=pagination>
 <span class="page-item page-prev">
