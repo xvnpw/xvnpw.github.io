@@ -35,6 +35,15 @@
 <main class=list>
 <div class=site-description><p>hacking, bug bounty, appsec</p></div>
 <section class=list-item>
+<h1 class=title><a href=/posts/hunting_for_buggy_authentication_authorization_services_on_github/>Hunting for buggy authentication/authorization services on github</a></h1>
+<time>Nov 28, 2021</time>
+<br><div class=description>
+To successful bypass access control using path traversal in $request_uri, you need to have buggy authentication/authorization service. Buggy in a way it&rsquo;s not normalizing url/uri that is part of access control decision. Let me find more of those on github that are relying on X-Original-Url. There is high chance that this header is populated from $request_uri variable and not protected in any way.
+pomerium Pomerium is an identity-aware proxy that enables secure access to internal applications.&mldr;
+</div>
+<a href=/posts/hunting_for_buggy_authentication_authorization_services_on_github/>Read more ⟶</a>
+</section>
+<section class=list-item>
 <h1 class=title><a href=/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/>Bug bounty tips for nginx $request_uri path traversal bypass</a></h1>
 <time>Nov 27, 2021</time>
 <br><div class=description>
@@ -66,16 +75,6 @@ Emissary-ingress can authenticate incoming requests before routing them to a bac
 I can already tell you that Emissary is secure and you cannot bypass using path traversal. What is even better, it&rsquo;s (and envoy) aware of this kind of security concern.&mldr;
 </div>
 <a href=/posts/path_traversal_in_authorization_context_in_emissary/>Read more ⟶</a>
-</section>
-<section class=list-item>
-<h1 class=title><a href=/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/>Path traversal in authorization context in Traefik and HAProxy</a></h1>
-<time>Nov 23, 2021</time>
-<br><div class=description>
-In my previous post about Apache APISIX I have found path traversal in uri-blocker plugin. In this text I will focus on yet another ingress controller which is Traefik. It has feature called forward auth. At the end I will mention HAProxy ingress controller.
-From docs:
-The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed.&mldr;
-</div>
-<a href=/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/>Read more ⟶</a>
 </section>
 <ul class=pagination>
 <span class="page-item page-prev">
