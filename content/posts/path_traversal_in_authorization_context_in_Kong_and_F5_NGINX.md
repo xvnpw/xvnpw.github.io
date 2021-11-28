@@ -136,6 +136,7 @@ Here my code if you want to try yourself: https://github.com/xvnpw/k8s-ingress-a
 * [Path traversal in authorization context in Traefik and HAProxy]({{< ref "/posts/path_traversal_in_authorization_context_in_Traefik_and_HAProxy.md" >}})
 * [Path traversal in authorization context in Emissary]({{< ref "/posts/path_traversal_in_authorization_context_in_Emissary.md" >}})
 * [Bug bounty tips for nginx $request_uri path traversal bypass]({{< ref "/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass.md" >}})
+* [Hunting for buggy authentication/authorization services on github]({{< ref "/posts/hunting_for_buggy_authentication_authorization_services_on_github.md" >}})
 
 ---
 
