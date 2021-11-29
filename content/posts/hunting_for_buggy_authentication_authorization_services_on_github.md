@@ -121,7 +121,31 @@ Next check logs of `auth-service`:
 kubectl logs auth-service-node-859ccc54cc-8cnlp -f
 ```
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/139594574-6c510392-8a2c-4c72-9228-2a7b16627389.png" >}}
+```
+{
+    'x-request-id': 'afd1f7fbc4c45c2db17cc1f72c5ec834', 
+    host: 'auth-service-node.default.svc.cluster.local', 
+    'x-original-url': 'http://app.test/public-service/..%2Fprotected-service/protected', 
+    'x-original-method': 'GET', 
+    'x-real-ip': '172.17.0.1', 
+    'x-forwarded-for': '172.17.0.1'
+},
+{
+    uri: 'http://app.test/public-service/..%2Fprotected-service/protected', 
+    parseduri: {
+        scheme: 'http', 
+        userinfo: undefined, 
+        host: 'app.test', 
+        port: undefined, 
+        path: "/public-service/..%2Fprotected-service/protected", 
+        query: undefined, 
+        fragment: undefined, 
+        reference: 'absolute'
+    },
+    parsedQuery: {}, 
+    method: 'GET'
+}
+```
 
 First `{…}` is from `console.log(req.headers)` and second `{…} `is from `console.log(parentReqInfo)`. Path is not normalized and wrong decision is made.
 
