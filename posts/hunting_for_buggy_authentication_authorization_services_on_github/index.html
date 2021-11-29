@@ -126,9 +126,30 @@ pomerium  Pomerium is an identity-aware proxy that enables secure access to inte
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>curl -v http://app.test/public-service/..%2Fprotected-service/protected
 </code></pre></div><p>Next check logs of <code>auth-service</code>:</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>kubectl logs auth-service-node-859ccc54cc-8cnlp -f
-</code></pre></div><figure><img src=https://user-images.githubusercontent.com/17719543/139594574-6c510392-8a2c-4c72-9228-2a7b16627389.png>
-</figure>
-<p>First <code>{…}</code> is from <code>console.log(req.headers)</code> and second <code>{…} </code>is from <code>console.log(parentReqInfo)</code>. Path is not normalized and wrong decision is made.</p>
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>{
+    &#39;x-request-id&#39;: &#39;afd1f7fbc4c45c2db17cc1f72c5ec834&#39;, 
+    host: &#39;auth-service-node.default.svc.cluster.local&#39;, 
+    &#39;x-original-url&#39;: &#39;http://app.test/public-service/..%2Fprotected-service/protected&#39;, 
+    &#39;x-original-method&#39;: &#39;GET&#39;, 
+    &#39;x-real-ip&#39;: &#39;172.17.0.1&#39;, 
+    &#39;x-forwarded-for&#39;: &#39;172.17.0.1&#39;
+},
+{
+    uri: &#39;http://app.test/public-service/..%2Fprotected-service/protected&#39;, 
+    parseduri: {
+        scheme: &#39;http&#39;, 
+        userinfo: undefined, 
+        host: &#39;app.test&#39;, 
+        port: undefined, 
+        path: &#34;/public-service/..%2Fprotected-service/protected&#34;, 
+        query: undefined, 
+        fragment: undefined, 
+        reference: &#39;absolute&#39;
+    },
+    parsedQuery: {}, 
+    method: &#39;GET&#39;
+}
+</code></pre></div><p>First <code>{…}</code> is from <code>console.log(req.headers)</code> and second <code>{…} </code>is from <code>console.log(parentReqInfo)</code>. Path is not normalized and wrong decision is made.</p>
 <figure><img src=https://user-images.githubusercontent.com/17719543/139594597-49abb40e-7afb-40fb-b4b4-211f871479f0.png>
 </figure>
 <p>I got protected data. One more time 😅</p>
