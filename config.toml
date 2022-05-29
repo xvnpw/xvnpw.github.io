@@ -10,6 +10,7 @@ paginate=4
 mode="auto"
 useCDN=false
 subtitle = "hacking, bug bounty, appsec"
+googleAnalytics = "G-YHETMXZXMZ"
 customcss = ["css/my.css"]
 
 [[params.social]]
