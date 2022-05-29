@@ -3,6 +3,7 @@ title: "Path traversal in authorization context in Kong and F5 NGINX"
 date: 2021-11-25T20:49:02+01:00
 draft: false
 tags: [kubernetes, ingress, kong, path-traversal]
+description: "In this part I will research another ingress controller based on nginx: 🦍 kong. At the end of article I will mention in short F5 NGINX Ingress Controller. In kong there is no explicit feature called external authentication, but developers gave possibility to create it using plugins."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png" class="image-center" >}}

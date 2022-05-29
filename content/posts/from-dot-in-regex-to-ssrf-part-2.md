@@ -3,6 +3,7 @@ title: "From . in regex to SSRF - part 2"
 date: 2020-01-14T10:14:47+01:00
 draft: false
 tags: [SSRF, bugbounty]
+description: "In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available here. What is state of the game up to now?"
 ---
 
 In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available [here]({{< ref "/posts/from-dot-in-regex-to-ssrf-part-1.md" >}}).
@@ -17,7 +18,9 @@ But wait a second. **This is not yet "SSRF"**. For now I could call specific dom
 
 First of all I checked what headers are sent to my server:
 
-```nc -l -n -p 80```
+```bash
+nc -l -n -p 80
+```
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139582215-1ead26ed-3b56-4ff7-9e25-35d901c27653.png" >}}
 

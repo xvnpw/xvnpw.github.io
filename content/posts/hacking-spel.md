@@ -3,6 +3,7 @@ title: "Hacking SpEL"
 date: 2020-07-17T10:14:47+01:00
 draft: false
 tags: [spel, bugbounty, java, appsec]
+description: "This story will explain how to find and exploit SpEL parser in web applications based on Java language. What is SpEL ? From Spring documentation: The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime."
 ---
 
 This story will explain how to find and exploit SpEL parser in web applications based on Java language.

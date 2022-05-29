@@ -3,6 +3,7 @@ title: "Hunting for buggy authentication/authorization services on github"
 date: 2021-11-28T10:58:59+01:00
 draft: false
 tags: [kubernetes, ingress, nginx, path-traversal]
+description: "To successful bypass access control using path traversal in $request_uri, you need to have buggy authentication/authorization service. Buggy in a way it’s not normalizing url/uri that is part of access control decision. Let me find more of those on github that are relying on X-Original-Url."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png" class="image-center" >}}
@@ -119,9 +120,6 @@ Next check logs of `auth-service`:
 
 ```bash
 kubectl logs auth-service-node-859ccc54cc-8cnlp -f
-```
-
-```
 {
     'x-request-id': 'afd1f7fbc4c45c2db17cc1f72c5ec834', 
     host: 'auth-service-node.default.svc.cluster.local', 

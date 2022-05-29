@@ -3,6 +3,7 @@ title: "Path traversal in authorization context in Emissary"
 date: 2021-11-24T19:59:02+01:00
 draft: false
 tags: [kubernetes, ingress, emissary, path-traversal]
+description: "After checking Apache APISIX and Traefik, for path traversal in authZ context, now I will research Emissary ingress. In Emissary there is feature called Basic authentication, which is very similar to forward authentication discussed in Traefik."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png" class="image-center" >}}

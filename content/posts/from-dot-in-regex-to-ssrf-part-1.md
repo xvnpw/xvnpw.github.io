@@ -3,6 +3,7 @@ title: "From . in regex to SSRF - part 1"
 date: 2020-01-05T10:14:47+01:00
 draft: false
 tags: [SSRF, bugbounty]
+description: "In test of one application I have encountered bug in regex that leaded to Server Side Request Forgery (SSRF). Way of finding it was huge fun and excitement. It was also my first bug on production system ever."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139576912-865d0f16-6dc3-4af9-8a39-5e77d7b236c3.png" class="image-center" >}}

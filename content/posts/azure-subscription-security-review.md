@@ -3,7 +3,10 @@ title: "Azure subscription security review"
 date: 2021-02-01T10:14:47+01:00
 draft: false
 tags: [azure, devops, appsec]
+description: "Lately I have come across task to perform security review of Azure subscription. It was white-box based and I had access to all terraform, Kubernetes and Docker files. I will share with you what checks are worth to do for such review."
 ---
+
+{{ template "_internal/google_analytics.html" . }}
 
 Lately I have come across task to perform security review of Azure subscription. It was white-box based and I had access to all terraform, Kubernetes and Docker files. I will share with you what checks are worth to do for such review.
 
@@ -63,11 +66,15 @@ Kubernetes files also can be checked with automated tools. The other way is to c
 
 In my case, I was checking Helm scripts. If you don't know Helm, it's templating language for Kubernetes. In order to check template I needed first to generate Kubernetes files based on template and values. For most simple case you need to run:
 
-```helm template review ./ > output.yaml```
+```bash
+helm template review ./ > output.yaml
+```
 
 I have choose checkov to test Kubernetes files:
 
-```checkov --quiet -f output.yaml > checkov.result.txt```
+```bash
+checkov --quiet -f output.yaml > checkov.result.txt
+```
 
 Second tool that I recommending is kube-scan deployed into cluster:
 
@@ -84,7 +91,9 @@ Dockerfiles can have misconfiguration and docker container can have vulnerabilit
 
 For checking Dockerfiles I used https://github.com/hadolint/hadolint:
 
-```docker run --rm -i hadolint/hadolint < Dockerfile```
+```bash
+docker run --rm -i hadolint/hadolint < Dockerfile
+```
 
 and for docker containers https://github.com/anchore/anchore-engine:
 

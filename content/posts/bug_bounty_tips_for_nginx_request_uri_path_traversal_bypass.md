@@ -3,6 +3,7 @@ title: "Bug bounty tips for nginx $request_uri path traversal bypass"
 date: 2021-11-27T22:59:05+01:00
 draft: false
 tags: [kubernetes, nginx, kong, "F5", "apisix", path-traversal, bugbounty]
+description: "In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx’s $request_uri variable. APIs This vulnerability is for APIs. Best scenario are microservice deployed to Kubernetes and exposed by ingress controller."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png" class="image-center" >}}

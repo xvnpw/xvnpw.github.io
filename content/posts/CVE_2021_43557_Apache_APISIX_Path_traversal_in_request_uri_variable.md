@@ -3,6 +3,7 @@ title: "CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable"
 date: 2021-11-22T20:59:02+01:00
 draft: false
 tags: [kubernetes, ingress, apisix, path-traversal]
+description: "In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem."
 ---
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png" class="image-center" >}}

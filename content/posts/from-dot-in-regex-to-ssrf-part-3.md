@@ -3,6 +3,7 @@ title: "From . in regex to SSRF - part 3"
 date: 2020-07-07T10:14:47+01:00
 draft: false
 tags: [SSRF, bugbounty]
+description: "This is last part of my stories about exploiting service with SSRF bug. Part 1 is available here, and part 2 here. This part is focused on abusing Node.js and node-fetch library. I will try to “talk” with Redis service using CRLF injection in http parser."
 ---
 
 This is last part of my stories about exploiting service with SSRF bug. Part 1 is available [here]({{< ref "/posts/from-dot-in-regex-to-ssrf-part-1.md" >}}), and part 2 [here]({{< ref "/posts/from-dot-in-regex-to-ssrf-part-2.md" >}}).
