@@ -1,4 +1,218 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>emissary on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/emissary/</link><description>Recent content in emissary on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 24 Nov 2021 19:59:02 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/emissary/index.xml" rel="self" type="application/rss+xml"/><item><title>Path traversal in authorization context in Emissary</title><link>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/</link><pubDate>Wed, 24 Nov 2021 19:59:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/</guid><description>After checking Apache APISIX and Traefik, for path traversal in authZ context, now I will research Emissary ingress.
-In Emissary there is feature called Basic authentication, which is very similar to forward authentication discussed in Traefik.
-Emissary-ingress can authenticate incoming requests before routing them to a backing service.
-I can already tell you that Emissary is secure and you cannot bypass using path traversal. What is even better, it&amp;rsquo;s (and envoy) aware of this kind of security concern.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>emissary on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/emissary/</link><description>Recent content in emissary on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Wed, 24 Nov 2021 19:59:02 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/emissary/index.xml" rel="self" type="application/rss+xml"/><item><title>Path traversal in authorization context in Emissary</title><link>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/</link><pubDate>Wed, 24 Nov 2021 19:59:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>After checking Apache APISIX and Traefik, for path traversal in authZ context, now I will research Emissary ingress.&lt;/p>
+&lt;p>In Emissary there is feature called &lt;a class="link" href="https://www.getambassador.io/docs/emissary/latest/howtos/basic-auth/" target="_blank" rel="noopener"
+>Basic authentication&lt;/a>, which is very similar to forward authentication discussed in Traefik.&lt;/p>
+&lt;blockquote>
+&lt;p>Emissary-ingress can authenticate incoming requests before routing them to a backing service.&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>I can already tell you that Emissary is secure and you cannot bypass using path traversal&lt;/strong>. What is even better, it&amp;rsquo;s (and envoy) aware of this kind of security concern. There is full description in documentation. I encourage you to read it:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://www.getambassador.io/docs/edge-stack/latest/topics/running/ambassador/#rejecting-client-requests-with-escaped-slashes" target="_blank" rel="noopener"
+>rejecting-client-requests-with-escaped-slashes&lt;/a> - although it&amp;rsquo;s not directly for Emissary. It&amp;rsquo;s describing well envoy concerts for escaped slashes&lt;/li>
+&lt;li>&lt;a class="link" href="https://github.com/envoyproxy/envoy/security/advisories/GHSA-xcx5-93pw-jw2w" target="_blank" rel="noopener"
+>GHSA-xcx5-93pw-jw2w&lt;/a> (CVE-2019–9901) - description of risks associated with normalizing paths in envoy&lt;/li>
+&lt;li>&lt;a class="link" href="https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto" target="_blank" rel="noopener"
+>envoy http connection manager options&lt;/a> - look for two particular: &lt;code>normalize_path&lt;/code> and &lt;code>path_with_escaped_slashes_action&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>Emissary is setting &lt;code>normalize_path&lt;/code> to &lt;code>true&lt;/code> and &lt;code>path_with_escaped_slashes_action&lt;/code> to &lt;code>KEEP_UNCHANGED&lt;/code>. Which is preventing from path traversal bypass. 
+In this place I would like to point out difference between Emissary ingress and Edge Stack. The latter is using Filter as &lt;a class="link" href="https://www.getambassador.io/docs/edge-stack/latest/topics/running/services/auth-service/" target="_blank" rel="noopener"
+>authentication service&lt;/a>. I did not cover it in my research.&lt;/p>
+&lt;h2 id="setting-thestage">Setting the stage&lt;/h2>
+&lt;p>Install Emissary ingress in Kubernetes:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">helm repo add datawire https://app.getambassador.io
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">helm repo update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">kubectl create namespace emissary &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> helm install emissary-ingress --devel --namespace emissary datawire/emissary-ingress &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> kubectl -n emissary &lt;span class="nb">wait&lt;/span> --for &lt;span class="nv">condition&lt;/span>&lt;span class="o">=&lt;/span>available --timeout&lt;span class="o">=&lt;/span>90s deploy -lapp.kubernetes.io/instance&lt;span class="o">=&lt;/span>emissary-ingress
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>If you need more info check &lt;a class="link" href="https://www.getambassador.io/docs/emissary/latest/topics/install/helm/" target="_blank" rel="noopener"
+>here&lt;/a>.&lt;/p>
+&lt;p>Check if all emissary pods are running: &lt;code>kubectl get pods -n emissary&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598827-d5ca6657-597d-4c02-b6ea-2b399d1ad828.png"/>
+&lt;/figure>
+&lt;p>Deploy listener:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">getambassador.io/v3alpha1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Listener&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emissary-ingress-listener-8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">namespace&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emissary&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">protocol&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">HTTP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">securityModel&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">XFP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">hostBinding&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">namespace&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">from&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ALL&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Deploy auth service definition and Emissary mappings:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">getambassador.io/v3alpha1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">AuthService&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">authentication&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">auth_service&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;http://auth-service.default.svc.cluster.local:8080&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">proto&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">http&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">path_prefix&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;/verify&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">allowed_request_headers&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;X-Api-Key&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nn">---&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">getambassador.io/v3alpha1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Mapping&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">public-service&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">hostname&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;app.test&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">prefix&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/public-service/&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">service&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">public-service:8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nn">---&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">getambassador.io/v3alpha1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Mapping&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">protected-service&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">hostname&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;app.test&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">prefix&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/protected-service/&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">service&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">protected-service:8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Code for &lt;code>auth-service&lt;/code> is changed:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">flask&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">Flask&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">request&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">from&lt;/span> &lt;span class="nn">http&lt;/span> &lt;span class="kn">import&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kn">import&lt;/span> &lt;span class="nn">sys&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">app&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">Flask&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="vm">__name__&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nd">@app&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">route&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;/verify/&amp;lt;path:path&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">verify&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">request&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">headers&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">file&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">sys&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">stderr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">path&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">file&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">sys&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">stderr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">api_key&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">request&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">headers&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;X-Api-Key&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="n">path&lt;/span> &lt;span class="ow">and&lt;/span> &lt;span class="n">path&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">startswith&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;public-service/&amp;#34;&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">status&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">OK&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="n">api_key&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;secret-api-key&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">status&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">OK&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">status&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">UNAUTHORIZED&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>It&amp;rsquo;s not using headers as Traefik. Instead it&amp;rsquo;s passing requested uri as path into &lt;code>/verify&lt;/code> route.&lt;/p>
+&lt;h2 id="test">Test&lt;/h2>
+&lt;p>Let&amp;rsquo;s check my payloads:&lt;/p>
+&lt;h3 id="1-payload">1° payload&lt;/h3>
+&lt;p>&lt;code>curl -v http://app.test/public-service/..%2Fprotected-service/protected&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598911-64682f0c-a199-4125-b928-5070d8e1a658.png"/>
+&lt;/figure>
+&lt;p>I have got 404. And logs from &lt;code>public-service&lt;/code> are giving answer why:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598944-dd4c4f2e-27f5-46e7-b2d0-1e78a640e4e9.png"/>
+&lt;/figure>
+&lt;p>There is no route defined in &lt;code>public-service&lt;/code> that is called &lt;code>/..%2Fprotected-service/protected&lt;/code> 😃&lt;/p>
+&lt;p>What was logged by &lt;code>auth-service&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598957-8c9c8e9c-d0f9-4bb2-bd35-1ba97270d5b1.png"/>
+&lt;/figure>
+&lt;p>Everything is align. Prefix is &lt;code>public-service&lt;/code>, &lt;code>%2F&lt;/code> was not decoded (due to &lt;code>path_with_escaped_slashes_action&lt;/code> envoy option) and &lt;code>auth-service&lt;/code> got right path for decision.&lt;/p>
+&lt;h3 id="2-payload">2° payload&lt;/h3>
+&lt;p>With second payload it&amp;rsquo;s a bit different as &lt;code>normalize_path&lt;/code> envoy option is set to &lt;code>true&lt;/code>.&lt;/p>
+&lt;p>&lt;code>curl --path-as-is -v http://app.test/public-service/../protected-service/protected&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598981-b426d3ac-c5b1-494c-bb11-be05eca1bfc4.png"/>
+&lt;/figure>
+&lt;p>This time it&amp;rsquo;s not 404, but 401. Why ? Path was normalized. Everywhere. Not only in routes decision making but also in authentication service. Let&amp;rsquo;s check logs from &lt;code>auth-service&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599021-1efcd692-eb39-4224-9a41-7a62be8dc67d.png"/>
+&lt;/figure>
+&lt;p>Yep. Logs are confirming this.&lt;/p>
+&lt;p>Emissary vs ingress authZ bypass - 1 : 0 😃&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>Emissary is resistant for ingress authZ bypass using path traversal. I&amp;rsquo;m impressed that both Emissary and envoy are aware of this concern. And whole documentation about it is in place. Also default configuration is secure. I was even looking how to change it to less secure, but didn&amp;rsquo;t find a way 😅&lt;/p>
+&lt;h3 id="versions-of-components-that-i-wasusing">Versions of components that I was using:&lt;/h3>
+&lt;p>minikube v1.23.2 on Microsoft Windows 10 Pro 10.0.19043 Build 19043; Kubernetesa v1.22.2 on Docker 20.10.8; Emissary 2.0.4&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/" >Bug bounty tips for nginx $request_uri path traversal bypass&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item></channel></rss>

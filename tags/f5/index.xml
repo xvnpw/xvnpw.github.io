@@ -1,4 +1,99 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>F5 on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/f5/</link><description>Recent content in F5 on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/f5/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s $request_uri variable.
-APIs This vulnerability is for APIs. Best scenario are microservice deployed to Kubernetes and exposed by ingress controller.
-Using paths API that you are playing with, need to use paths to address services, e.g.:
-OK! https://api.example.com/user-service https://api.example.com/customer-service ... NOT OK! https://user.example.com/ https://customer.example.com/ First set of URLs is good for exploitation, as you can try sending request with https://api.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>F5 on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/f5/</link><description>Recent content in F5 on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/f5/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s &lt;code>$request_uri&lt;/code> variable.&lt;/p>
+&lt;h2 id="apis">APIs&lt;/h2>
+&lt;p>This vulnerability is for APIs. Best scenario are &lt;strong>microservice&lt;/strong> deployed to Kubernetes and exposed by ingress controller.&lt;/p>
+&lt;h2 id="using-paths">Using paths&lt;/h2>
+&lt;p>API that you are playing with, need to use paths to address services, e.g.:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/user-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/customer-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NOT OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://user.example.com/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://customer.example.com/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>First set of URLs is good for exploitation, as you can try sending request with &lt;code>https://api.example.com/user-service/..%2F/customer-service/endpoint1&lt;/code>&lt;/p>
+&lt;h2 id="using-nginx-based-ingress-controller">Using nginx based ingress controller&lt;/h2>
+&lt;p>In this point we have having two condition, using Kubernetes and using nginx based ingress controller, e.g.: kong, Apache APISIX, F5 NGINX. &lt;/p>
+&lt;p>Kubernetes is used in many organizations right now. If you see that API consists of multiply services, you can safely bet on Kubernetes as orchestration. &lt;/p>
+&lt;p>To verify if specific ingress is in place you can try to get error message, e.g.: &lt;code>curl --path-as-is https://api.example.com/sdalksjdeiu23432/cutomer-serivice/endpoint1&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599207-a1c661f7-ac5f-421b-a48f-eabc8c2cea81.png"/>
+&lt;/figure>
+&lt;p>This &lt;code>sdalksjdeiu23432&lt;/code> is just not existing service. You can see that there is nginx in response.&lt;/p>
+&lt;h2 id="normalization-of-and2f">Normalization of ../ and ..%2F&lt;/h2>
+&lt;p>It&amp;rsquo;s good to check what is happening for normalization of paths. Between your machine and ingress could be other servers, e.g: additional proxies or WAF (Web Application Firewall).&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/../cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%2F/cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%252Fcutomer-serivice/endpoint1 &lt;span class="c1"># double encoding&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Comparing results could give you idea about path normalization.&lt;/p>
+&lt;h2 id="external-authentication-service">External authentication service&lt;/h2>
+&lt;p>This is quite hard to investigate. Idea behind external authentication service is about having it centralized. Having broken authentication proof (e.g. JWT) would issue 401/403 on ingress rather than on upstream.&lt;/p>
+&lt;p>I would follow those steps:&lt;/p>
+&lt;ol>
+&lt;li>Login into application&lt;/li>
+&lt;li>Get some request to backend service&lt;/li>
+&lt;li>Change it in a way that authentication proof is broken. For JWT it would be just to place any character into it.&lt;/li>
+&lt;li>Send changed request and see results&lt;/li>
+&lt;/ol>
+&lt;p>Something that you would like to see is:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599242-26908b17-554a-4737-af2c-6f163bb0560e.png"/>
+&lt;/figure>
+&lt;p>If you cannot get any indication whether centralized authentication is in place, you can also assume so and try to exploit.&lt;/p>
+&lt;h2 id="centralized-authorization">Centralized authorization&lt;/h2>
+&lt;p>Authentication service is checking if you are who you are talking to be. But authorization is making decisions about letting you do some action. Having it centralized in some way is necessary for exploitation. If backend services are doing access control on they own, there is &lt;strong>no way&lt;/strong> to exploit it with presented bypass.&lt;/p>
+&lt;p>You can do assumption here, that there is centralized authorization and move on.&lt;/p>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="public-service">Public service&lt;/h3>
+&lt;p>Try to find service that is handling requests for anyone. Without any authentication proof. Some kind of public service. If you have one, that&amp;rsquo;s good, if you don&amp;rsquo;t have there is still one thing you can do (described in next paragraph).&lt;/p>
+&lt;p>OK. We have some &lt;code>public-service&lt;/code> and also &lt;code>protected-service&lt;/code> that is only for logged in users (e.g. with valid JWT token). &lt;/p>
+&lt;p>Do some tests:&lt;/p>
+&lt;ol>
+&lt;li>Take a valid request to protected service, e.g. &lt;code>/protected-service/protected?a=1&lt;/code> and change it to &lt;code>/public-service/..%2Fprotected-service/protected?a=1&lt;/code> but send it &lt;strong>without any token&lt;/strong>. &lt;/li>
+&lt;li>Make token invalid and send request from point 1.&lt;/li>
+&lt;li>Wait and make token expired and send request from point 1.&lt;/li>
+&lt;/ol>
+&lt;p>What responses did you get? In case of luck you are already getting valid response for point 1. If not maybe point 2 or 3 was successful for you. If not try with different public and protected services. If you still get no valid response it means that there is no vulnerability here.&lt;/p>
+&lt;h3 id="privilege-escalation">Privilege escalation&lt;/h3>
+&lt;p>There could be implementation of centralized access control that is checking to which group/role user belong.&lt;/p>
+&lt;p>In this situation try following steps:&lt;/p>
+&lt;ol>
+&lt;li>Find endpoint that you cannot access. &lt;/li>
+&lt;li>Take a valid request with authentication proof (e.g. JWT).&lt;/li>
+&lt;li>Send request to endpoint from point 1, but using path traversal described in previous paragraph.&lt;/li>
+&lt;/ol>
+&lt;p>If you didn&amp;rsquo;t success it means that there is no vulnerability here. Sadly… ☹️&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I have presented steps that can be inspiration for you. Do not limit yourself and be creative. Happy hunting!&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item></channel></rss>

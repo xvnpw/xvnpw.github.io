@@ -1,7 +1,287 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kong on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/kong/</link><description>Recent content in kong on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/kong/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s $request_uri variable.
-APIs This vulnerability is for APIs. Best scenario are microservice deployed to Kubernetes and exposed by ingress controller.
-Using paths API that you are playing with, need to use paths to address services, e.g.:
-OK! https://api.example.com/user-service https://api.example.com/customer-service ... NOT OK! https://user.example.com/ https://customer.example.com/ First set of URLs is good for exploitation, as you can try sending request with https://api.</description></item><item><title>Path traversal in authorization context in Kong and F5 NGINX</title><link>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/</link><pubDate>Thu, 25 Nov 2021 20:49:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/</guid><description>In this part I will research another ingress controller based on nginx: 🦍 kong. At the end of article I will mention in short F5 NGINX Ingress Controller.
-In kong there is no explicit feature called external authentication, but developers gave possibility to create it using plugins.
-Here are some links describing this process:
-Custom Authentication and Authorization Framework with Kong aunkenlabs/kong-external-auth - repository with PoC of external-auth. It&amp;rsquo;s old and cannot be run as it with kong 2.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>kong on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/kong/</link><description>Recent content in kong on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/kong/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s &lt;code>$request_uri&lt;/code> variable.&lt;/p>
+&lt;h2 id="apis">APIs&lt;/h2>
+&lt;p>This vulnerability is for APIs. Best scenario are &lt;strong>microservice&lt;/strong> deployed to Kubernetes and exposed by ingress controller.&lt;/p>
+&lt;h2 id="using-paths">Using paths&lt;/h2>
+&lt;p>API that you are playing with, need to use paths to address services, e.g.:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/user-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/customer-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NOT OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://user.example.com/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://customer.example.com/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>First set of URLs is good for exploitation, as you can try sending request with &lt;code>https://api.example.com/user-service/..%2F/customer-service/endpoint1&lt;/code>&lt;/p>
+&lt;h2 id="using-nginx-based-ingress-controller">Using nginx based ingress controller&lt;/h2>
+&lt;p>In this point we have having two condition, using Kubernetes and using nginx based ingress controller, e.g.: kong, Apache APISIX, F5 NGINX. &lt;/p>
+&lt;p>Kubernetes is used in many organizations right now. If you see that API consists of multiply services, you can safely bet on Kubernetes as orchestration. &lt;/p>
+&lt;p>To verify if specific ingress is in place you can try to get error message, e.g.: &lt;code>curl --path-as-is https://api.example.com/sdalksjdeiu23432/cutomer-serivice/endpoint1&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599207-a1c661f7-ac5f-421b-a48f-eabc8c2cea81.png"/>
+&lt;/figure>
+&lt;p>This &lt;code>sdalksjdeiu23432&lt;/code> is just not existing service. You can see that there is nginx in response.&lt;/p>
+&lt;h2 id="normalization-of-and2f">Normalization of ../ and ..%2F&lt;/h2>
+&lt;p>It&amp;rsquo;s good to check what is happening for normalization of paths. Between your machine and ingress could be other servers, e.g: additional proxies or WAF (Web Application Firewall).&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/../cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%2F/cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%252Fcutomer-serivice/endpoint1 &lt;span class="c1"># double encoding&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Comparing results could give you idea about path normalization.&lt;/p>
+&lt;h2 id="external-authentication-service">External authentication service&lt;/h2>
+&lt;p>This is quite hard to investigate. Idea behind external authentication service is about having it centralized. Having broken authentication proof (e.g. JWT) would issue 401/403 on ingress rather than on upstream.&lt;/p>
+&lt;p>I would follow those steps:&lt;/p>
+&lt;ol>
+&lt;li>Login into application&lt;/li>
+&lt;li>Get some request to backend service&lt;/li>
+&lt;li>Change it in a way that authentication proof is broken. For JWT it would be just to place any character into it.&lt;/li>
+&lt;li>Send changed request and see results&lt;/li>
+&lt;/ol>
+&lt;p>Something that you would like to see is:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599242-26908b17-554a-4737-af2c-6f163bb0560e.png"/>
+&lt;/figure>
+&lt;p>If you cannot get any indication whether centralized authentication is in place, you can also assume so and try to exploit.&lt;/p>
+&lt;h2 id="centralized-authorization">Centralized authorization&lt;/h2>
+&lt;p>Authentication service is checking if you are who you are talking to be. But authorization is making decisions about letting you do some action. Having it centralized in some way is necessary for exploitation. If backend services are doing access control on they own, there is &lt;strong>no way&lt;/strong> to exploit it with presented bypass.&lt;/p>
+&lt;p>You can do assumption here, that there is centralized authorization and move on.&lt;/p>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="public-service">Public service&lt;/h3>
+&lt;p>Try to find service that is handling requests for anyone. Without any authentication proof. Some kind of public service. If you have one, that&amp;rsquo;s good, if you don&amp;rsquo;t have there is still one thing you can do (described in next paragraph).&lt;/p>
+&lt;p>OK. We have some &lt;code>public-service&lt;/code> and also &lt;code>protected-service&lt;/code> that is only for logged in users (e.g. with valid JWT token). &lt;/p>
+&lt;p>Do some tests:&lt;/p>
+&lt;ol>
+&lt;li>Take a valid request to protected service, e.g. &lt;code>/protected-service/protected?a=1&lt;/code> and change it to &lt;code>/public-service/..%2Fprotected-service/protected?a=1&lt;/code> but send it &lt;strong>without any token&lt;/strong>. &lt;/li>
+&lt;li>Make token invalid and send request from point 1.&lt;/li>
+&lt;li>Wait and make token expired and send request from point 1.&lt;/li>
+&lt;/ol>
+&lt;p>What responses did you get? In case of luck you are already getting valid response for point 1. If not maybe point 2 or 3 was successful for you. If not try with different public and protected services. If you still get no valid response it means that there is no vulnerability here.&lt;/p>
+&lt;h3 id="privilege-escalation">Privilege escalation&lt;/h3>
+&lt;p>There could be implementation of centralized access control that is checking to which group/role user belong.&lt;/p>
+&lt;p>In this situation try following steps:&lt;/p>
+&lt;ol>
+&lt;li>Find endpoint that you cannot access. &lt;/li>
+&lt;li>Take a valid request with authentication proof (e.g. JWT).&lt;/li>
+&lt;li>Send request to endpoint from point 1, but using path traversal described in previous paragraph.&lt;/li>
+&lt;/ol>
+&lt;p>If you didn&amp;rsquo;t success it means that there is no vulnerability here. Sadly… ☹️&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I have presented steps that can be inspiration for you. Do not limit yourself and be creative. Happy hunting!&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>Path traversal in authorization context in Kong and F5 NGINX</title><link>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/</link><pubDate>Thu, 25 Nov 2021 20:49:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>In this part I will research another ingress controller based on &lt;strong>nginx&lt;/strong>: 🦍 &lt;a class="link" href="https://konghq.com/solutions/kubernetes-ingress/" target="_blank" rel="noopener"
+>kong&lt;/a>. At the end of article I will mention in short &lt;a class="link" href="https://www.nginx.com/products/nginx-ingress-controller" target="_blank" rel="noopener"
+>F5 NGINX Ingress Controller&lt;/a>.&lt;/p>
+&lt;p>In kong there is no explicit feature called external authentication, but developers gave possibility to create it using plugins.&lt;/p>
+&lt;p>Here are some links describing this process:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://konghq.com/blog/custom-authentication-and-authorization-framework-with-kong/" target="_blank" rel="noopener"
+>Custom Authentication and Authorization Framework with Kong&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://github.com/aunkenlabs/kong-external-auth" target="_blank" rel="noopener"
+>aunkenlabs/kong-external-auth&lt;/a> - repository with PoC of external-auth. It&amp;rsquo;s old and cannot be run as it with kong 2.6, which is latest at time of writing.&lt;/li>
+&lt;/ul>
+&lt;p>During analysis I have found two possible exploitation paths:&lt;/p>
+&lt;ul>
+&lt;li>using &lt;a class="link" href="https://docs.konghq.com/hub/kong-inc/basic-auth/" target="_blank" rel="noopener"
+>basic-auth&lt;/a> and &lt;a class="link" href="https://docs.konghq.com/hub/kong-inc/acl/" target="_blank" rel="noopener"
+>acl plugins&lt;/a> - general idea is to create acl for route to protect service. I have tested it but, was not able to exploit 🙁&lt;/li>
+&lt;li>using custom plugin to implement external authentication&lt;/li>
+&lt;/ul>
+&lt;h2 id="custom-plugin">Custom Plugin&lt;/h2>
+&lt;p>I based my plugin on &lt;code>aunkenlabs/kong-external-auth&lt;/code>, but made it compatible with kong 2.6 and align with my &lt;code>auth-service&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-lua" data-lang="lua">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">local&lt;/span> &lt;span class="n">BasePlugin&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">require&lt;/span> &lt;span class="s2">&amp;#34;kong.plugins.base_plugin&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">local&lt;/span> &lt;span class="n">http&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">require&lt;/span> &lt;span class="s2">&amp;#34;resty.http&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kd">local&lt;/span> &lt;span class="n">ExternalAuthHandler&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">BasePlugin&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">extend&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">function&lt;/span> &lt;span class="nc">ExternalAuthHandler&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="nf">new&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">ExternalAuthHandler.super&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">new&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">self&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;external-auth&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">function&lt;/span> &lt;span class="nc">ExternalAuthHandler&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="nf">access&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">conf&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">ExternalAuthHandler.super&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">access&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">self&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kd">local&lt;/span> &lt;span class="n">client&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">http.new&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">client&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">set_timeouts&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">conf.connect_timeout&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">send_timeout&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">read_timeout&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kd">local&lt;/span> &lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">err&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">client&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="n">request_uri&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">conf.url&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">method&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;GET&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">ssl_verify&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="kc">false&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">headers&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;X-Original-Uri&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">ngx.var&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">request_uri&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;X-Forwarded-Path&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">kong.request&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">get_path&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;X-Forwarded-Method&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">kong.request&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">get_method&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;X-Forwarded-Query&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">kong.request&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">get_raw_query&lt;/span>&lt;span class="p">(),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;X-Api-Key&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">kong.request&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">get_headers&lt;/span>&lt;span class="p">()[&lt;/span>&lt;span class="s2">&amp;#34;X-Api-Key&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">})&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">if&lt;/span> &lt;span class="ow">not&lt;/span> &lt;span class="n">res&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="n">kong.response&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">exit&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">500&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">if&lt;/span> &lt;span class="n">res.status&lt;/span> &lt;span class="o">~=&lt;/span> &lt;span class="mi">200&lt;/span> &lt;span class="kr">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">return&lt;/span> &lt;span class="n">kong.response&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">exit&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">401&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="n">ExternalAuthHandler.PRIORITY&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">900&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">return&lt;/span> &lt;span class="n">ExternalAuthHandler&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>To load this plugin in Kubernetes deployment, read this guide: &lt;a class="link" href="https://docs.konghq.com/kubernetes-ingress-controller/2.0.x/guides/setting-up-custom-plugins/" target="_blank" rel="noopener"
+>setting up custom plugins&lt;/a>. I loaded it as &lt;code>ConfigMap&lt;/code> and added reference to &lt;code>values.yaml&lt;/code>.&lt;/p>
+&lt;h2 id="test">Test&lt;/h2>
+&lt;p>I&amp;rsquo;m using kong in version &lt;strong>2.6.0&lt;/strong> and kong ingress in &lt;strong>2.0.5&lt;/strong>.&lt;/p>
+&lt;p>This what is most important is value of headers that are coming into &lt;code>auth-service&lt;/code>.&lt;/p>
+&lt;p>First payload: &lt;code>curl --path-as-is -v http://app.test/public-service/../protected-service/protected&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/140642782-6f764efb-af14-433c-9a91-e90624adeacd.png"/>
+&lt;/figure>
+&lt;p>and logs from &lt;code>auth-service&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/140642764-128d25d7-a5fd-40c2-8982-cc0f4ae77d86.png"/>
+&lt;/figure>
+&lt;p>As you can see from image values of both headers are manipulated:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">X-Original-Uri: /public-service/../protected-service/protected
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Forwarded-Path: /public-service/../protected-service/protected
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Why both headers are important? So first header is taken directly from &lt;code>ngx.var.request_uri&lt;/code> but second one is taken using kong api: &lt;code>kong.request.get_path()&lt;/code>. Result is a bit shocking for me as I was expecting to see normalized path in case of call to kong api. This is due fact that in kong &lt;a class="link" href="https://github.com/Kong/kong/blob/f27c5868fc48bec1cc9e740bd1d1cf65793c473d/kong/tools/uri.lua#L60" target="_blank" rel="noopener"
+>source code&lt;/a> there is path normalization implemented.&lt;/p>
+&lt;p>In case of second payload: &lt;code>curl -v http://app.test/public-service/..%2Fprotected-service/protected&lt;/code>. There is &lt;strong>no success&lt;/strong>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/140642947-3e2302d0-5668-48f8-b318-c503f937fab6.png"/>
+&lt;/figure>
+&lt;p>It&amp;rsquo;s interesting that kong is not url decoding &lt;code>%2F&lt;/code>. What is even more interesting it&amp;rsquo;s decoding &lt;code>%2E&lt;/code> to &lt;code>.&lt;/code> 🤔&lt;/p>
+&lt;p>The &lt;code>404&lt;/code> is coming from &lt;code>public-service&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/140642967-98e2d374-9b82-4a69-95ed-3074ed39e042.png"/>
+&lt;/figure>
+&lt;h2 id="f5-nginx-ingress-controller">F5 NGINX Ingress Controller&lt;/h2>
+&lt;p>There is no dedicated feature for external authentication, but using annotations you can add it like this (&lt;a class="link" href="https://github.com/nginxinc/kubernetes-ingress/issues/873" target="_blank" rel="noopener"
+>read more&lt;/a>):&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">extensions/v1beta1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Ingress&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">annotations&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.org/location-snippets&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> &lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">auth_request /auth;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.org/server-snippets&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> location = /auth {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> return 200;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> }&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">cafe-ingress&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">namespace&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>If you can add external auth, you can also add &lt;code>$request_uri&lt;/code> as some header, which will effectively allow exploitation using path traversal.&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>After failed on exploitation with ingresses based on Traefik and envoy, I had mixed feelings about kong. This time I was successful 😀. From defenders perspective it&amp;rsquo;s good that &lt;code>acl&lt;/code> plugin is not vulnerable. In external auth case, developers need to build custom plugin and authentication service without path normalization.&lt;/p>
+&lt;p>Kong developers are very explicit about &lt;code>get_path()&lt;/code> function. In documentation there is info that it&amp;rsquo;s not normalized in anyway. This is clear indicator for creators of custom plugins: &lt;a class="link" href="https://docs.konghq.com/gateway/2.6.x/pdk/kong.request/#kongrequestget_path" target="_blank" rel="noopener"
+>https://docs.konghq.com/gateway/2.6.x/pdk/kong.request/#kongrequestget_path&lt;/a>. I have also check code of various kong plugins and they are secure. &lt;strong>So the only valid case for exploitation is custom plugin using not normalized variables&lt;/strong>.&lt;/p>
+&lt;p>Here my code if you want to try yourself: &lt;a class="link" href="https://github.com/xvnpw/k8s-ingress-auth-bypass-kong" target="_blank" rel="noopener"
+>https://github.com/xvnpw/k8s-ingress-auth-bypass-kong&lt;/a>&lt;/p>
+&lt;p>&lt;strong>F5 NGINX Ingress Controller&lt;/strong> is also suffering from &lt;code>request_uri&lt;/code> being not normalized.&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/" >Bug bounty tips for nginx $request_uri path traversal bypass&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item></channel></rss>

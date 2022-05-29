@@ -1,5 +1,57 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>java on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/java/</link><description>Recent content in java on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 17 Jul 2020 10:14:47 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/java/index.xml" rel="self" type="application/rss+xml"/><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>This story will explain how to find and exploit SpEL parser in web applications based on Java language.
-What is SpEL ? From Spring documentation:
-The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.
-Where is it used ?
-Spring Framework: Security, Data, … Any place developers use it by SpEL API For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>java on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/java/</link><description>Recent content in java on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Fri, 17 Jul 2020 10:14:47 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/java/index.xml" rel="self" type="application/rss+xml"/><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>&lt;p>This story will explain how to find and exploit SpEL parser in web applications based on Java language.&lt;/p>
+&lt;p>What is SpEL ? From Spring documentation:&lt;/p>
+&lt;blockquote>
+&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>
+&lt;/blockquote>
+&lt;p>Where is it used ?&lt;/p>
+&lt;ol>
+&lt;li>Spring Framework: Security, Data, …&lt;/li>
+&lt;li>&lt;strong>Any place developers use it by SpEL API&lt;/strong>&lt;/li>
+&lt;li>For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.&lt;/li>
+&lt;/ol>
+&lt;p>First point is known by issues in past like: &lt;a class="link" href="https://tanzu.vmware.com/security/cve-2018-1273" target="_blank" rel="noopener"
+>CVE-2018–1273&lt;/a>, &lt;a class="link" href="https://tanzu.vmware.com/security/cve-2017-8046" target="_blank" rel="noopener"
+>CVE-2017–8046&lt;/a> or CVE-2011–2730. I will not talk about them, I will focus on point number two.&lt;/p>
+&lt;h2 id="spel-api">SpEL API&lt;/h2>
+&lt;p>Most common use cases for SpEL that I have seen in web applications:&lt;/p>
+&lt;ul>
+&lt;li>complex expressions using custom function calls: &lt;code>fun1(&amp;quot;some string&amp;quot;) ? &amp;quot;text&amp;quot; : fun2(&amp;quot;some other string&amp;quot;)&lt;/code>&lt;/li>
+&lt;li>dynamic code evaluation: &lt;code>T(org.springframework.util.StreamUtils).copy(T(java.lang.Runtime).getRuntime().exec…&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>Any of user input can be part of expression. Also input can be expression as a whole. Those above use cases are good indicators what to look for in web apps. Key words: &lt;strong>expression, mapping, dynamic&lt;/strong> 😃&lt;/p>
+&lt;h2 id="payloads">Payloads&lt;/h2>
+&lt;p>From you have already see I bet you know what is coming. If developers are using SpEL with user input, we need to create payload with injection. Let&amp;rsquo;s check one that allow remote code execution (RCE). It was created as part of exploit for &lt;a class="link" href="https://github.com/m3ssap0/SpringBreakVulnerableApp" target="_blank" rel="noopener"
+>CVE-2017–8046&lt;/a>.&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583765-7570579f-f233-483c-8334-5f664caeb4e9.png"/>
+&lt;/figure>
+&lt;p>It consist of 3 parts:&lt;/p>
+&lt;ul>
+&lt;li>black color - copy result of command execution directly to output stream of HTTP request&lt;/li>
+&lt;li>red color - get Java Runtime and execute command in system&lt;/li>
+&lt;li>blue color - String containing command: &lt;code>cmd /c dir&lt;/code>. To make it more robust individual characters of command are decoded from numbers.&lt;/li>
+&lt;/ul>
+&lt;p>Result of executing it:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583810-50b2ec88-a69f-4acf-9848-29aeb18b6e9f.png"/>
+&lt;/figure>
+&lt;p>Code of intentionally vulnerable web application:&lt;/p>
+&lt;script type="application/javascript" src="https://gist.github.com/xvnpw/658e7f6f0d1c11f4d17f4cf96494ae59.js">&lt;/script>
+&lt;p>Keep in mind:&lt;/p>
+&lt;ul>
+&lt;li>payload is working in some of Blind scenarios - always copy result to HTTP response&lt;/li>
+&lt;li>can be tune to work on Linux - just remove &lt;code>cmd /c&lt;/code> and it should work out-of-box&lt;/li>
+&lt;li>in real world you will need probably first break out of string to inject this or do other tricks that are common for injection attacks&lt;/li>
+&lt;li>it can be used with multiple versions of String Framework and Java&lt;/li>
+&lt;/ul>
+&lt;p>Here is payload to copy:&lt;/p>
+&lt;script type="application/javascript" src="https://gist.github.com/xvnpw/85aa53c3e1b17d3515e8e3d43985a060.js">&lt;/script>
+&lt;p>The other interesting payload is this one:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139584003-8228ebaf-0a98-4028-9340-ee50a6f4bff5.png"/>
+&lt;/figure>
+&lt;p>It&amp;rsquo;s far less complicated but short and powerful. It&amp;rsquo;s also not using &lt;code>T(...)&lt;/code> syntax and no constructor is used. It&amp;rsquo;s just executing methods and accessing properties. I will show in next part why it does matter.&lt;/p>
+&lt;p>Check more payloads for SpEL in my repository: &lt;a class="link" href="https://github.com/xvnpw/hacking/blob/master/payloads/spel-injections.txt" target="_blank" rel="noopener"
+>https://github.com/xvnpw/hacking/blob/master/payloads/spel-injections.txt&lt;/a>&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>That will be all for this part. I have explained what is SpEL API and how to exploit it. In next part I will deep dive into Spring source code to show how exactly it works.&lt;/p>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item></channel></rss>

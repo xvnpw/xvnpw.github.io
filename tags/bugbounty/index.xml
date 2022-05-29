@@ -1,17 +1,319 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>bugbounty on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/bugbounty/</link><description>Recent content in bugbounty on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/bugbounty/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s $request_uri variable.
-APIs This vulnerability is for APIs. Best scenario are microservice deployed to Kubernetes and exposed by ingress controller.
-Using paths API that you are playing with, need to use paths to address services, e.g.:
-OK! https://api.example.com/user-service https://api.example.com/customer-service ... NOT OK! https://user.example.com/ https://customer.example.com/ First set of URLs is good for exploitation, as you can try sending request with https://api.</description></item><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>This story will explain how to find and exploit SpEL parser in web applications based on Java language.
-What is SpEL ? From Spring documentation:
-The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.
-Where is it used ?
-Spring Framework: Security, Data, … Any place developers use it by SpEL API For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.</description></item><item><title>From . in regex to SSRF - part 3</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</link><pubDate>Tue, 07 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</guid><description>This is last part of my stories about exploiting service with SSRF bug. Part 1 is available here, and part 2 here.
-This part is focused on abusing Node.js and node-fetch library. I will try to &amp;ldquo;talk&amp;rdquo; with Redis service using CRLF injection in http parser.
-For convenience Redis service will be simulated by nc -vvlp 6379.
-Test environment from my Kali 2020.1b:
-Node.js version 10.19.0 node-fetch version 2.6.0 CRLF Injection Lets start with PayloadsAllTheThings.</description></item><item><title>From . in regex to SSRF - part 2</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</link><pubDate>Tue, 14 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</guid><description>In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available here.
-What is state of the game up to now? I have found service that is vulnerable to SSRF by executing the REST call and by passing domain name check:
-https://api.example.org/image-converter/https://www-example.org
-I have registered domain name: www-example.org and add for it CNAME record to my EC2 server.
-But wait a second. This is not yet &amp;ldquo;SSRF&amp;rdquo;.</description></item><item><title>From . in regex to SSRF - part 1</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</link><pubDate>Sun, 05 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</guid><description>In test of one application I have encountered bug in regex that leaded to Server Side Request Forgery (SSRF). Way of finding it was huge fun and excitement. It was also my first bug on production system ever.
-During a recon I have found service called image-converter. It was definitely interesting, but not straight forward to exploit. I had no example of usage it and on simple GET request I was just getting:</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>bugbounty on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/bugbounty/</link><description>Recent content in bugbounty on xvnpw personal blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/bugbounty/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png"/>
+&lt;/figure>
+&lt;p>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s &lt;code>$request_uri&lt;/code> variable.&lt;/p>
+&lt;h2 id="apis">APIs&lt;/h2>
+&lt;p>This vulnerability is for APIs. Best scenario are &lt;strong>microservice&lt;/strong> deployed to Kubernetes and exposed by ingress controller.&lt;/p>
+&lt;h2 id="using-paths">Using paths&lt;/h2>
+&lt;p>API that you are playing with, need to use paths to address services, e.g.:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/user-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://api.example.com/customer-service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NOT OK!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://user.example.com/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://customer.example.com/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>First set of URLs is good for exploitation, as you can try sending request with &lt;code>https://api.example.com/user-service/..%2F/customer-service/endpoint1&lt;/code>&lt;/p>
+&lt;h2 id="using-nginx-based-ingress-controller">Using nginx based ingress controller&lt;/h2>
+&lt;p>In this point we have having two condition, using Kubernetes and using nginx based ingress controller, e.g.: kong, Apache APISIX, F5 NGINX. &lt;/p>
+&lt;p>Kubernetes is used in many organizations right now. If you see that API consists of multiply services, you can safely bet on Kubernetes as orchestration. &lt;/p>
+&lt;p>To verify if specific ingress is in place you can try to get error message, e.g.: &lt;code>curl --path-as-is https://api.example.com/sdalksjdeiu23432/cutomer-serivice/endpoint1&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599207-a1c661f7-ac5f-421b-a48f-eabc8c2cea81.png"/>
+&lt;/figure>
+&lt;p>This &lt;code>sdalksjdeiu23432&lt;/code> is just not existing service. You can see that there is nginx in response.&lt;/p>
+&lt;h2 id="normalization-of-and2f">Normalization of ../ and ..%2F&lt;/h2>
+&lt;p>It&amp;rsquo;s good to check what is happening for normalization of paths. Between your machine and ingress could be other servers, e.g: additional proxies or WAF (Web Application Firewall).&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/../cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%2F/cutomer-serivice/endpoint1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">curl --path-as-is https://api.example.com/sdalksjdeiu23432/..%252Fcutomer-serivice/endpoint1 &lt;span class="c1"># double encoding&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Comparing results could give you idea about path normalization.&lt;/p>
+&lt;h2 id="external-authentication-service">External authentication service&lt;/h2>
+&lt;p>This is quite hard to investigate. Idea behind external authentication service is about having it centralized. Having broken authentication proof (e.g. JWT) would issue 401/403 on ingress rather than on upstream.&lt;/p>
+&lt;p>I would follow those steps:&lt;/p>
+&lt;ol>
+&lt;li>Login into application&lt;/li>
+&lt;li>Get some request to backend service&lt;/li>
+&lt;li>Change it in a way that authentication proof is broken. For JWT it would be just to place any character into it.&lt;/li>
+&lt;li>Send changed request and see results&lt;/li>
+&lt;/ol>
+&lt;p>Something that you would like to see is:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139599242-26908b17-554a-4737-af2c-6f163bb0560e.png"/>
+&lt;/figure>
+&lt;p>If you cannot get any indication whether centralized authentication is in place, you can also assume so and try to exploit.&lt;/p>
+&lt;h2 id="centralized-authorization">Centralized authorization&lt;/h2>
+&lt;p>Authentication service is checking if you are who you are talking to be. But authorization is making decisions about letting you do some action. Having it centralized in some way is necessary for exploitation. If backend services are doing access control on they own, there is &lt;strong>no way&lt;/strong> to exploit it with presented bypass.&lt;/p>
+&lt;p>You can do assumption here, that there is centralized authorization and move on.&lt;/p>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="public-service">Public service&lt;/h3>
+&lt;p>Try to find service that is handling requests for anyone. Without any authentication proof. Some kind of public service. If you have one, that&amp;rsquo;s good, if you don&amp;rsquo;t have there is still one thing you can do (described in next paragraph).&lt;/p>
+&lt;p>OK. We have some &lt;code>public-service&lt;/code> and also &lt;code>protected-service&lt;/code> that is only for logged in users (e.g. with valid JWT token). &lt;/p>
+&lt;p>Do some tests:&lt;/p>
+&lt;ol>
+&lt;li>Take a valid request to protected service, e.g. &lt;code>/protected-service/protected?a=1&lt;/code> and change it to &lt;code>/public-service/..%2Fprotected-service/protected?a=1&lt;/code> but send it &lt;strong>without any token&lt;/strong>. &lt;/li>
+&lt;li>Make token invalid and send request from point 1.&lt;/li>
+&lt;li>Wait and make token expired and send request from point 1.&lt;/li>
+&lt;/ol>
+&lt;p>What responses did you get? In case of luck you are already getting valid response for point 1. If not maybe point 2 or 3 was successful for you. If not try with different public and protected services. If you still get no valid response it means that there is no vulnerability here.&lt;/p>
+&lt;h3 id="privilege-escalation">Privilege escalation&lt;/h3>
+&lt;p>There could be implementation of centralized access control that is checking to which group/role user belong.&lt;/p>
+&lt;p>In this situation try following steps:&lt;/p>
+&lt;ol>
+&lt;li>Find endpoint that you cannot access. &lt;/li>
+&lt;li>Take a valid request with authentication proof (e.g. JWT).&lt;/li>
+&lt;li>Send request to endpoint from point 1, but using path traversal described in previous paragraph.&lt;/li>
+&lt;/ol>
+&lt;p>If you didn&amp;rsquo;t success it means that there is no vulnerability here. Sadly… ☹️&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I have presented steps that can be inspiration for you. Do not limit yourself and be creative. Happy hunting!&lt;/p>
+&lt;h3 id="other-articles-from-this-series">Other articles from this series&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/cve_2021_43557_apache_apisix_path_traversal_in_request_uri_variable/" >CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/" >Path traversal in authorization context in Traefik and HAProxy&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_emissary/" >Path traversal in authorization context in Emissary&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_kong_and_f5_nginx/" >Path traversal in authorization context in Kong and F5 NGINX&lt;/a>&lt;/li>
+&lt;li>&lt;a class="link" href="https://xvnpw.github.io/posts/hunting_for_buggy_authentication_authorization_services_on_github/" >Hunting for buggy authentication/authorization services on github&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>&lt;p>This story will explain how to find and exploit SpEL parser in web applications based on Java language.&lt;/p>
+&lt;p>What is SpEL ? From Spring documentation:&lt;/p>
+&lt;blockquote>
+&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>
+&lt;/blockquote>
+&lt;p>Where is it used ?&lt;/p>
+&lt;ol>
+&lt;li>Spring Framework: Security, Data, …&lt;/li>
+&lt;li>&lt;strong>Any place developers use it by SpEL API&lt;/strong>&lt;/li>
+&lt;li>For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.&lt;/li>
+&lt;/ol>
+&lt;p>First point is known by issues in past like: &lt;a class="link" href="https://tanzu.vmware.com/security/cve-2018-1273" target="_blank" rel="noopener"
+>CVE-2018–1273&lt;/a>, &lt;a class="link" href="https://tanzu.vmware.com/security/cve-2017-8046" target="_blank" rel="noopener"
+>CVE-2017–8046&lt;/a> or CVE-2011–2730. I will not talk about them, I will focus on point number two.&lt;/p>
+&lt;h2 id="spel-api">SpEL API&lt;/h2>
+&lt;p>Most common use cases for SpEL that I have seen in web applications:&lt;/p>
+&lt;ul>
+&lt;li>complex expressions using custom function calls: &lt;code>fun1(&amp;quot;some string&amp;quot;) ? &amp;quot;text&amp;quot; : fun2(&amp;quot;some other string&amp;quot;)&lt;/code>&lt;/li>
+&lt;li>dynamic code evaluation: &lt;code>T(org.springframework.util.StreamUtils).copy(T(java.lang.Runtime).getRuntime().exec…&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>Any of user input can be part of expression. Also input can be expression as a whole. Those above use cases are good indicators what to look for in web apps. Key words: &lt;strong>expression, mapping, dynamic&lt;/strong> 😃&lt;/p>
+&lt;h2 id="payloads">Payloads&lt;/h2>
+&lt;p>From you have already see I bet you know what is coming. If developers are using SpEL with user input, we need to create payload with injection. Let&amp;rsquo;s check one that allow remote code execution (RCE). It was created as part of exploit for &lt;a class="link" href="https://github.com/m3ssap0/SpringBreakVulnerableApp" target="_blank" rel="noopener"
+>CVE-2017–8046&lt;/a>.&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583765-7570579f-f233-483c-8334-5f664caeb4e9.png"/>
+&lt;/figure>
+&lt;p>It consist of 3 parts:&lt;/p>
+&lt;ul>
+&lt;li>black color - copy result of command execution directly to output stream of HTTP request&lt;/li>
+&lt;li>red color - get Java Runtime and execute command in system&lt;/li>
+&lt;li>blue color - String containing command: &lt;code>cmd /c dir&lt;/code>. To make it more robust individual characters of command are decoded from numbers.&lt;/li>
+&lt;/ul>
+&lt;p>Result of executing it:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583810-50b2ec88-a69f-4acf-9848-29aeb18b6e9f.png"/>
+&lt;/figure>
+&lt;p>Code of intentionally vulnerable web application:&lt;/p>
+&lt;script type="application/javascript" src="https://gist.github.com/xvnpw/658e7f6f0d1c11f4d17f4cf96494ae59.js">&lt;/script>
+&lt;p>Keep in mind:&lt;/p>
+&lt;ul>
+&lt;li>payload is working in some of Blind scenarios - always copy result to HTTP response&lt;/li>
+&lt;li>can be tune to work on Linux - just remove &lt;code>cmd /c&lt;/code> and it should work out-of-box&lt;/li>
+&lt;li>in real world you will need probably first break out of string to inject this or do other tricks that are common for injection attacks&lt;/li>
+&lt;li>it can be used with multiple versions of String Framework and Java&lt;/li>
+&lt;/ul>
+&lt;p>Here is payload to copy:&lt;/p>
+&lt;script type="application/javascript" src="https://gist.github.com/xvnpw/85aa53c3e1b17d3515e8e3d43985a060.js">&lt;/script>
+&lt;p>The other interesting payload is this one:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139584003-8228ebaf-0a98-4028-9340-ee50a6f4bff5.png"/>
+&lt;/figure>
+&lt;p>It&amp;rsquo;s far less complicated but short and powerful. It&amp;rsquo;s also not using &lt;code>T(...)&lt;/code> syntax and no constructor is used. It&amp;rsquo;s just executing methods and accessing properties. I will show in next part why it does matter.&lt;/p>
+&lt;p>Check more payloads for SpEL in my repository: &lt;a class="link" href="https://github.com/xvnpw/hacking/blob/master/payloads/spel-injections.txt" target="_blank" rel="noopener"
+>https://github.com/xvnpw/hacking/blob/master/payloads/spel-injections.txt&lt;/a>&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>That will be all for this part. I have explained what is SpEL API and how to exploit it. In next part I will deep dive into Spring source code to show how exactly it works.&lt;/p>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>From . in regex to SSRF - part 3</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</link><pubDate>Tue, 07 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</guid><description>&lt;p>This is last part of my stories about exploiting service with SSRF bug. Part 1 is available &lt;a class="link" href="https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/" >here&lt;/a>, and part 2 &lt;a class="link" href="https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/" >here&lt;/a>.&lt;/p>
+&lt;p>This part is focused on abusing Node.js and &lt;em>node-fetch&lt;/em> library. I will try to &amp;ldquo;talk&amp;rdquo; with Redis service using CRLF injection in http parser.&lt;/p>
+&lt;p>For convenience Redis service will be simulated by &lt;code>nc -vvlp 6379&lt;/code>.&lt;/p>
+&lt;p>Test environment from my Kali 2020.1b:&lt;/p>
+&lt;ul>
+&lt;li>Node.js version 10.19.0&lt;/li>
+&lt;li>node-fetch version 2.6.0&lt;/li>
+&lt;/ul>
+&lt;h2 id="crlf-injection">CRLF Injection&lt;/h2>
+&lt;p>Lets start with PayloadsAllTheThings. It contains couple of CRLF Injection payloads. I will loop over them and check result in second console:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583089-ecf56f8e-5c1a-465d-b0ff-01204ef313aa.png"/>
+&lt;/figure>
+&lt;p>None success here. All payloads failed 🙁&lt;/p>
+&lt;p>Next step is to check payloads from two great articles by Orange Tsai: &lt;a class="link" href="https://www.blackhat.com/docs/us-17/thursday/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf" target="_blank" rel="noopener"
+>first from Red Hat 2017&lt;/a> and &lt;a class="link" href="https://blog.orange.tw/2017/07/how-i-chained-4-vulnerabilities-on.html" target="_blank" rel="noopener"
+>second from his blog&lt;/a>. It&amp;rsquo;s giving few more options to test:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">－＊Set-Cookie:injection－＊ (Unicode U+FF0D U+FF0A)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">http://0\r\n SET foo 0 60 5\r\n :6379/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">https://0\r\nSET foo 0 60 5\r\n:6379/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Still no success here. I seams that this version of Node.js is not vulnerable for CRLF attacks.&lt;/p>
+&lt;p>Let&amp;rsquo;s try harder and dig dipper into node-fetch, maybe something interesting will be in code 😃&lt;/p>
+&lt;h2 id="investigation-of-node-fetch-code">Investigation of node-fetch code&lt;/h2>
+&lt;p>What am I trying to achieve here? I have in mind two types of possible errors:&lt;/p>
+&lt;ol>
+&lt;li>Url parsing&lt;/li>
+&lt;li>Handling url input as object not as &lt;em>string&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;p>Let&amp;rsquo;s see what I will find.&lt;/p>
+&lt;p>Debug of Node.js code is quite nice with Visual Studio Code:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583200-2686e457-092e-4385-8a01-f7716babf711.png"/>
+&lt;/figure>
+&lt;p>Problem number one is not existing as node-fetch is using standard Node.js &lt;code>Url.parse&lt;/code> for input. There are not doing much fancy stuff with it.&lt;/p>
+&lt;p>For second problem I needed to do more investigation.&lt;/p>
+&lt;p>First of all I will explain why I&amp;rsquo;m interested in processing &lt;em>object&lt;/em> instead of &lt;em>string&lt;/em>. In many dynamic languages you can make valid request like this:&lt;/p>
+&lt;p>&lt;code>http://localhost:3000/c?url[href]=localhost&amp;amp;url[method]=POST&lt;/code>&lt;/p>
+&lt;p>This leads to created object instead of string. Could be quite handy for some scenarios. Especially if developers didn&amp;rsquo;t predict it 😃 See below example of parsing such url in Node.js Express framework.&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583272-0e1f3070-7ec9-44a3-8df7-ac9cf858d883.png"/>
+&lt;/figure>
+&lt;p>In node-fetch I have found one possible attacking vector:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139583293-12f60351-0548-41c5-a92b-45711eac279f.png"/>
+&lt;/figure>
+&lt;p>It look like possible to use object instead of string for input parameter. This &lt;code>input.method&lt;/code> could change method type in some specific conditions. After spending some time in debugger it turn out as &lt;strong>dead end&lt;/strong>.&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I didn&amp;rsquo;t manage to escalate blind SSRF to anything more. I have spent couple of days trying different approaches. Nevertheless after submitting report I was awarded with &lt;strong>400$&lt;/strong> and bug was marked as &lt;strong>medium&lt;/strong>.&lt;/p>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>From . in regex to SSRF - part 2</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</link><pubDate>Tue, 14 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</guid><description>&lt;p>In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available &lt;a class="link" href="https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/" >here&lt;/a>.&lt;/p>
+&lt;p>What is state of the game up to now? I have found service that is vulnerable to SSRF by executing the REST call and by passing domain name check:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/https://www-example.org&lt;/code>&lt;/p>
+&lt;p>I have registered domain name: &lt;code>www-example.org&lt;/code> and add for it &lt;code>CNAME&lt;/code> record to my EC2 server.&lt;/p>
+&lt;p>But wait a second. &lt;strong>This is not yet &amp;ldquo;SSRF&amp;rdquo;&lt;/strong>. For now I could call specific domain, but didn&amp;rsquo;t prove ability to scan internal ports or execute requests to internal services.&lt;/p>
+&lt;p>First of all I checked what headers are sent to my server:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nc -l -n -p &lt;span class="m">80&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139582215-1ead26ed-3b56-4ff7-9e25-35d901c27653.png"/>
+&lt;/figure>
+&lt;p>What it interesting here is &lt;code>User-Agent&lt;/code>. Clearly indicating &lt;strong>NodeJS&lt;/strong> and &lt;strong>node-fetch&lt;/strong> library.&lt;/p>
+&lt;h2 id="tools">Tools&lt;/h2>
+&lt;p>For this part I needed http server to host some files and do redirects. Here is my script based on python &lt;code>http.server&lt;/code>:&lt;/p>
+&lt;script type="application/javascript" src="https://gist.github.com/xvnpw/9fa7f7c5a7dfa13d3f27d2e19af9a264.js">&lt;/script>
+&lt;p>This script is doing two things:&lt;/p>
+&lt;ul>
+&lt;li>if request is starting with query parameter &lt;code>/?r=&lt;/code> it is taking value of this parameter and put it in &lt;code>Location&lt;/code> header, returning code &lt;code>302&lt;/code>&lt;/li>
+&lt;li>else it is loading file from disk and always returning &lt;code>image/svg+xml&lt;/code> with code &lt;code>200&lt;/code>. &lt;strong>This is important!&lt;/strong> Always return expected &lt;code>Content-Type&lt;/code> to check if parser can handle different types.&lt;/li>
+&lt;/ul>
+&lt;p>This code is PoC so don&amp;rsquo;t expect much out of it. It&amp;rsquo;s for testing purpose only. &lt;code>Don't use it on production&lt;/code>.&lt;/p>
+&lt;p>You can check more of my hacking resources in &lt;a class="link" href="https://github.com/xvnpw/hacking" target="_blank" rel="noopener"
+>my public repo&lt;/a>.&lt;/p>
+&lt;h2 id="mind-map">Mind map&lt;/h2>
+&lt;p>Here is mind map of ideas that I had during exploitation:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139582537-5fe5ba0c-123f-4413-8a0f-9f90194a5415.png"/>
+&lt;/figure>
+&lt;h2 id="svg-payload">SVG payload&lt;/h2>
+&lt;p>Hosting some svg files was my first shot. I have took some from PayloadsAllTheThings repository, but sadly none was working.&lt;/p>
+&lt;p>In most cases I got &lt;code>502 Bad Gateway&lt;/code> and in some payloads were just ignored. The other thing I noticed is that I was able request &lt;code>png&lt;/code> or &lt;code>jpg&lt;/code> file and it was parsed. I have gut feeling that service was using some kind of NodeJS library, not ImageMagick. Maybe I did miss something?&lt;/p>
+&lt;h2 id="http-redirect">HTTP Redirect&lt;/h2>
+&lt;p>I have implemented in my &lt;code>server.py&lt;/code> possibility to redirect with new &lt;code>Location&lt;/code> header. This created variety of options to exploit.&lt;/p>
+&lt;p>Lets start with ports scanning:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/https://www-example.org/%3Fr%3Dhttp%3A%2F%2F127.0.0.1%3A80%2F&lt;/code>&lt;/p>
+&lt;p>Redirect part is url encoded to not break service with &lt;code>?&lt;/code> or &lt;code>/&lt;/code>. I have taken this to Burp Intruder and scan all ports. But if you are using free version of Burp this can take a very long time. So it&amp;rsquo;s better to use &lt;code>ffuf&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="k">for&lt;/span> i in &lt;span class="o">{&lt;/span>1..65535&lt;span class="o">}&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">do&lt;/span> &lt;span class="nb">echo&lt;/span> &lt;span class="nv">$i&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="k">done&lt;/span> &amp;gt; all_ports.txt&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">ffuf -mc all -ac -w all_ports.txt -u &lt;span class="s1">&amp;#39;https://api.example.org/image-converter/https://www-example.org/%3Fr%3Dhttp%3A%2F%2F127.0.0.1%3AFUZZ%2F&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>Same way I was able to &lt;strong>scan for internal services&lt;/strong>. For list of domains I used SecLists:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ffuf -mc all -ac -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt -u &lt;span class="s1">&amp;#39;https://api.example.org/image-converter/https://www-example.org/%3Fr%3Dhttp%3A%2F%2FFUZZ.example.org%2F&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>This will try to make a call to subdomains of &lt;code>example.org&lt;/code> but from perspective of &lt;code>api.example.org&lt;/code>. In my case it found redis instance on &lt;code>redis.example.org&lt;/code>.&lt;/p>
+&lt;p>Next step for me was &lt;strong>access cloud resources&lt;/strong>, e.g. metadata services on 169.254.169.254:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/https://www-example.org/%3Fr%3Dhttp%3A%2F%2F169.254.169.254%3A80%2F&lt;/code>&lt;/p>
+&lt;p>I was able to positively connect to 169.254.169.254. So it means that service was running on AWS.&lt;/p>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;p>I finally got blind SSRF using redirect &lt;code>302&lt;/code> code and &lt;code>Location&lt;/code> header! That&amp;rsquo;s gave me possibility to penetrate internal network. I was disappointed that no svg payload was working. For part 3 I left &amp;ldquo;HTTP Parser Abuse&amp;rdquo; - I will try to force node-fetch to change protocol and talk with services like &lt;code>redis&lt;/code>.&lt;/p>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item><item><title>From . in regex to SSRF - part 1</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</link><pubDate>Sun, 05 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139576912-865d0f16-6dc3-4af9-8a39-5e77d7b236c3.png"/>
+&lt;/figure>
+&lt;p>In test of one application I have encountered bug in regex that leaded to Server Side Request Forgery (SSRF). Way of finding it was huge fun and excitement. It was also my first bug on production system ever.&lt;/p>
+&lt;p>During a recon I have found service called &lt;em>image-converter&lt;/em>. It was definitely interesting, but not straight forward to exploit. I had no example of usage it and on simple GET request I was just getting:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139576933-06cadc0d-6489-4ac1-8e58-292d5fb1baf8.png"/>
+&lt;/figure>
+&lt;p>That was first major problem for me. I was trying with some simple query parameters like:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>?url=&lt;/code>&lt;/li>
+&lt;li>&lt;code>?width=&lt;/code>&lt;/li>
+&lt;li>&lt;code>?name=&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>and so on but without luck. Then I tried with &lt;a class="link" href="https://github.com/s0md3v/Arjun" target="_blank" rel="noopener"
+>https://github.com/s0md3v/Arjun&lt;/a> which is tool for automated parameter discovery. This also failed. I was pretty sure that there is something out there, but I couldn&amp;rsquo;t force it to work.&lt;/p>
+&lt;p>Then I started digging in what is this error message that I see all the time: &lt;code>&amp;quot;Cannot read property 'groups' of null&amp;quot;&lt;/code>. This leads me to stackoverflow question about JavaScript and regex error. After that I was wondering: &amp;ldquo;How the hell they have implemented this?&amp;rdquo;. After hour of trying and failure, I got it:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/width=100/http://google.com&lt;/code>&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139577018-2487fddb-ef0a-449b-a893-7ad929e4aa0b.png"/>
+&lt;/figure>
+&lt;p>In my almost 10 years IT career, I didn&amp;rsquo;t see service implementation like that 😉&lt;/p>
+&lt;p>My positive energy went down, as I realized that there is domain whitelisting implemented. I have picked main domain &lt;code>www.example.org&lt;/code> and in fact it was working:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/width=100/https://www.example.org&lt;/code>&lt;/p>
+&lt;p>I got response:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139577079-083fd93f-3679-4487-9f91-4d7f8fec6be8.png"/>
+&lt;/figure>
+&lt;p>In this moment I was sure about SSRF, but still had whitelisting to bypass.&lt;/p>
+&lt;p>My first approach was to take SSRF from &lt;a class="link" href="https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Server%20Side%20Request%20Forgery" target="_blank" rel="noopener"
+>PayloadAllTheThings&lt;/a> and test it. I don&amp;rsquo;t want to copy all that here. There is dozen of payloads. Sadly not of it worked. I got very interested in &lt;a class="link" href="https://www.blackhat.com/docs/us-17/thursday/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf" target="_blank" rel="noopener"
+>Orange: A New Era SSRF&lt;/a>, but that was also death end.&lt;/p>
+&lt;p>I was pretty puzzled. Having high hope on some nice bug, but it looked like this service was secured. Good thing was that I have learned a lot, especially from Orange paper.&lt;/p>
+&lt;p>Next day with fresh head I took different way. During recon I have noted two other domains connected with main one: &lt;code>www.example.net&lt;/code> and &lt;code>www.example.com&lt;/code>. It turn out that those domains where also whitelisted. Having a background in programming I knew that developers have a tendency to write &amp;ldquo;nice code&amp;rdquo;, so maybe they used regex to check domain suffix? And guess what? They did! For request:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/width=100/https://www-example.org&lt;/code>&lt;/p>
+&lt;p>I got response:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139577185-1b2711fb-6a19-435e-8bd3-015deb803884.png"/>
+&lt;/figure>
+&lt;p>Hurray!&lt;/p>
+&lt;p>What exactly regex they used ? I think something like this regex101:&lt;/p>
+&lt;figure>&lt;img src="https://user-images.githubusercontent.com/17719543/139577198-3c7995e4-d9ef-4c83-ad57-2608c17305ed.png"/>
+&lt;/figure>
+&lt;p>And what they should use is: &lt;code>www\.example\.(com|net|org)&lt;/code>&lt;/p>
+&lt;p>Next I have registered &lt;code>www-example.com&lt;/code> domain and started playing with escalation this. More about it in part 2.&lt;/p>
+&lt;hr>
+&lt;p>Thanks for reading! You can follow me on &lt;a class="link" href="https://twitter.com/xvnpw" target="_blank" rel="noopener"
+>Twitter&lt;/a>.&lt;/p></description></item></channel></rss>
