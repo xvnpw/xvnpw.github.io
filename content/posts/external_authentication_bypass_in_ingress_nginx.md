@@ -1,11 +1,11 @@
 ---
 title: "External Authentication bypass in ingress-nginx"
-date: 2022-05-29T20:59:02+01:00
-draft: true
+date: 2022-05-29T16:59:02+01:00
+draft: false
 tags: [kubernetes, ingress, nginx, path-traversal]
 ---
 
-{{< figure src="[https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png](https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png)" class="image-center" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png" class="image-center" >}}
 
 In October 2021 I was researched [ingress-nginx](https://kubernetes.github.io/ingress-nginx/) for possibility to bypass external authentication using path traversal. It was origin story for other investigations regarding insecure usage of `$request_uri` which leaded to [Apache APISIX CVE-2021-43557](https://apisix.apache.org/blog/2021/11/23/cve-2021-43557-research-report/). I have started with report on HackerOne to Kubernetes project: https://hackerone.com/reports/1357948. It took long time for the team to investigate it, but in the end I got some bounty 😏 sadly report was closed as informative. They asked me to create normal [issue](https://github.com/kubernetes/ingress-nginx/issues/8644) in github as this behavior is considered as **not security issue**. For me this is still an issue of **insecure design**.
 
@@ -26,9 +26,9 @@ Accept: */*
 
 Root cause of the problem, is how nginx is handling `$request_uri` variable. It's documented very "frugal":
 
-{{< figure src="[https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png]([https://user-images.githubusercontent.com/17719543/170878532-514c01cc-aa97-42b2-adba-f61a155d9863.png](https://user-images.githubusercontent.com/17719543/170879498-1cca915f-9c5f-45f3-a6fc-fdfc97ff22a2.png))" class="image-center" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/170879498-1cca915f-9c5f-45f3-a6fc-fdfc97ff22a2.png" class="image-center" >}}
 
-For me it's not enought. There should be brought documentation of risks associated with consuming not normalized paths. After pointing it out to nginx team, I got response that it's obvious that `$request_uri` is not normalized and developers should take care of their projects 😕. This would be perfect world, but we are not living in such. Just compare it with documentation in [envoy](https://www.envoyproxy.io):
+For me it's not enough. There should be brought documentation of risks associated with consuming not normalized paths. After pointing it out to nginx team, I got response that it's obvious that `$request_uri` is not normalized and developers should take care of their projects 😕. This would be perfect world, but we are not living in such. Just compare it with documentation in [envoy](https://www.envoyproxy.io):
 
 * [rejecting-client-requests-with-escaped-slashes](https://www.getambassador.io/docs/edge-stack/latest/topics/running/ambassador/#rejecting-client-requests-with-escaped-slashes) - although it's not directly for Emissary. It's describing well envoy concerts for escaped slashes
 * [GHSA-xcx5-93pw-jw2w](https://github.com/envoyproxy/envoy/security/advisories/GHSA-xcx5-93pw-jw2w) (CVE-2019–9901) - description of risks associated with normalizing paths in envoy
@@ -85,14 +85,14 @@ $ curl http://127.0.0.1:8080/protected-service/protected -H "X-Api-Key: secret-a
 {"data":"protected data"}
 ```
 
-as you can see I needed to provide "secret-api-key" to get resource.
+as you can see I need to provide "secret-api-key" to get resource.
 
 ## Exploitation
 
 Let's send request with path traversal
 
 ```
-$ curl --path-as-is http://127.0.0.1:8080/public-service/../protected-service/protected  -H "Host: app.test"
+$ curl --path-as-is http://127.0.0.1:8080/public-service/../protected-service/protected -H "Host: app.test"
 {"data":"protected data"}
 ```
 
@@ -100,7 +100,7 @@ As you can see, I was able to bypass uri restrictions 😄
 
 ## Authentication service
 
-Of course **not all** authentication services will be vulnerable. Only those that are making specific decisional based on requested paths. In my case service looks like this:
+Of course **not all** authentication services will be vulnerable. Only those that are making specific decisions based on requested paths. In my case service looks like this:
 
 ```
 @app.route('/verify')
@@ -150,19 +150,6 @@ spec:
                   number: 8080
 ```
 
-### Root cause
-
-`uri-blocker` plugin is using `ctx.var.request_uri` variable in logic of making blocking decision. You can check it in [code](https://github.com/apache/apisix/blob/11e7824cee0e4ab0145ea7189d991464ade3682a/apisix/plugins/uri-blocker.lua#L98):
-
-{{< figure src="https://user-images.githubusercontent.com/17719543/140750129-f32e9acc-2f4b-42d9-b565-d52d44fe0504.png" >}}
-
-### Impact
-
-- attacker can bypass access control restrictions and perform successful access to routes that shouldn't be able to,
-- developers of custom plugins have no knowledge that `ngx.var.request_uri` variable is untrusted.
-
-Search for usage of `var.request_uri` gave me a hint that maybe [authz-keycloak plugin](https://github.com/apache/apisix/blob/master/docs/en/latest/plugins/authz-keycloak.md) is affected. You can see [this code](https://github.com/apache/apisix/blob/a3d42e66f60673e408cab2e2ceedc58aee450776/apisix/plugins/authz-keycloak.lua#L578), it looks really nasty. If there is no normalization on keycloak side, then there is high potential for vulnerablity. 
-
 ### Mitigation
 
 One thing is to not trust content of `X-Original-Uri` and `X-Auth-Request-Redirect` headers. But there is also nice variable that can be used: `$service_name`
@@ -194,6 +181,7 @@ Whole code of this example is here https://github.com/xvnpw/k8s-ingress-auth-byp
 
 ### Other articles from this series
 
+* [CVE-2021-43557: Apache APISIX: Path traversal in request_uri variable]({{< ref "/posts/CVE_2021_43557_Apache_APISIX_Path_traversal_in_request_uri_variable.md" >}})
 * [Path traversal in authorization context in Traefik and HAProxy]({{< ref "/posts/path_traversal_in_authorization_context_in_Traefik_and_HAProxy.md" >}})
 * [Path traversal in authorization context in Emissary]({{< ref "/posts/path_traversal_in_authorization_context_in_Emissary.md" >}})
 * [Path traversal in authorization context in Kong and F5 NGINX]({{< ref "/posts/path_traversal_in_authorization_context_in_Kong_and_F5_NGINX.md" >}})
