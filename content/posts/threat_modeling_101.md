@@ -26,7 +26,7 @@ My advice is to start with something simple, to setup right foundation and build
 
 I could not mention Geoffrey Hill and his [Rapid Threat Model Prototyping](https://github.com/geoffrey-hill-tutamantic/rapid-threat-model-prototyping-docs). In his view, the most important are **data**, and those should be protected at most. He is also focused on **countermeasures** and not threats. I can understand that, if team is not doing anything to stop threats before implementation, fast and easy to perform technique is big plus. There is one caveat in my opinion, this technique is coming with assumed risk appetite of organization. If you want to know more check this [OWASP DevSlop](https://www.youtube.com/watch?v=6eUlRVzcbaU) talk.
 
-### Everyone is doing Threat Modeling
+### Every developer is doing Threat Modeling
 
 From process perspective, I have lately encounter [Redefining Threat Modeling: Security Team Goes on Vacation by Jeevan Singh](https://www.youtube.com/watch?v=kRiXDpq-nd4). Jeevan gave himself goal to train every dev in his company in TM. It was enormous effort, and he is sharing his way.
 
@@ -67,6 +67,8 @@ For TM, most important in my opinion is that engineers and security people are a
 
 Proper **SecDevOps** can only start with accepting fact that you have this "🚗 expensive car" that everyone want to take from you (which is not far from true in current cybersecurity landscape).
 
+#### Every 👤 Human is doing Threat Modeling
 
+How to secure house? Should I take this route or that route? Those questions are popping in our heads every day. We are constantly thinking about something that can threaten our lives or assets. But can you **easily** prioritize how to spend your money on countermeasures? Do you need guards with dogs or only cheap wifi camera. I'm finding this prioritization thinking very hard in my private life. 
 
 
