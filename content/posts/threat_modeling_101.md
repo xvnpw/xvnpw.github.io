@@ -3,10 +3,12 @@ title: "Threat Modeling 101"
 date: 2022-10-13T08:59:02+01:00
 draft: true
 tags: [appsec, threat-modeling]
-description: "What is Threat Modeling? There are many definitions, but for me it's a technique to find security problems before implementation happened."
+description: "What is Threat Modeling? First of all it’s, just thinking about threats. We all do it, every day 😃 How someone could break into my house? But wait a second. How do you know that you need to protected your house in the first place? Maybe you don’t have house, maybe you don’t have money right now to buy protections."
 ---
 
-What is Threat Modeling? There are many definitions, but for me it's a technique to find security problems **before** implementation happened. And what do we have before implementation, you may ask? Creating a **design**. Design can be as simple as drawing few boxes and arrows among them or complex with multiple diagrams. **Anything is enough** (especially for beginning), it's only a model, it's wrong, but it can be useful. 
+What is Threat Modeling? First of all it's, just thinking about threats. We all do it, every day 😃 How someone could break into my house? But wait a second. How do you know that you need to protected your house in the first place? Maybe you don't have house, maybe you don't have money right now to buy protections. Or maybe your family thinks you are a bit paranoid? 😕 Just before doing Threat Modeling you need to start doing Risk Management, to assess what is your risk appetite and profile. More on that later. 
+
+Ok, so what is Threat Modeling in *cyber security*? There are many definitions, but for me it's a technique to find security problems **before** implementation happened. And what do we have before implementation, you may ask? Creating a **design**. Design can be as simple as drawing few boxes and arrows among them or complex with multiple diagrams. **Anything is enough** (especially for beginning), it's only a model, it's wrong, but it can be useful. 
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/195526702-922b05ae-f28e-4889-af64-6962c31122d0.png" class="image-center" >}}
 
@@ -20,7 +22,7 @@ Same as with definitions of TM (Threat Modeling), there are multiply techniques 
 
 For me most important observation is that, you need to match technique to skill level of team. Jumping right into most robust will not be easy for both security people and engineering team. Apart of skill level you need also match company culture, team setup, processes and more.
 
-My advice is to start with something simple, to setup right foundation and build upon that. On the other side, engineers don't want to spend time on meaningless activities, so be precise on goals of your TM program.
+My advice is to start with something simple, to setup right foundation and build upon that. On the other hand, engineers don't want to spend time on meaningless activities, so be precise on goals of your TM program.
 
 ### Rapid Threat Model Prototyping
 
@@ -70,5 +72,7 @@ Proper **SecDevOps** can only start with accepting fact that you have this "🚗
 #### Every 👤 Human is doing Threat Modeling
 
 How to secure house? Should I take this route or that route? Those questions are popping in our heads every day. We are constantly thinking about something that can threaten our lives or assets. But can you **easily** prioritize how to spend your money on countermeasures? Do you need guards with dogs or only cheap wifi camera. I'm finding this prioritization thinking very hard in my private life. 
+
+This is just another reason to start with Risk Assessment / Management before any TM.
 
 
