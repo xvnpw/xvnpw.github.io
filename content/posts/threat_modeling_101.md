@@ -51,7 +51,7 @@ I want to focus only on explaining those two categories of threats to use it lat
 |       Category       |      Description     | Property violated 
 |:-------------------:|:--------------------:|:---|
 | 👓 Spoofing | Pretending to be someone or something other than yourself | Authentication 
-| ✋ Tampering | | Integrity |
+| ✋ Tampering | Malicious data modification | Integrity |
 
 ## Motivation (Risk Assessment)
 
@@ -67,32 +67,46 @@ Such intuitive thinking can save us time and focus, but can also harm us. How to
 
 This topic is far greater then TM, but I will only mention [PwC report](https://www.pwc.com/us/en/services/consulting/cybersecurity-risk-regulatory/library/cyber-risk-quantification-management.html), that is showing how right approach to risk management can help organizations.
 
-For TM, most important in my opinion is that engineers and security people should be aware of **risk management**. There is nothing worse than security people standing on their heads to do TM, and everyone else thinking that we don't need that 👿
+For TM, most important in my opinion is that engineers and security team should be aware of **risk management**. There is nothing worse than security people standing on their heads to do TM, and everyone else thinking that we don't need that 👿
 
 Proper **SecDevOps** can only start with accepting fact that you have this "🚗 expensive car" that everyone want to take from you (which is not far from true in current cybersecurity landscape).
 
 ## Goals
 
-I have already mention main goal of TM: "To find security problems before implementation happened". It's good opening sentence for TM training, but it's not enough for having long lasting program. 
+I have already mentioned main goal of TM: "To find security problems before implementation happened". It's good opening sentence for TM training, but it's not enough for having long lasting program. 
 
 Let's have simple data flow diagram, representing web application:
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/196056425-c2bd34e2-aed5-4ba1-9444-ec2df1331860.png" class="image-center" >}}
 
-We have Web Application, so will can enumerate all threats including XSS, security headers, maybe file upload, injections code and command. We have SQL database so probably SQL injections. You see where this is going. We can enumerate all possible threats and number of those is enormous. There is second thing that is outstanding here. Our list of threats is almost the same for every other Web Application and what is more interesting it's the same as any **DAST tool checklist**. 
+We have Web Application, so will can enumerate all threats including XSS, security headers, maybe file upload, injections. You see where this is going. We can enumerate all possible threats and number of those is enormous. There is second thing that is outstanding here. Our list of threats is almost the same for every other Web Application.
 
 We have already too many threats to deal with in 1h session with developers, and we even didn't tackle deployment and CI/CD 💩.
 
 To get things sort out let's divide TM by scopes with different goals:
 
-| Scope|Description|Goal|Typical countermeasures|
-|:----:|:--------------------:|:---|:----|
-| System Architecture | We are looking here on whole system from high level | Find threats that can affect system as a whole, e.g. DoS/DDoS, various injections | DDoS protection, rate limiting, WAF, central authentication on API gateway
-| Reference microservice architecture | Engineers probably will try to make as many similar technology choices as possible to simplify development of microservices | Find threats that are affecting particular design of microservices and are not enough mitigated at System Architecture level | Hardened libraries (e.g. database access, XML processing, sending http requests), SAST rules (semgrep is good for that)
-| Feature (Use Story) | Here we have this 1h meeting with developers each Sprint | Add additional acceptance criteria, perform spikes, create tech dept or new security feature implementation. For significant threats "abuse stories" can be created | 
-| Deployment | It can be included in system architecture, but it's worth to create deployment view of resource | Find threats for infrastructure | IaC scanning tools (e.g. tfsec), benchmarking tools 
-| CI/CD | Explicit view on how development process works and how artifacts are landing in the end in production | CI/CD environments are very important for organization to work and deliver value. There are also target for attacker as there need to be easy to work with and have high privileges | IaC scanning tools if possible, 
+| Scope|🎯 Goal|
+|:----:|:--------------------:|
+| System Architecture | We look on system from high level. We focus on threats that can affect system as a whole. We can address compliance **security requirements** that would be hard to change later. Typical problems to solve at this point: **authentication**, WAF, DDoS protection, logging, availability. |
+| Reference microservice (component) architecture | Our objective is to find threats that are affecting design of microservice (component) and are not enough mitigated at System Architecture level. Security people can help engineers take right choices here, e.g. on tech stack to use. It's a big plus to create a list of countermeasures that are later easy to pick for developers of particular component. |
+| Feature (User Story) | This is about working very closely with developers. It can be 1h meeting each Sprint, as part of process. Goal would be to find and address security issues in technical and business field. In terms of Scrum we can create additional acceptance criteria, perform spikes, create tech dept or new security feature stories. For significant threats "abuse stories" can be used. To not get **overloaded with threats** team should use System Architecture and Reference microservice (component) architecture threat models and pick up right mitigations based on those. |
+| Deployment | It's easier to focus on infrastructure threats on dedicated deployment view of system. |
+| CI/CD | This is yet another special view. It includes both infrastructure and processes. Same as deployment, goal is to address threats on separated view. | 
 
+### Example of connection among different scopes
 
+To show you how powerful can be building User Story TM, based on high level TMs, I will use example:
 
+{{< figure src="https://user-images.githubusercontent.com/17719543/196270205-f41d2c3e-af52-42c2-948a-004d7760eba6.png" class="image-center" >}}
 
+In this User Story developers need to implement new API. I have listed 3 threats:
+
+| Threat | Mitigation |
+|:------:|:----------:|
+|No AuthN | Authentication is solved in this particular case on API Gateway level and don't need to be solved in component directly |
+|Weak credentials | User accounts are created in IdP. There is configured policy regarding user passwords |
+|No rate limiting | Rate limiting issue is also solved in API Gateway |
+
+As you can see those 3 threats, which can be easily found in any STRIDE learning materials, are **not essential** for this system. They are already mitigated!
+
+Very important part of TM program would be maintaining high level TMs and making sure that all devs knows them. It should be part of TM training!
