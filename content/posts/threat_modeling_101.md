@@ -93,11 +93,15 @@ To get things sort out let's divide TM by scopes with different goals:
 | Deployment | It's easier to focus on infrastructure threats on dedicated deployment view of system. |
 | CI/CD | This is yet another special view. It includes both infrastructure and processes. Same as deployment, goal is to address threats on separated view. | 
 
+This is how connection among scopes can look like:
+
+{{< figure src="https://user-images.githubusercontent.com/17719543/196274640-f08775b9-fa03-4ec0-9325-5dd913e7cdef.png" class="image-center no-border" >}}
+
 ### Example of connection among different scopes
 
 To show you how powerful can be building User Story TM, based on high level TMs, I will use example:
 
-{{< figure src="https://user-images.githubusercontent.com/17719543/196270205-f41d2c3e-af52-42c2-948a-004d7760eba6.png" class="image-center" >}}
+{{< figure src="https://user-images.githubusercontent.com/17719543/196270205-f41d2c3e-af52-42c2-948a-004d7760eba6.png" class="image-center no-border" >}}
 
 In this User Story developers need to implement new API. I have listed 3 threats:
 
