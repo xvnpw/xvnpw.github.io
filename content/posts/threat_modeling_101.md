@@ -8,13 +8,17 @@ description: "What is Threat Modeling? First of all, it’s just thinking about 
 
 What is Threat Modeling? First of all, it's just thinking about threats. We all do it, every day 😃 "How someone could break into my house?" But wait a second. How do you know that you need to protected your house in the first place? Maybe you don't have house, maybe you don't have money right now to buy protections. Or maybe your family thinks you are a bit paranoid? 😕 Just before doing Threat Modeling you need to start doing Risk Management, to assess what is your risk appetite and profile. More on that later. 
 
-Ok, so what is Threat Modeling in *cyber security*? There are many definitions, but for me it's a technique to find security problems **before** implementation happened. And what do we have before implementation, you may ask? Creating a **design**. Design can be as simple as drawing few boxes and arrows among them or complex with multiple diagrams. **Anything is enough** (especially for beginning), it's only a model, it's wrong, but it can be useful. 
+Ok, so what is Threat Modeling in *cyber security*? There are many definitions, with most accurate from [Threat Modeling Manifesto](https://www.threatmodelingmanifesto.org/):
+
+> Threat modeling is analyzing representations of a system to highlight concerns about security and privacy characteristics.
+
+But on the same time it is extremely general and abstract. For my world, where I mostly work with developers, it's a technique to find security problems **before** implementation happened. And what do we have before implementation, you may ask? Creating a **design**. Design can be as simple as drawing few boxes and arrows among them or complex with multiple diagrams. **Anything is enough** (especially for beginning), it's only a model, it's wrong, but it can be useful.
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/195526702-922b05ae-f28e-4889-af64-6962c31122d0.png" class="image-center" >}}
 
 This is simple [Data Flow Diagram](https://learn.microsoft.com/en-us/training/modules/tm-create-a-threat-model-using-foundational-data-flow-diagram-elements/). It's not perfect. It's not covering all items. But it can be useful for us. 
 
-In this article, I will talk about three things regarding Threat Modeling: **techniques**, **motivation** and **goals**.
+Getting back to Threat Modeling Manifesto for a bit. I really like it's *Values* and *Principles*, and I will talk more about those in next article. In this one, I will cover three things regarding Threat Modeling: **techniques**, **motivation** and **goals**.
 
 ## Techniques
 
@@ -93,9 +97,11 @@ To get things sort out let's divide TM by scopes with different goals:
 | Deployment | It's easier to focus on infrastructure threats on dedicated deployment view of system. |
 | CI/CD | This is yet another special view. It includes both infrastructure and processes. Same as deployment, goal is to address threats on separated view. | 
 
-This is how connection among scopes can look like:
+It all can be represented on one picture:
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/196274640-f08775b9-fa03-4ec0-9325-5dd913e7cdef.png" class="image-center no-border" >}}
+
+It's worth to refine high level TMs continuously with key stakeholders, to be up to date with design and changing threats landscape. 
 
 ### Example of connection among different scopes
 
@@ -114,3 +120,19 @@ In this User Story developers need to implement new API. I have listed 3 threats
 As you can see those 3 threats, which can be easily found in any STRIDE learning materials, are **not essential** for this system. They are already mitigated!
 
 Very important part of TM program would be maintaining high level TMs and making sure that all devs knows them. It should be part of TM training!
+
+## Summary
+
+Number of ideas, techniques and opinions on Threat Modeling is huge. In this article I wanted to provide reader all that is necessary to start doing TM, but I must confess, I get **overloaded** 😶 with information. This is how I remembered about Threat Modeling Manifesto and it's *Values* and *Principles*. I think it's really a gem 💎, and I will only quote part of it:
+
+> Values:
+> * A culture of finding and fixing design issues over checkbox compliance.
+> * People and collaboration over processes, methodologies, and tools.
+> * A journey of understanding over a security or privacy snapshot.
+> * Doing threat modeling over talking about it.
+> * Continuous refinement over a single delivery.
+
+Apart from that I would underline two idea:
+
+* Risk Assessment - to filter out only those items that need Threat Modeling
+* Scopes - for each scope we can have different technique. High level scopes can be more detailed analyzed by security team and then used by developers as input to their TM sessions 
