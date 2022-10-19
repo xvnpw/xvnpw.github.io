@@ -1,9 +1,9 @@
 ---
 title: "Threat Modeling 101"
-date: 2022-10-13T08:59:02+01:00
-draft: true
+date: 2022-10-19T18:59:02+01:00
+draft: false
 tags: [appsec, threat-modeling]
-description: "What is Threat Modeling? First of all, it’s just thinking about threats. We all do it, every day 😃 How someone could break into my house? But wait a second. How do you know that you need to protected your house in the first place? Maybe you don’t have house, maybe you don’t have money right now to buy protections."
+description: "What is Threat Modeling? First of all, it’s just thinking about threats. We all do it, every day 😃 How someone could break into my house? But wait a second. How do you know that you need to protect your house in the first place? Maybe you don’t have a house, or maybe you don’t have money right now to buy deterrents. Or maybe your family thinks you are a bit paranoid? 😕"
 ---
 
 What is Threat Modeling? First of all, it's just thinking about threats. We all do it, every day 😃 "How someone could break into my house?" But wait a second. How do you know that you need to protect your house in the first place? Maybe you don't have a house, or maybe you don't have money right now to buy deterrents. Or maybe your family thinks you are a bit paranoid? 😕 Just before doing Threat Modeling you need to start doing Risk Management, to assess what is your risk appetite and profile. More on that later. 
@@ -12,7 +12,7 @@ Ok, so what is Threat Modeling in *cyber security*? There are many definitions, 
 
 > Threat modeling is analyzing representations of a system to highlight concerns about security and privacy characteristics.
 
-But at the same time, it is extremely general and abstract. In my world, where I mostly work with developers, it's a technique to find security problems **before** implementation happened. And what do we have before implementation, you may ask? Creating a **design**. Design can be as simple as drawing a few boxes and arrows among them or complex with multiple diagrams. **Anything is enough** (especially for the beginning), it's only a model, it's wrong, but it can be useful.
+But at the same time, it is extremely general and abstract. For me, and I mostly work with developers, it's a technique to find security problems **before** implementation happened. And what do we have before implementation, you may ask? Creating a **design**. Design can be as simple as drawing a few boxes and arrows among them or complex with multiple diagrams. **Anything is enough** (especially for the beginning), it's only a model, it's wrong, but it can be useful.
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/195526702-922b05ae-f28e-4889-af64-6962c31122d0.png" class="image-center" >}}
 
@@ -22,7 +22,7 @@ Getting back to Threat Modeling Manifesto for a bit. I like its *Values* and *Pr
 
 ## Techniques
 
-Same as with definitions of TM (Threat Modeling), there are multiple techniques of performing it. You can read more about it in Adam Shostack's article: [Fast, Cheap + Good: An Unusual Tradeoff Available in Threat Modeling](https://shostack.org/files/papers/Fast-Cheap-and-Good.pdf). I will only take one picture from it:
+You may already know that, there are multiple techniques of performing Threat Modeling. Adam Shostack's article: [Fast, Cheap + Good: An Unusual Tradeoff Available in Threat Modeling](https://shostack.org/files/papers/Fast-Cheap-and-Good.pdf) is providing decent overview of those. I will only take one picture from it:
 
 {{< figure src="https://user-images.githubusercontent.com/17719543/195985325-d1cb494f-5eab-41f6-abf8-69dd834cceeb.png" class="image-center" title="Adam Shostack: Fast, Cheap + Good: An Unusual Tradeoff Available in Threat Modeling" >}}
 
@@ -32,7 +32,7 @@ For me, the most important observation is that you need to match technique to sk
 
 ### Rapid Threat Model Prototyping
 
-I could not mention Geoffrey Hill and his [Rapid Threat Model Prototyping](https://github.com/geoffrey-hill-tutamantic/rapid-threat-model-prototyping-docs). In his view, the most important is **data**, and those should be protected at most. He is also focused on **countermeasures** and not threats. I can understand that, if team is not doing anything to stop threats before implementation, fast and easy to perform technique is big plus. There is one caveat in my opinion, this technique is coming with assumed risk appetite of organization. If you want to know more check this [OWASP DevSlop](https://www.youtube.com/watch?v=6eUlRVzcbaU) talk.
+I could not mention Geoffrey Hill and his [Rapid Threat Model Prototyping](https://github.com/geoffrey-hill-tutamantic/rapid-threat-model-prototyping-docs). In his view, the most important is **data**, and those should be protected at most. He is also focused on **countermeasures** and not threats. I can understand that, if team is not doing anything to stop threats before implementation, fast and easy to perform technique is big plus. There is one caveat in my opinion, this technique is coming with assumed risk assessment. If you want to know more check this [OWASP DevSlop](https://www.youtube.com/watch?v=6eUlRVzcbaU) talk.
 
 ### Every developer is doing Threat Modeling
 
@@ -48,19 +48,19 @@ There are many materials on TM with STRIDE. I appreciate those three:
 * A Guide to Threat Modelling for Developers on Martin Fowler's [blog](https://martinfowler.com/articles/agile-threat-modelling.html) - I have found it useful because developers tend to trust content coming from Martin's blog 😆
 * Adam Shostack [courses](https://shostack.org/training/courses/linkedin) (paid)
 
-## Motivation (Risk Assessment)
+## Motivation (Risk Management)
 
-I will quickly mention one step **before** even doing Threat Modeling. Because not every organization, not every system, and not every piece of code needs to be covered with TM. Here to plays comes Risk Assessment, which will define risk profile and will allow making prioritization. As introduction to this topic, please check [Anshuman Bhartiya article](https://www.anshumanbhartiya.com/posts/secure-sdlc), especially Rapid Risk Assessment (RRA) section.
+I will quickly mention one step **before** even doing Threat Modeling. Because not every organization, not every system, and not every piece of code needs to be covered with TM. Here to plays comes Risk Management, which will define risk profile and will allow making prioritization. As introduction to this topic, please check [Anshuman Bhartiya article](https://www.anshumanbhartiya.com/posts/secure-sdlc), especially Rapid Risk Assessment (RRA) section.
 
-### 👤 "Human" based Risk Assessment
+If your Org is not having strong Risk Management process, probably your Senior Engineers and Managers are having some kind of informal process or understanding. Try to get it from them. Good idea is to ask them "what if..." questions with doom scenarios and see their responses. At some point, they will confess what really is scary for them and what is not. This is sometimes hard truth for security engineers.
+
+### 👤 Everyday Risk Assessment
 
 We are doing Risk Assessments every day. Consider an example:
 
 > If you have expensive car you will more think about alarm, GPS, and trackers. You will be more interested in news and reports regarding car theft. But when you have something that is not on thieves' radar, you will probably skip all those details.
 
 Such intuitive thinking can save us time and focus, but can also harm us. How to **compare** risk of losing a car, with other risks in our lives? Should you buy more sophisticated alarm or pay for extended medical insurance? There are no universal answers here, everyone needs to value those risks for themselves. 
-
-This topic is far greater than TM, but I will only mention [PwC report](https://www.pwc.com/us/en/services/consulting/cybersecurity-risk-regulatory/library/cyber-risk-quantification-management.html), that is showing how right approach to risk management can help organizations.
 
 ❕For TM, the most important in my opinion is that engineers and security team should be aware of **risk management**. There is nothing worse than security people standing on their heads to do TM, and everyone else thinking that we don't need that 👿
 
@@ -84,6 +84,7 @@ To get things sorted out let's divide TM by scopes with different goals:
 |:----:|:--------------------:|
 | System Architecture | We look at system from a high level. We focus on threats that can affect system as a whole. We can address compliance **security requirements**. Typical problems to solve at this point: **authentication**, WAF, DDoS protection, logging and availability. |
 | Reference component architecture (e.g. microservice) | Our objective is to find threats that are affecting reference design of component and are not enough mitigated at System Architecture level. Security people can help engineers take right choices here, e.g. on tech stack to use. It's a big plus to create a list of countermeasures that are later easy to pick for developers of particular components. |
+| Component architecture (e.g. microservice) | In previous point, there was assumption on existence of some kind of reference architecture (formal or informal). In this, we can cover threats that are for custom components. It's best to engage early in design process and talk with team frequently. Amount of time spend on TM will be probably related to time that team need to spend on overall design. |
 | Feature (User Story) | This is about working very closely with developers. It can be 1h meeting each Sprint, as part of process. Goal would be to find and address security issues in technical and business fields. In terms of Scrum, we can create additional acceptance criteria, perform spikes, create tech dept or new security feature stories. For significant threats "abuse stories" can be used. To not get **overloaded with threats** team should use System Architecture and Reference component architecture TMs and pick up right mitigations based on those. |
 | Deployment | It's easier to focus on infrastructure threats on dedicated deployment view of system. |
 | CI/CD | This is yet another special view. It includes both infrastructure and processes. Same to deployment, goal is to address threats on separate view. | 
@@ -125,10 +126,9 @@ Number of ideas, techniques, and opinions on Threat Modeling is huge and can eas
 > * The best use of threat modeling is to improve the security and privacy of a system through early and frequent analysis.
 > * (...)
 
-❕Apart from that, I would underline three ideas:
+❕Apart from that, I would underline two ideas:
 
 * Risk Assessment - to filter out only those items that need Threat Modeling.
 * Scopes - for each scope we can have different techniques. High level scopes can be more detailed and analyzed by security team and then used by developers as input for their TM sessions. 
-* For TM sessions with developers, take what is best from Threat Modeling Manifesto and ThoughtWorks's Agile Threat Modelling. Be very near development process. **TM session is almost like Scrum refinement, but about security**. Ask team what was good and bad on retrospectives. 
 
-I will continue writing on Threat Modeling, stay tuned 😏
+During the writing of this article, I was wondering if it's really needed. There are so many good resources on Threat Modeling out there. Hope I have highlighted important aspects of it and connected some dots. If you have any comments or feedback, you are welcome to write to me on [Twitter](https://twitter.com/xvnpw).
