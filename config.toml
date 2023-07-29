@@ -7,7 +7,7 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 paginate=4
 [params]
-favicon = "/favicon.ico"
+favicon = "/favicon.png"
 mode = "toggle"
 useCDN=false
 subtitle = "hacking, bug bounty, appsec"
