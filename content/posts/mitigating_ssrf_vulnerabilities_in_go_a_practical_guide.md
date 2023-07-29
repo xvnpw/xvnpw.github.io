@@ -3,7 +3,7 @@ title: "Mitigating SSRF vulnerabilities in Go. A practical guide"
 date: 2023-07-29T18:59:02+01:00
 draft: true
 tags: [appsec, go, ssrf]
-description: "Server-Side Request Forgery (SSRF) vulnerabilities have been around for a long time, and they still pose a significant threat to web applications, so much so this kind of vulnerability has been included in OWASP TOP 10. This time I will explain how to mitigating SSRF vulnerabilities in Go applications."
+description: "Server-Side Request Forgery (SSRF) vulnerabilities have been around for a long time, and they still pose a significant threat to web applications, so much so this kind of vulnerability has been included in OWASP TOP 10. This time I will explain how to mitigate SSRF vulnerability in Go applications."
 ---
 
 Server-Side Request Forgery (SSRF) vulnerabilities have been around for a long time, and they still pose a significant threat to web applications, so much so this kind of vulnerability has been included in OWASP TOP 10. This type of attack allows an attacker to send unauthorized requests from a vulnerable application, which can lead to data leakage, server-side request smuggling, and even full-scale remote code execution.
@@ -38,10 +38,10 @@ SSRF is number 10 on the 2021 version of the list. It was voted by people togeth
 
 {{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/bc85bf4c-bb95-48e4-a22d-dcaf52473664" class="image-center" >}}
 
-To have more meaningful example, I will use Kubernetes as my deployment platform. This way I will be able to easily model new service and connections among them.
+To have more meaningful example, I will use Kubernetes as my deployment platform. This way I will be able to easily model new services and connections among them.
 
 - attacker will be placed outside of the Kubernetes cluster
-- from outside, we can only access Public API. we cannot access Backend API, because it's not exposed
+- from outside, we can only access Public API. We cannot access Backend API, because it's not exposed
 
 **Attacker objective** is to access Backend API using SSRF flaw in Public API. Our objective is to mitigate that 😈
 
@@ -77,13 +77,14 @@ Without any restrictions, we let attacker to access Backend API 😟
 
 ### Code checker 
 
-Code checker or SAST (Static application security testing) tool, can help us finding this problem early and not introduce it at all.
+Code checker or SAST (Static application security testing) tool, can help us find this problem early and not introduce it at all.
 
-Let's use [gosec](https://github.com/securego/gosec)
+Let's use [gosec](https://github.com/securego/gosec):
 
 ```bash
 $ gosec publicapi/
-G107 (CWE-88): Potential HTTP request made with variable url (Confidence: MEDIUM, Severity: MEDIUM)
+G107 (CWE-88): Potential HTTP request made with variable url 
+(Confidence: MEDIUM, Severity: MEDIUM)
     83: urlFromUser := context.Query("url")
     > 84: resp, err := http.Get(urlFromUser)
 ```
@@ -94,7 +95,7 @@ Other tool that I can recommend for `go` apps is [semgrep](https://semgrep.dev/d
 
 ### Fix with negative validation
 
-We can try to fix this SSRF by validating user input. Validation can be done in many ways. I will try first something that might now be very wise, just to prove a point.
+We can try to fix this SSRF by validating user input. Validation can be done in many ways. I will try first something that might now be very wise, just to prove a point:
 
 ```go
 func validateTargetUrl(input string) bool {
@@ -111,15 +112,15 @@ func validateTargetUrl(input string) bool {
 ```
 
 What this function does is:
-- parsing `input` to url
-- checking if `Scheme` is `http` or `https` and
-- making sure that we are not trying to connect to `backendapi`
+- parse `input` to url
+- check if `Scheme` is `http` or `https` and
+- make sure that we are not trying to connect to `backendapi`
 
 Remember, we don't want to let the attacker connect to the `backendapi`!
 
 ### Exploit 2
 
-Let's see service code one more time. But now, slightly modified:
+Let's see Public API code one more time. But now, slightly modified:
 
 ```go
 router.GET("/debug", func(context *gin.Context) {
@@ -143,9 +144,7 @@ This is internal sensitive endpoint
 
 Heh, yes, we have successful exploit.
 
-{{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/25e42343-084a-4755-ba04-56f534a9da03" class="image-center" >}}
-
-Why using IP address was possible? Public API and Backend API are sharing same network. There is nothing in between.
+Why usage of raw IP address was possible? Public API and Backend API are **sharing same network** (Kubernetes!). There is nothing in between.
 
 Using IP addresses in numerous formats is interesting technique for bypassing SSRF filters. 
 
@@ -179,7 +178,7 @@ func validateTargetUrl(input string) bool {
 What this function does is:
 - parse `input` to url
 - check if `Scheme` is `http` or `https` and
-- check if `Port` is empty 80 or 443
+- check if `Port` is empty, 80 or 443
 - **check if** `Hostname` is `imageapi`
 
 Pretty robust. But what is this Image API? Let's check our new setup:
@@ -203,7 +202,7 @@ router.GET("/debug", func(context *gin.Context) {
     resp, err := http.Get(urlFromUser)
 ```
 
-and exploit:
+and new exploit:
 
 ```bash
 $ curl -s \
@@ -215,7 +214,7 @@ This is internal sensitive endpoint
 
 It might seems that it's a bit unfair to abuse Image API, but this is reality many bug bounty programs. You can find yet another service with vulnerability that you can chain together.
 
-Do you see what kind of flaw is in Image API? It's [Open Redirect](https://portswigger.net/kb/issues/00500100_open-redirection-reflected). What it does? It returns `301` redirect http code and `Location` taken directly from input parameter (`target=`)
+Do you see what kind of flaw is in Image API? It's [Open Redirect](https://portswigger.net/kb/issues/00500100_open-redirection-reflected). What it does? It returns `301` redirect http code and `Location` taken directly from input parameter (`target=`). It `low` vulnerability but can be used to escalate SSRF.
 
 #### Exploit 3 step by step
 
@@ -237,7 +236,7 @@ http://backendapi/internal"
 ```
 
 - first Public API is called on `/debug` endpoint
-- it will first validate hostname, which is `imageapi` - OK!
+- it will validate hostname, which is `imageapi` - OK!
 - than it will call `imageapi` on `/redirect` endpoint
 - Image API will return `301` redirect to `backendapi` location
 - **Public API will follow redirect and call Backend API**
@@ -246,10 +245,9 @@ One more view on this:
 
 {{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/b06b7a27-2704-40e1-bb7c-c519b34c6e40" class="image-center" >}}
 
+This is very interesting. Go `http` default client will follow any redirects. You will get same behavior in other languages.
 
-This is very interesting. Go http default client will follow any redirects. You will get same behavior in other languages.
-
-Our positive validation code is best what we could done. Why we didn't mitigate this scenario? It's really simple: `http` client knows nothing about validation. 
+Our positive validation code is best what we could done. Why we didn't mitigate this scenario 😟? It's really simple: `http` client knows nothing about validation. 
 
 {{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/6217f5b9-59c0-4ce0-a827-ba1325b8a43f" class="image-center" >}}
 
