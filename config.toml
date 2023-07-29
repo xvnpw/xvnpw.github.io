@@ -7,7 +7,7 @@ pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 paginate=4
 [params]
-mode="auto"
+mode = "toggle"
 useCDN=false
 subtitle = "hacking, bug bounty, appsec"
 googleAnalytics = "G-YHETMXZXMZ"
