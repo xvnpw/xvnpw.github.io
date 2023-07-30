@@ -1,7 +1,7 @@
 ---
-title: "Mitigating SSRF vulnerabilities in Go. A practical guide"
+title: "Mitigating SSRF vulnerabilities in Go. A practical guide. Part 1"
 date: 2023-07-29T18:59:02+01:00
-draft: true
+draft: false
 tags: [appsec, go, ssrf]
 description: "Server-Side Request Forgery (SSRF) vulnerabilities have been around for a long time, and they still pose a significant threat to web applications, so much so this kind of vulnerability has been included in OWASP TOP 10. This time I will explain how to mitigate SSRF vulnerability in Go applications."
 ---
@@ -212,7 +212,7 @@ $ curl -s \
 This is internal sensitive endpoint
 ```
 
-It might seems that it's a bit unfair to abuse Image API, but this is reality many bug bounty programs. You can find yet another service with vulnerability that you can chain together.
+It might seems that it's a bit unfair to abuse Image API, but this is reality in many bug bounty programs. You can find yet another service with vulnerability that you can chain together.
 
 Do you see what kind of flaw is in Image API? It's [Open Redirect](https://portswigger.net/kb/issues/00500100_open-redirection-reflected). What it does? It returns `301` redirect http code and `Location` taken directly from input parameter (`target=`). It `low` vulnerability but can be used to escalate SSRF.
 
@@ -251,5 +251,8 @@ Our positive validation code is best what we could done. Why we didn't mitigate 
 
 {{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/6217f5b9-59c0-4ce0-a827-ba1325b8a43f" class="image-center" >}}
 
+## Summary
+
+So far attacker **won** this battle, we were not able to protect Backed API service. Positive validation is not enough in case of redirect. We need to take it one step further. I will show you how to do it in part 2 😃
 
 If you have any comments or feedback, you are welcome to write to me on [Twitter](https://twitter.com/xvnpw).
