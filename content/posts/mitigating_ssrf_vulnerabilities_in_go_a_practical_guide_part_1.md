@@ -255,4 +255,8 @@ Our positive validation code is best what we could done. Why we didn't mitigate 
 
 So far attacker **won** this battle, we were not able to protect Backed API service. Positive validation is not enough in case of redirect. We need to take it one step further. I will show you how to do it in part 2 😃
 
+## Code
+
+You can try yourself with code that is ready to run on your machine: https://github.com/xvnpw/ssrf-in-go
+
 If you have any comments or feedback, you are welcome to write to me on [Twitter](https://twitter.com/xvnpw).
