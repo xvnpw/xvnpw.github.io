@@ -214,7 +214,7 @@ This is internal sensitive endpoint
 
 It might seems that it's a bit unfair to abuse Image API, but this is reality in many bug bounty programs. You can find yet another service with vulnerability that you can chain together.
 
-Do you see what kind of flaw is in Image API? It's [Open Redirect](https://portswigger.net/kb/issues/00500100_open-redirection-reflected). What it does? It returns `301` redirect http code and `Location` taken directly from input parameter (`target=`). It `low` vulnerability but can be used to escalate SSRF.
+Do you see what kind of flaw is in Image API? It's [Open Redirect](https://portswigger.net/kb/issues/00500100_open-redirection-reflected). What it does? It returns `301` redirect http code and `Location` taken directly from input parameter (`target=`). It's `low` vulnerability but can be used to escalate SSRF.
 
 #### Exploit 3 step by step
 
