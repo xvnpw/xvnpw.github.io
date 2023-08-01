@@ -1,8 +1,8 @@
 ---
-title: "Input validation in Go"
-date: 2023-07-29T18:59:02+01:00
-draft: true
-tags: [appsec, go, validation]
+title: "Security Coding in Go. Input Validation"
+date: 2023-08-01T15:59:02+01:00
+draft: false
+tags: [appsec, go, golang, security-coding, validation]
 description: "Input validation is one of most important technique in secure coding. Deep dive into it for Go language."
 ---
 
@@ -19,6 +19,8 @@ From [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Che
 ## Input Processing Model - Developer vs Hacker
 
 {{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/dce28b3f-952b-4d0e-a396-3cae02413f70" class="image-center" >}}
+
+In this article I will focus on finding loophols in typical input validation techniques. Hackers are targeting those to bypass filtering and achieve goals. Typical example of such problem is `.` vs `\.` in regex. We will take a look on that later.
 
 ## Why we should use it?
 
@@ -65,7 +67,7 @@ re := regexp.MustCompile(`^test\.example\.com$`)
 
 ### Wrong regex - range problem
 
-`[A-z]`: A-z matches a single character in the range between A (index 65) and z (index 122) 
+`[A-z]`: A-z matches a single character in the range between A (index 65) and z (index 122) - which includes, e.g. `[`, `\`, `]`
 
 ❌ **Bad code**
 ```
@@ -74,7 +76,7 @@ re := regexp.MustCompile(`^test\.example\.com$`)
 
 ✅ **Correct code**
 ```
-^[A-Za-z0-9]{4}$
+^[a-zA-Z0-9]{4}$
 ```
 
 ⭐ **Important:** Validation is not proven to work if not tested
