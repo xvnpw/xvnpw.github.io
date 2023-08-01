@@ -197,7 +197,7 @@ router.GET("/debug", func(context *gin.Context) {
     // validation because world is full of mean people :(
     if !validateTargetUrl(urlFromUser) {
         context.String(http.StatusBadRequest, "Bad url")
-    return
+        return
     }
     resp, err := http.Get(urlFromUser)
 ```
