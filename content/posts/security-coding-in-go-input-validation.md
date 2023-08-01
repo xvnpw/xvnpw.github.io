@@ -1,5 +1,5 @@
 ---
-title: "Security Coding in Go. Input Validation"
+title: "Security Coding in Go. Input validation"
 date: 2023-08-01T15:59:02+01:00
 draft: false
 tags: [appsec, go, golang, security-coding, validation]
