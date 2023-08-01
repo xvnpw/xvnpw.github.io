@@ -56,7 +56,7 @@ $ curl -s \
 This is internal sensitive endpoint
 ```
 
-- we sent get request to `publicapi` `/debug` endpoint
+- we sent `GET` request to `publicapi` `/debug` endpoint
 - we set `url` parameter to `http://backendapi/internal`
 - and we got response `This is internal sensitive endpoint`
 
@@ -95,7 +95,7 @@ Other tool that I can recommend for `go` apps is [semgrep](https://semgrep.dev/d
 
 ### Fix with negative validation
 
-We can try to fix this SSRF by validating user input. Validation can be done in many ways. I will try first something that might now be very wise, just to prove a point:
+We can try to fix this SSRF by validating user input. Validation can be done in many ways. I will try first something that might not be very wise, just to prove a point:
 
 ```go
 func validateTargetUrl(input string) bool {
