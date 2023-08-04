@@ -257,6 +257,6 @@ So far attacker **won** this battle, we were not able to protect Backed API serv
 
 ## Code
 
-You can try yourself with code that is ready to run on your machine: https://github.com/xvnpw/ssrf-in-go
+You can try yourself with code that is ready to run on your local: https://github.com/xvnpw/ssrf-in-go
 
 If you have any comments or feedback, you are welcome to write to me on [Twitter](https://twitter.com/xvnpw).
