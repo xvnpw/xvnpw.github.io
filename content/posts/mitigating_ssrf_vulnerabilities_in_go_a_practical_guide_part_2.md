@@ -101,7 +101,7 @@ ip: 10.96.45.24 not found in allowlist
 - it will validate hostname, which is `imageapi` - OK!
 - than it will call `imageapi` on `/redirect` endpoint
 - Image API will return `301` redirect to `backendapi` location
-- **Public API will not follow redirect**, because safeurl validated this redirect and it's not to imageapi
+- **Public API will not follow redirect**, because safeurl validated this redirect and it's not in allowlist (imageapi)
 
 ## Fix with redirect turn off
 
