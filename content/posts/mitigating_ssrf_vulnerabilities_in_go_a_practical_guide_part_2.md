@@ -1,7 +1,7 @@
 ---
 title: "Mitigating SSRF vulnerabilities in Go. A practical guide. Part 2"
-date: 2023-07-29T18:59:02+01:00
-draft: true
+date: 2023-08-04T07:59:02+01:00
+draft: false
 tags: [appsec, go, ssrf]
 description: "In this final part of mitigation guide we will explore doyensec/safeurl library for Go."
 ---
