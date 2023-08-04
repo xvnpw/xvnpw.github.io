@@ -145,8 +145,10 @@ func buildHttpClient(wc *WrappedClient) *http.Client {
       }).DialContext,
 ```
 
+Above function is used to build `http` client. Safeurl is wrapping that client to control network communication:
+
 - we can see that redirects are controled with config function like this: `wc.config.CheckRedirect`
-- most important is `DialContext` which has `Resolver: wc.resolver` and `Control:  buildRunFunc(wc)`
+- most important is `DialContext` which has `Resolver: wc.resolver` and `Control: buildRunFunc(wc)`
   - this way we can inspect and control every network call of `http` client
  
 Remarkable how easy it's in `go` to wire into low level network call for `http`. Well done!
