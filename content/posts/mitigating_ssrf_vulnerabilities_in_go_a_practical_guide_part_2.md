@@ -126,7 +126,7 @@ $ curl -s \
 <a href="http://backendapi/internal">Moved Permanently</a>.
 ```
 
-Bit different response, but similar result. Which is better? Safeurl can handle redirects that targets allowlist, but it's additional library to your project. Now everyone is easy for new dependencies. 
+Bit different response, but similar result. Which is better? Safeurl can handle redirects that targets allowlist, but it's additional library to your project. You need to decide.
 
 ## Safeurl in details
 
