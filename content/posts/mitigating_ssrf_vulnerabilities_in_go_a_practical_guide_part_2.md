@@ -16,7 +16,7 @@ Reminder about our setup:
 
 ## Explot 3
 
-We end up [previous part]({{< ref "/posts/mitigating_ssrf_vulnerabilities_in_go_a_practical_guide_part_1.md#exploit-3" >}}) with following Public API code and exploit that works:
+We ended up [previous part]({{< ref "/posts/mitigating_ssrf_vulnerabilities_in_go_a_practical_guide_part_1.md#exploit-3" >}}) with following Public API code and exploit that works:
 
 ```go
 router.GET("/debug", func(context *gin.Context) {
