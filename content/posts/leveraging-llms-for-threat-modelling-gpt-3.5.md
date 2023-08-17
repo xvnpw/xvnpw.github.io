@@ -1,7 +1,7 @@
 ---
 title: "Leveraging LLMs for Threat Modelling - GPT-3.5"
-date: 2023-08-16T18:59:02+01:00
-draft: true
+date: 2023-08-17T18:59:02+01:00
+draft: false
 tags: [security, threat-modelling, langchain, llm, gpt]
 description: "In this article, I delve into the AI Nutrition-Pro experiment, a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: threat modelling and security review."
 ---
@@ -38,7 +38,7 @@ I will omit input data and only refer to it in repository (you can check it dire
 
 **Input:** [PROJECT.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md):
 
-**Prompt** is quite simple. First I provided extensive instruction, the next example of output format, and at the end PROJECT.md content:
+**Prompt** is quite simple. First, I provided extensive instruction, and next example of output format, and at the end `PROJECT.md` content:
 ```
 Instruction:
 - You are a security architect.
@@ -57,7 +57,7 @@ Project description:
 "{text}"
 ```
 
-PROJECT.md file is placed into the prompt in `{text}` placeholder.
+`PROJECT.md` file is placed into the prompt in `{text}` placeholder.
 
 GPT output is saved into [PROJECT_SECURITY.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT_SECURITY.md):
 
@@ -69,13 +69,13 @@ GPT output is saved into [PROJECT_SECURITY.md](https://github.com/xvnpw/ai-nutri
 
 **Comment on results:**
 
-These requirements demonstrate a **solid grasp** of security best practices and compliance standards. They are good for high level description. It could benefit from providing more specific implementation guidance or references to established security frameworks.
+These requirements demonstrate a **solid grasp** of security best practices and compliance standards. They are good for high level description. Output could benefit from providing more specific implementation guidance or references to established security frameworks.
 
 #### Architecture
 
 **Input:** [ARCHITECTURE.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) 
 
-Architecture was described using [C4 Model](https://c4model.com/), with diagrams coded in `mermaid`. Additionally, each diagram was described in points in case GPT cannot understand it.
+Architecture was described using [C4 Model](https://c4model.com/), with diagrams coded in `mermaid`. Additionally, each diagram was described in points in case GPT cannot understand it from `mermaid`.
 
 This **prompt** is more complex. A simple instruction to perform threat model didn't return meaningful results 😕. After playing for some time with the prompt, I got good results using 2 stages:
 
@@ -100,7 +100,7 @@ Architecture description:
 "{text}"
 ```
 
-`{text}` is placeholder for ARCHITECTURE.md file.
+`{text}` is placeholder for `ARCHITECTURE.md` file.
 
 Second prompt (executed for each data flow):
 
@@ -127,7 +127,7 @@ Data flow:
 "{dataflow}"
 ```
 
-`{text}` is one more time placeholder for ARCHITECTURE.md and `{dataflow}` is placeholder for dataflow returned in the previous step.
+`{text}` is one more time placeholder for `ARCHITECTURE.md` and `{dataflow}` is placeholder for data flows returned in the previous step.
 
 GPT output is saved into [ARCHITECTURE_SECURITY.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE_SECURITY.md):
 
@@ -179,10 +179,10 @@ Same as for architecture it was hard to get good results. For some of runs, I go
 
 GPT-3.5 has **some potential** for performing threat modeling and security reviews, especially for teams without security engineers and/or with junior staff. It gives **general** and **high level** guidance but **lacks detailed descriptions**. Prompt needs to be tuned to match document's structure.
 
-I encourage you to try using [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) for your documentation, and share the results will me!
+I encourage you to try with [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) for your documentation, and share the results!
 
 In next part, I will review GPT-4.
 
 ---
 
-Thanks for reading! You can follow me on [X/Twitter](https://twitter.com/xvnpw).
+Thanks for reading! You can contact me and/or follow on [X/Twitter](https://twitter.com/xvnpw).
