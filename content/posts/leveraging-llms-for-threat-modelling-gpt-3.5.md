@@ -3,7 +3,7 @@ title: "Leveraging LLMs for Threat Modelling - GPT-3.5"
 date: 2023-08-16T18:59:02+01:00
 draft: true
 tags: [security, threat-modelling, langchain, llm, gpt]
-description: "In this article, I delve into the AI Nutrition-Pro experiment, a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: threat modelling and security review"
+description: "In this article, I delve into the AI Nutrition-Pro experiment, a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: threat modelling and security review."
 ---
 
 In this article, I delve into the [AI Nutrition-Pro experiment](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5), a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: **threat modelling** and **security review**.
@@ -32,7 +32,7 @@ I created **fake** input data as if it was real project in github repository and
 
 ### Results
 
-I will omit input data only referencing it in repository (you can check it directly). In my opinion the most interesting are comments on results and prompts.
+I will omit input data and only refer to it in repository (you can check it directly). In my opinion the most interesting are comments on results and prompts.
 
 #### Project description
 
