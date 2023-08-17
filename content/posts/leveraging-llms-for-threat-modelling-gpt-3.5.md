@@ -32,16 +32,16 @@ I created **fake** input data as if it was real project in github repository and
 
 ### Results
 
-I will omit input data and only refer to it in repository (you can check it directly). In my opinion the most interesting are comments on results and prompts.
+I will omit input data and only refer to it in repository (you can check it directly). In my opinion, the most interesting are comments on results and prompts.
 
 #### Project description
 
 **Input:** [PROJECT.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md):
 
-**Prompt** is quite simple. First I provided extensive instruction, next example of output format and at the end PROJECT.md content:
+**Prompt** is quite simple. First I provided extensive instruction, the next example of output format, and at the end PROJECT.md content:
 ```
 Instruction:
-- You are an security architect.
+- You are a security architect.
 - Your task is to analyze project description and create high level security and privacy requirements
 - Project description will be in markdown format
 - Format output as markdown
@@ -57,7 +57,7 @@ Project description:
 "{text}"
 ```
 
-PROJECT.md file is placed into prompt in `{text}` placeholder.
+PROJECT.md file is placed into the prompt in `{text}` placeholder.
 
 GPT output is saved into [PROJECT_SECURITY.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT_SECURITY.md):
 
@@ -69,23 +69,23 @@ GPT output is saved into [PROJECT_SECURITY.md](https://github.com/xvnpw/ai-nutri
 
 **Comment on results:**
 
-These requirements demonstrate a **solid grasp** of security best practices and compliance standards. Their are good for high level description. It could benefit from providing more specific implementation guidance or references to established security frameworks.
+These requirements demonstrate a **solid grasp** of security best practices and compliance standards. They are good for high level description. It could benefit from providing more specific implementation guidance or references to established security frameworks.
 
 #### Architecture
 
 **Input:** [ARCHITECTURE.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) 
 
-Architecture was described using [C4 Model](https://c4model.com/), with diagrams coded in `mermaid`. Additionally each diagram was described in points in case GPT cannot understand it.
+Architecture was described using [C4 Model](https://c4model.com/), with diagrams coded in `mermaid`. Additionally, each diagram was described in points in case GPT cannot understand it.
 
-This **prompt** is more complex. Simple instruction to performing threat model didn't return meaningful results 😕. After playing for some time with prompt, I got good results using 2 stages:
+This **prompt** is more complex. A simple instruction to perform threat model didn't return meaningful results 😕. After playing for some time with the prompt, I got good results using 2 stages:
 
 - first I ask to list data flows for architecture
-- and than for each data flow I ask for threat modelling using STRIDE per component technique
+- and then for each data flow I ask for threat modeling using STRIDE per component technique
 
 First prompt:
 ```
 Instruction:
-- You are an security architect
+- You are a security architect
 - List data flows for all components that are internal and important for security of system
 - You should not include any persons in data flows
 - You should answer only in list and nothing more. Each data flow should be in separated line
@@ -106,7 +106,7 @@ Second prompt (executed for each data flow):
 
 ```
 Instruction:
-- You are an security architect
+- You are a security architect
 - I will provide you Architecture description
 - Perform threat modelling using STRIDE per component technique for data flow
 - I will provide you data flow in structure: Data flow 1: Component A -> Component B
@@ -127,7 +127,7 @@ Data flow:
 "{dataflow}"
 ```
 
-`{text}` is one more time placeholder for ARCHITECTURE.md and `{dataflow}` is placeholder for dataflow returned in previous step.
+`{text}` is one more time placeholder for ARCHITECTURE.md and `{dataflow}` is placeholder for dataflow returned in the previous step.
 
 GPT output is saved into [ARCHITECTURE_SECURITY.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE_SECURITY.md):
 
@@ -142,19 +142,19 @@ GPT output is saved into [ARCHITECTURE_SECURITY.md](https://github.com/xvnpw/ai-
 
 **Comment on results:**
 
-It was much harder to get meaningful results for threat modelling. For some runs with [temperature](https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683) > 0, I got brilliant results, but most of them were just **average**. Their are still relevant to the scope, but **very general**. While the document presents a comprehensive threat model, some areas could benefit from additional elaboration. GPT had no problem with consistent following output structure of table.
+It was much harder to get meaningful results for threat modelling. For some runs with [temperature](https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683) > 0, I got brilliant results, but most of them were just **average**. They are still relevant to the scope, but **very general**. While the document presents a comprehensive threat model, some areas could benefit from additional elaboration. GPT had no problem with consistently following output structure of table.
 
 #### User story
 
 **Input:** [0001_STORE_DIET_INTRODUCTIONS.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/user-stories/0001_STORE_DIET_INTRODUCTIONS.md) 
 
-User story is the most detailed document. It contains new API structure, container diagram from C4 model and listed tasks.
+User story is the most detailed document. It contains new API structure, container diagram from C4 model, and listed tasks.
 
-**Prompt** also is the most complex. Same as for architecture threat model, I couldn't benefit from simple prompt 😞. It was returning acceptance criteria for elements that are out of scope, e.g. client. I suspect that reason of that is misunderstanding word "component" by GPT. Each time I ask for "components in scope of user story" it returned rubbish. I changed that into question for "architecture containers, services or applications included in architecture". This worked a way better than before. Still for some runs I saw *client*, but it was very rare. 
+**Prompt** also is the most complex. Same as for architecture threat model, I couldn't benefit from simple prompt 😞. It was returning acceptance criteria for elements that are out of scope, e.g. client. I suspect that reason of that is misunderstanding word "component" by GPT. Each time I ask for "components in scope of user story" it returned rubbish. I changed that into question for "architecture containers, services or applications included in architecture". This worked way better than before. Still for some runs I saw *client*, but it was very rare. 
 
 As mentioned above prompt has two stages:
-- in first I ask to list components (using "architecture containers, services or applications included in architecture")
-- in second I ask to list security related acceptance criteria for every component - in contrast to architecture I don't ask for each component individually but all at once. This is due to fact that asking one by one generated a lot of acceptance criteria. Mostly not relevant 😏
+- first, I ask to list components (using "architecture containers, services or applications included in architecture")
+- second, I ask to list security related acceptance criteria for every component - in contrast to architecture I don't ask for each component individually but all at once. This is due to fact that asking one by one generated a lot of acceptance criteria. Mostly not relevant 😏
 
 As this prompt is the most complex, please review it directly in [repository](https://github.com/xvnpw/ai-threat-modeling-action/blob/main/user_story.py).
 
@@ -173,15 +173,15 @@ GPT output is saved into [0001_STORE_DIET_INTRODUCTIONS_SECURITY.md](https://git
 
 **Comment on results:**
 
-Same as for architecture it was hard to get good results. For some of runs I got brilliant output with reference to API path and parameters 🔥. But for most of runs I got very general and average results. 
+Same as for architecture it was hard to get good results. For some of runs, I got brilliant output with reference to API path and parameters 🔥. But for most of runs, I got very general and average results. 
 
 ## Summary
 
-GPT-3.5 has **some potential** for performing threat modeling and security reviews, especially for teams without security engineers and/or with junior stuff. It gives **general** and **high level** guidance but **lacks detailed descriptions**. Prompt needs to be tune to match documents structure.
+GPT-3.5 has **some potential** for performing threat modeling and security reviews, especially for teams without security engineers and/or with junior staff. It gives **general** and **high level** guidance but **lacks detailed descriptions**. Prompt needs to be tuned to match document's structure.
 
-I encourage you to try use [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) for your documentation, and share results will me!
+I encourage you to try using [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) for your documentation, and share the results will me!
 
-In next part I will review GPT-4.
+In next part, I will review GPT-4.
 
 ---
 
