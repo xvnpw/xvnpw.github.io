@@ -20,7 +20,7 @@ While security tools like [semgrep](https://semgrep.dev/blog/2023/using-ai-to-wr
 
 ## Structure of Experiment
 
-I created **fake** input data mimicking real project in github repository and used github action [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) to automatically generate output content and commit it directly into repository or create pull request. Action can also comment on issues.
+I created **fake** input data as if it was real project in github repository and used github action [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) to automatically generate output content and commit it directly into repository or create pull request. Action can also comment on issues.
 
 ### Input Data 
 
@@ -32,22 +32,11 @@ I created **fake** input data mimicking real project in github repository and us
 
 ### Results
 
-Let's check each input data and corresponding results. I will also discuss prompt techniques.
+I will omit input data only referencing it in repository (you can check it directly). In my opinion the most interesting are comments on results and prompts.
 
 #### Project description
 
-Below part of [PROJECT.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md):
-
-> # AI Nutrition-Pro
-> ## Business background
-> Dietitians use online applications to create meals, diets and calculate calories called meal planners. Different professionals have different ways of creating diets, which gives a personal style to it. LLMs can reproduce this personal style of writing based on samples of already created content. Meal planners can use LLMs to speed up diet creation for dietitians.
-> ## Project Overview
-> AI Nutrition-Pro will be backend API application that will have the possibility to integrate with any meal planner application for dietitians. It will reproduce the personal style of a nutrition specialist based on samples.
->
-> Dietitians will not use the application directly but from their meal planner applications. There will be no user interface exposed to Dietitians. Integration will be using meal plan applications backend.
->
-> Direct clients of AI Nutrition-Pro will be applications like DietMaster Pro, Nutritionist Pro, or others. Those clients will send to AI Nutrition-Pro samples of content and AI Nutrition-Pro will generate requested type of content based on that. AI Nutrition-Pro will use LLM to generate requested content.
-> ...
+**Input:** [PROJECT.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md):
 
 **Prompt** is quite simple. First I provided extensive instruction, next example of output format and at the end PROJECT.md content:
 ```
@@ -76,12 +65,6 @@ GPT output is saved into [PROJECT_SECURITY.md](https://github.com/xvnpw/ai-nutri
 > ### 1. Authentication and Authorization
 > - **Requirement**: Implement secure authentication mechanisms for all users, applications, and APIs accessing AI Nutrition-Pro.
 > - **Description**: Utilize strong authentication protocols such as OAuth 2.0 or JWT to authenticate and authorize tenants, dietitians, and other users. Different levels of access should be granted based on roles and responsibilities.
-> ### 2. Data Encryption
-> - **Requirement**: Encrypt all sensitive data at rest and in transit within AI Nutrition-Pro.
-> - **Description**: Utilize industry-standard encryption algorithms and protocols to protect sensitive data, including personal health information (PHI), both when it is stored in databases and when it is transmitted over networks.
-> ### 3. Secure Storage and Processing of PII
-> - **Requirement**: Implement robust security measures to protect the storage and processing of personally identifiable information (PII) within AI Nutrition-Pro.
-> - **Description**: Utilize secure cloud-based services and follow best practices for data storage and processing to ensure the confidentiality, integrity, and availability of PII. Implement access controls, data segregation, and regular security audits.
 > ...
 
 **Comment on results:**
@@ -90,36 +73,11 @@ These requirements demonstrate a **solid grasp** of security best practices and 
 
 #### Architecture
 
-[Architecture](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) was described using [C4 Model](https://c4model.com/), with diagrams coded in `mermaid`. Additional each diagram was described in points in case GPT cannot understand it.
+**Input:** [ARCHITECTURE.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) 
 
-> # Architecture
-> This document outlines the architecture of the AI Nutrition-Pro application, including system context, containers, and deployment views. The architecture is depicted using C4 diagrams for enhanced clarity.
-> ## System Context diagram
->
-> ```mermaid
-> CC4ontext
->  title System Context diagram for AI Nutrition-Pro
->  Enterprise_Boundary(b0, "AI Nutrition-Pro boundary") {
->    System(anps1, "AI Nutrition-Pro API Service")
->  }
->  Enterprise_Boundary(b1, "OpenAI") {
->    System_Ext(ChatGPT, "ChatGPT", "LLM")
->  }
->  Enterprise_Boundary(b2, "Meal Planner A") {
->    Person_Ext(n1, "Dietitian A")
->    System_Ext(apa, "Meal Planner A System")
->  }
->  Rel(anps1, ChatGPT, "Uses for LLM featured content creation", "REST")
->  Rel(n1, apa, "Uses for diet creation")
->  Rel(apa, anps1, "Uses for AI content generation", "REST")
-> ```
->
-> - AI Nutrition-Pro is API backend application that uses OpenAI ChatGPT as LLM solution. It connects to OpenAI server using REST.
-> - Meal Planner A is one of many Meal Planner applications that can be integrated with AI Nutrition-Pro. It connects to AI Nutrition-Pro using REST.
-> - Dietitian A uses Meal Planner A for making diets. For example, dietitian can generate new diet introductions based on existing ones. LLMs can create this content following personal style of dietitian.
-> ...
+Architecture was described using [C4 Model](https://c4model.com/), with diagrams coded in `mermaid`. Additionally each diagram was described in points in case GPT cannot understand it.
 
-This prompt is more complex. Simple instruction to performing threat model didn't return meaningful results. After playing with prompt, I got good results using 2 stages:
+This **prompt** is more complex. Simple instruction to performing threat model didn't return meaningful results 😕. After playing for some time with prompt, I got good results using 2 stages:
 
 - first I ask to list data flows for architecture
 - and than for each data flow I ask for threat modelling using STRIDE per component technique
@@ -179,51 +137,24 @@ GPT output is saved into [ARCHITECTURE_SECURITY.md](https://github.com/xvnpw/ai-
 > | --- | --- | --- | --- | --- | --- |
 > | 1 | Client | Attacker intercepts and modifies requests/responses | Tampering | Use HTTPS for secure communication. Implement message integrity checks. | High |
 > | 2 | API Gateway | Attacker bypasses authentication and gains unauthorized access | Spoofing | Implement strong authentication mechanisms. Use secure protocols for communication. | High |
-> | 3 | API Gateway | Attacker overwhelms the API Gateway with excessive requests | Denial of Service | Implement rate limiting and throttling mechanisms. Use load balancers to distribute traffic. | Medium |
-> | 4 | API Gateway | Attacker injects malicious code or scripts in requests | Injection | Implement input validation and sanitization techniques. Use secure coding practices. | High |
-> | 5 | API Gateway | Attacker gains unauthorized access to sensitive data | Elevation of Privilege | Implement access control mechanisms. Encrypt sensitive data at rest and in transit. | High |
 >
 > ...
 
 **Comment on results:**
 
-It was much harder to get meaningful results for threat modelling. For some runs with temperature > 0, I got brilliant results, but most of them were just average. Their are still relevant to the scope, but very general. While the document presents a comprehensive threat model, some areas could benefit from additional elaboration.
+It was much harder to get meaningful results for threat modelling. For some runs with [temperature](https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683) > 0, I got brilliant results, but most of them were just **average**. Their are still relevant to the scope, but **very general**. While the document presents a comprehensive threat model, some areas could benefit from additional elaboration. GPT had no problem with consistent following output structure of table.
 
 #### User story
 
-Description of [user story](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/user-stories/0001_STORE_DIET_INTRODUCTIONS.md) is most detailed. Containing new API structure, container diagram from C4 model and listed tasks:
+**Input:** [0001_STORE_DIET_INTRODUCTIONS.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/user-stories/0001_STORE_DIET_INTRODUCTIONS.md) 
 
-> # Store diet introductions
-> As Meal App, I want to store samples of diet introductions of dietitians, so that those can be later used to generate new diet introductions using ChatGPT..
-> ## Diagram
-> ```mermaid
-> CC4ontainer
->    title Container diagram for User Story: Store diet introductions
->    ...
->```
->
-> ## New API
-> New API to implement:
-> 
-> ```
-> POST /api/v1/storeContent
-> {
->   "type": "introduction",
->   "dietitian-uuid": "3beddddb-d8f2-41a3-8b6e-38bf2a39a56c",
->   "client-uuid": "47dba491-8a34-4bca-934b-b32532de975b",
->   "content": [
->     "Hi Mark. I created this diet for you. Hope you will love it :)",
->     "Hi Joanna! Hope you are well. This 3 days diet will help you get started :)"
->  ]
-> }
->```
-> ...
+User story is the most detailed document. It contains new API structure, container diagram from C4 model and listed tasks.
 
-Prompt also is the most complex. Same as for architecture threat model, I couldn't benefit from simple prompt. It was returning acceptance criteria for elements that are out of scope, e.g. client. I suspect that reason of that is misunderstanding word "component" by GPT. Each time I ask for "components in scope of user story" it returned rubbish. I changed that into question for "architecture containers, services or applications included in architecture". This worked a way better than before. Still for some runs I saw client, but it was very rare. 
+**Prompt** also is the most complex. Same as for architecture threat model, I couldn't benefit from simple prompt 😞. It was returning acceptance criteria for elements that are out of scope, e.g. client. I suspect that reason of that is misunderstanding word "component" by GPT. Each time I ask for "components in scope of user story" it returned rubbish. I changed that into question for "architecture containers, services or applications included in architecture". This worked a way better than before. Still for some runs I saw *client*, but it was very rare. 
 
 As mentioned above prompt has two stages:
-- in first I asked to list components (using "architecture containers, services or applications included in architecture")
-- in second I asked to list security related acceptance criteria for every component - in contrast to architecture I don't ask for each component individually but all at once. 
+- in first I ask to list components (using "architecture containers, services or applications included in architecture")
+- in second I ask to list security related acceptance criteria for every component - in contrast to architecture I don't ask for each component individually but all at once. This is due to fact that asking one by one generated a lot of acceptance criteria. Mostly not relevant 😏
 
 As this prompt is the most complex, please review it directly in [repository](https://github.com/xvnpw/ai-threat-modeling-action/blob/main/user_story.py).
 
@@ -242,11 +173,11 @@ GPT output is saved into [0001_STORE_DIET_INTRODUCTIONS_SECURITY.md](https://git
 
 **Comment on results:**
 
-Same as for architecture it was hard to get good results. For some of runs I got brilliant output with reference to API path and parameters. But for most of runs I got very general and average results. 
+Same as for architecture it was hard to get good results. For some of runs I got brilliant output with reference to API path and parameters 🔥. But for most of runs I got very general and average results. 
 
 ## Summary
 
-GPT-3.5 has some potential for performing threat modeling and security reviews, especially for teams without security engineers. It gives general and high level guidance but lacks detailed descriptions. Prompt need to be tune to match documents structure.
+GPT-3.5 has **some potential** for performing threat modeling and security reviews, especially for teams without security engineers and/or with junior stuff. It gives **general** and **high level** guidance but **lacks detailed descriptions**. Prompt needs to be tune to match documents structure.
 
 I encourage you to try use [xvnpw/ai-threat-modeling-action](https://github.com/xvnpw/ai-threat-modeling-action) for your documentation, and share results will me!
 
