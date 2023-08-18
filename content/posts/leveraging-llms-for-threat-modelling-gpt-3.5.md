@@ -1,5 +1,5 @@
 ---
-title: "Leveraging LLMs for Threat modeling - GPT-3.5"
+title: "Leveraging LLMs for Threat Modeling - GPT-3.5"
 date: 2023-08-17T18:59:02+01:00
 draft: false
 tags: [security, threat-modeling, langchain, llm, gpt]
