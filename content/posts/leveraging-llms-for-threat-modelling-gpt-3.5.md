@@ -1,12 +1,12 @@
 ---
-title: "Leveraging LLMs for Threat Modelling - GPT-3.5"
+title: "Leveraging LLMs for Threat modeling - GPT-3.5"
 date: 2023-08-17T18:59:02+01:00
 draft: false
-tags: [security, threat-modelling, langchain, llm, gpt]
-description: "In this article, I delve into the AI Nutrition-Pro experiment, a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: threat modelling and security review."
+tags: [security, threat-modeling, langchain, llm, gpt]
+description: "In this article, I delve into the AI Nutrition-Pro experiment, a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: threat modeling and security review."
 ---
 
-In this article, I delve into the [AI Nutrition-Pro experiment](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5), a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: **threat modelling** and **security review**.
+In this article, I delve into the [AI Nutrition-Pro experiment](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5), a research project exploring the potential of LLMs in enhancing security practices during the design phase of DevSecOps: **threat modeling** and **security review**.
 
 ## DevSecOps: A Brief Overview
 
@@ -27,7 +27,7 @@ I created **fake** input data as if it was real project in github repository and
 | Name | File | Description | Security artefact to generate | 
 | --- | --- | --- | --- | 
 | Project description | [PROJECT.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md) | High level description of the project with business explanation and listed core features | High level security design review | 
-| Architecture | [ARCHITECTURE.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) | Architecture of the solution | Threat Modelling |
+| Architecture | [ARCHITECTURE.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) | Architecture of the solution | Threat modeling |
 | User story | [0001_STORE_DIET_INTRODUCTIONS.md](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/user-stories/0001_STORE_DIET_INTRODUCTIONS.md) | Technical and user stories to implement | Security related acceptance criteria | 
 
 ### Results
@@ -108,13 +108,13 @@ Second prompt (executed for each data flow):
 Instruction:
 - You are a security architect
 - I will provide you Architecture description
-- Perform threat modelling using STRIDE per component technique for data flow
+- Perform threat modeling using STRIDE per component technique for data flow
 - I will provide you data flow in structure: Data flow 1: Component A -> Component B
 - You should answer only in table and nothing more
 - Architecture description will be in markdown format
 - Format output as markdown
 
-Output of threat modelling should be in table as in example:
+Output of threat modeling should be in table as in example:
 ### Data flow 1: Component A -> Component B
 | Threat Id | Component name | Threat Name | STRIDE category | Mitigations | Risk severity |
 | --- | --- | --- | --- | --- | --- |
@@ -142,7 +142,7 @@ GPT output is saved into [ARCHITECTURE_SECURITY.md](https://github.com/xvnpw/ai-
 
 **Comment on results:**
 
-It was much harder to get meaningful results for threat modelling. For some runs with [temperature](https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683) > 0, I got brilliant results, but most of them were just **average**. They are still relevant to the scope, but **very general**. While the document presents a comprehensive threat model, some areas could benefit from additional elaboration. GPT had no problem with consistently following output structure of table.
+It was much harder to get meaningful results for threat modeling. For some runs with [temperature](https://community.openai.com/t/cheat-sheet-mastering-temperature-and-top-p-in-chatgpt-api-a-few-tips-and-tricks-on-controlling-the-creativity-deterministic-output-of-prompt-responses/172683) > 0, I got brilliant results, but most of them were just **average**. They are still relevant to the scope, but **very general**. While the document presents a comprehensive threat model, some areas could benefit from additional elaboration. GPT had no problem with consistently following output structure of table.
 
 #### User story
 
