@@ -1,7 +1,7 @@
 ---
 title: "Leveraging LLMs for Threat Modeling - GPT-3.5 vs Claude 2 vs GPT-4"
-date: 2023-09-02T18:59:02+01:00
-draft: true
+date: 2023-09-03T08:59:02+01:00
+draft: false
 tags: [security, threat-modeling, langchain, llm, gpt, claude]
 description: "I tested most important LLMs for ability to perform threat modeling. Let's check results and find out which performed best."
 ---
@@ -106,9 +106,9 @@ gen_threats = fixing_parser.parse(ret)
 
 ## Summary
 
-I have tested 3 the most important LLMs for capabilities in doing threat modeling. All of them gave good results when asked for most important threats. **GPT-4** is most promising in tuning for particular real-life needs. Because it can understand assumptions and connect them to threats. It will not create threat about SQL Injection if informed that this threat is already mitigated elsewhere.
+I have tested 3 the most important LLMs for capabilities in doing threat modeling. All of them gave good results when asked about most important threats. **GPT-4** is most promising in tuning for particular real-life needs. Because it can understand assumptions and connect them to threats. It will not create threat about SQL Injection if informed that this threat is already mitigated elsewhere.
 
-[Code](https://github.com/xvnpw/ai-threat-modeling-action) used in this experiment is free and you can use it whatever you like.
+[Code](https://github.com/xvnpw/ai-threat-modeling-action) used in this experiment is published on github.
 
 ---
 
