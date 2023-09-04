@@ -99,10 +99,6 @@ GPT-3.5 and Claude 2 produced similar results. They're useful if your developmen
 
 🔥 Check results yourself: [GPT-3.5](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE_SECURITY.md), [Claude 2](https://github.com/xvnpw/ai-nutrition-pro-design-claude2/blob/main/ARCHITECTURE_SECURITY.md), [GPT-4](https://github.com/xvnpw/ai-nutrition-pro-design-gpt4/blob/main/ARCHITECTURE_SECURITY.md) and let me know what you think about experiment!
 
-## Summary
-
-I have tested 3 the most important LLMs for capabilities in doing threat modeling. All of them gave good results when asked about most important threats. **GPT-4** is most promising in tuning for particular real-life needs. Because it can understand assumptions and connect them to threats. It will not create threat about SQL Injection if informed that this threat is already mitigated elsewhere.
-
 [Code](https://github.com/xvnpw/ai-threat-modeling-action) used in this experiment is published on github.
 
 ---
