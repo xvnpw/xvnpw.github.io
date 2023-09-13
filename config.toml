@@ -28,8 +28,7 @@ url = "https://twitter.com/xvnpw"
 [[params.social]]
 name = "Linkedin"
 url   = "https://www.linkedin.com/in/marcin-niemiec-304349104/"
-icon  = "linkedin-in" # icon name without the 'fa-'
-icon_pack = "fab"
+icon  = "linkedin"
 
 [[menu.main]]
 name = "Home"
