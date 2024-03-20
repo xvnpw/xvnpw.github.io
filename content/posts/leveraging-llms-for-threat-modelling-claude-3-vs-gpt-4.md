@@ -3,10 +3,10 @@ title: "Leveraging LLMs for Threat Modeling - Claude 3 Opus vs GPT-4"
 date: 2024-03-20T14:59:02+01:00
 draft: false
 tags: [security, threat-modeling, langchain, llm, gpt, claude]
-description: "With new version of Claude model, I would like to compare it to GPT-4 in threat modeling"
+description: "With new version of Claude model, I would like to compare it to GPT-4 in threat modeling."
 ---
 
-[Claude 3 Opus](https://www.anthropic.com/news/claude-3-family) is latest and most powerful model from Anthropic. Is it able to overcome GPT-4?
+[Claude 3 Opus](https://www.anthropic.com/news/claude-3-family) is the latest and most powerful model from Anthropic. Is it able to overcome GPT-4?
 
 {{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/3305cef0-c07d-4239-8fd9-c6e9e14146e7" class="image-center" >}}
 
