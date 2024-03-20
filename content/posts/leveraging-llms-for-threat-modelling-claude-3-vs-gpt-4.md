@@ -1,7 +1,7 @@
 ---
 title: "Leveraging LLMs for Threat Modeling - Claude 3 Opus vs GPT-4"
-date: 2024-03-19T22:59:02+01:00
-draft: true
+date: 2024-03-20T14:59:02+01:00
+draft: false
 tags: [security, threat-modeling, langchain, llm, gpt, claude]
 description: "With new version of Claude model, I would like to compare it to GPT-4 in threat modeling"
 ---
@@ -27,10 +27,11 @@ I tasked the AI models with four types of analysis: high-level security design r
 
 ## Key Learnings
 
-In contrast to GPT-3.5 and Claude 2, latest models from OpenAI and Anthropic do better in threat modeling:
-- they can reason about threats and incorporate additional context, e.g. existing migitations
-- they correctly find components of architecture
-- they work good with json format
+The latest models from OpenAI and Anthropic demonstrate significant advancements in threat modeling compared to their predecessors, GPT-3.5 and Claude 2. Key improvements include:
+
+- **Enhanced Reasoning:** These models exhibit stronger reasoning abilities when it comes to threats, allowing them to integrate additional context like existing security mitigations.
+- **Accurate Architecture Understanding:** They demonstrate a better grasp of system architecture, correctly identifying individual components.
+- **JSON Compatibility:** They work effectively with JSON formatting, making them suitable for integration with technical systems and data.
 
 ## Detailed threats comparison
 
