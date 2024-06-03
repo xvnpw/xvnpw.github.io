@@ -1,7 +1,7 @@
 ---
 title: "Threat Modelling with Fabric Framework"
 date: 2024-06-03T16:59:02+01:00
-draft: true
+draft: false
 tags: [security, threat-modeling, fabric, llm, gpt, claude]
 description: ""
 ---
