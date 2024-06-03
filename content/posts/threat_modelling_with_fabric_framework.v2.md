@@ -208,7 +208,7 @@ This section can be a source of inspiration to update input documents in order t
 
 ### Context Matters
 
-There is something missing in all solutions to threat modeling that we checked today: **context**. In real life, we don't create a threat model for its own sake but with a purpose in mind. Context can describe what kind of company will implement this design; it could be a startup company just starting out with AI Nutrition-Pro as their only project or a mature company where AI Nutrition-Pro will be one of many features in their platform. Risk appetite and existing platform or company security posture will matter here; also it will be different who will be consuming the threat modelï¿½developers or security team?
+There is something missing in all solutions to threat modeling that we checked today: **context**. In real life, we don't create a threat model for its own sake but with a purpose in mind. Context can describe what kind of company will implement this design; it could be a startup company just starting out with AI Nutrition-Pro as their only project or a mature company where AI Nutrition-Pro will be one of many features in their platform. Risk appetite and existing platform or company security posture will matter here; also it will be different who will be consuming the threat model—developers or security team?
 
 It's definitely worth checking how LLM can handle this additional context; but this is for another experiment.
 
@@ -218,7 +218,7 @@ If you are console-oriented, Fabric will be perfect for you.
 
 ### Co-intelligence
 
-Ethan Mollick coined this term _co-intelligence_ as a way to describe how LLMs help us in thinking processes. I cannot predict the future but have a feeling that LLMs will become tools that help us think and solve problems better; there is no security engineer to replace in companies that don't hire any in the first placeï¿½there are only developers who will do their job better using AI.
+Ethan Mollick coined this term _co-intelligence_ as a way to describe how LLMs help us in thinking processes. I cannot predict the future but have a feeling that LLMs will become tools that help us think and solve problems better; there is no security engineer to replace in companies that don't hire any in the first place—there are only developers who will do their job better using AI.
 
 [Code](https://github.com/xvnpw/fabric-stride-threat-model) used in this experiment is published on GitHub.
 
