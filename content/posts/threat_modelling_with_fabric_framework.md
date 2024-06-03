@@ -3,7 +3,7 @@ title: "Threat Modelling with Fabric Framework"
 date: 2024-06-03T16:59:02+01:00
 draft: false
 tags: [security, threat-modeling, fabric, llm, gpt, claude]
-description: ""
+description: "The Fabric framework enhances AI-powered threat modeling with a new pattern, offering detailed, actionable security insights."
 ---
 
 [Fabric](https://github.com/danielmiessler/fabric) is a framework that puts AI at your fingertips. Instead of diving into chat interfaces (e.g., ChatGPT) or writing custom programs that consume APIs, you can create prompts as markdown text and receive output in markdown. Fabric also maintains a database of prompts called [patterns](https://github.com/danielmiessler/fabric/tree/main/patterns).
