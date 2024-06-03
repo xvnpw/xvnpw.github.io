@@ -171,16 +171,16 @@ I will show you only a single threat: **spoofing** of API Gateway:
 
 | Column | Value | Comment |
 | --- | --- | --- |
-| THREAT ID | 0001 | + |
-| COMPONENT NAME | API Gateway | + |
-| THREAT NAME | Unauthorized access to API endpoints | + |
-| STRIDE CATEGORY | Spoofing | + |
+| THREAT ID | 0001 | ✅ |
+| COMPONENT NAME | API Gateway | ✅ |
+| THREAT NAME | Unauthorized access to API endpoints | ✅ |
+| STRIDE CATEGORY | Spoofing | ✅ |
 | WHY APPLICABLE | Attackers may try to access API endpoints without proper authentication to gain unauthorized access to data or functionality. | Somehow good but also generic |
-| HOW MITIGATED | Authentication with API keys for each Meal Planner application is implemented. | + - this is exactly mentioned in input document |
-| MITIGATION | Ensure strong API key generation, secure storage, and regular rotation. Implement rate limiting and input validation at the API Gateway level. | + |
-| LIKELIHOOD EXPLANATION | Low, as authentication and rate limiting are in place, making it difficult for attackers to gain unauthorized access. | + |
-| IMPACT EXPLANATION | High, as unauthorized access could lead to data breaches or misuse of the system. | + |
-| RISK SEVERITY | Medium | + - likelihood x impact |
+| HOW MITIGATED | Authentication with API keys for each Meal Planner application is implemented. | ✅ - this is exactly mentioned in input document |
+| MITIGATION | Ensure strong API key generation, secure storage, and regular rotation. Implement rate limiting and input validation at the API Gateway level. | ✅ |
+| LIKELIHOOD EXPLANATION | Low, as authentication and rate limiting are in place, making it difficult for attackers to gain unauthorized access. | ✅ |
+| IMPACT EXPLANATION | High, as unauthorized access could lead to data breaches or misuse of the system. | ✅ |
+| RISK SEVERITY | Medium | ✅ - likelihood x impact |
 
 #### Comparison to Baselines
 
@@ -218,7 +218,7 @@ If you are console-oriented, Fabric will be perfect for you.
 
 ### Co-intelligence
 
-Ethan Mollick coined this term _co-intelligence_ as a way to describe how LLMs help us in thinking processes. I cannot predict the future but have a feeling that LLMs will become tools that help us think and solve problems better; there is no security engineer to replace in companies that don't hire any in the first place�there are only developers who will do their job better using AI.
+Ethan Mollick coined this term _co-intelligence_ as a way to describe how LLMs help us in thinking processes. I cannot predict the future but have a feeling that LLMs will become tools that help us think and solve problems better; there is no security engineer to replace in companies that don't hire any in the first place; there are only developers who will do their job better using AI.
 
 [Code](https://github.com/xvnpw/fabric-stride-threat-model) used in this experiment is published on GitHub.
 
