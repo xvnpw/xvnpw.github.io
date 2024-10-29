@@ -6,19 +6,33 @@ tags: [design, security, fabric, llm, gpt]
 description: "How I use Fabric patterns to create, review and refine design documents."
 ---
 
-I stumbled into a problem of creating high quality design documents for my threat modelling research. About 1.5 years ago, I created [AI Nutrition-Pro](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) architecture and have been using it since then. What if it's already in LLMs training data 🤔? Testing threat modelling capabilities could give me false results.
+I stumbled into a problem of creating high quality design documents for my threat modelling research. About one and half years ago, I created [AI Nutrition-Pro](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) architecture and have been using it since then. What if it's already in LLMs training data 🤔? Testing threat modelling capabilities could give me false results.
 
 I decided to create few prompts that will help me in daunting task of creating design documents. I coded those as [Fabric](https://github.com/danielmiessler/fabric) patterns so everyone can benefit. If you don't know Fabric - it's great cli tool created by [Daniel Miessler](https://danielmiessler.com).
 
-{{< figure src="https://github.com/user-attachments/assets/df07a470-769e-48e6-ac79-3584c9e8bb22" class="image-center" width=300 >}}
+You can use my prompts not only for fictional projects but also real ones.
+
+🔒 In this article I will especially focus on security part of prompts and AI generated output.
+
+{{< figure src="https://github.com/user-attachments/assets/df07a470-769e-48e6-ac79-3584c9e8bb22" class="image-center" width=500 >}}
 
 ## create_design_document
 
-`create_design_document` - as name suggest it can be used to create design document. It takes description of idea or system and provides well written, detailed design document.
+`create_design_document` - as name suggests, can be used to create design document. It takes description of idea, project or system and provides well written, detailed design document.
+
+Usage:
 
 ```bash
 cat PROJECT.md | fabric -p create_design_document > design.md
 ```
+
+- **input** - idea, project or system description
+- **output** - design document, containing:
+  - business risks, 
+  - **existing and recommended security controls**, 
+  - C4 design diagrams,
+  - risk assessment - **critical business processes and data**,
+  - AI questions and assumptions
 
 Example of input ([FULL](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md)): 
 
@@ -31,17 +45,12 @@ Dietitians use online applications to create meals, diets and calculate calories
 ...
 ```
 
-Example of output ([FULL](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3#file-design-md)):
+Example of output ([FULL](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3#file-design-md)) - generated with `-m openai/o1-preview`:
 
 ```markdown
 ## BUSINESS POSTURE
 
-The business priorities and goals for AI Nutrition-Pro are to enhance the efficiency and personalization of diet creation for dietitians by integrating with existing meal planner applications. The key objectives are to provide a seamless and secure backend API service that can reproduce the personal style of nutrition specialists using LLMs. 
-
-Most important business risks include:
-1. Ensuring data privacy and protection, especially concerning PII and personal health data.
-2. Maintaining high availability and reliability of the API service.
-3. Ensuring scalability to handle multiple tenants and large volumes of data.
+The business priorities and goals for AI Nutrition-Pro [...]
 
 ## SECURITY POSTURE
 
@@ -63,57 +72,7 @@ Security Requirements:
 - Role-based access control should be implemented to restrict access to sensitive data.
 - Data anonymization techniques should be applied to reduce the risk of exposing PII.
 
-## DESIGN
-
-### C4 CONTEXT
-
-```mermaid
-graph TB
-    DietMasterPro[DietMaster Pro] -->|Integrates with| AI_NutritionPro[AI Nutrition-Pro]
-    NutritionistPro[Nutritionist Pro] -->|Integrates with| AI_NutritionPro
-    AI_NutritionPro -->|Requests content from| ChatGPT35[ChatGPT 3.5]
-
-| Name             | Type         | Description                                                 | Responsibilities                                | Security Controls                                 |
-|------------------|--------------|-------------------------------------------------------------|-------------------------------------------------|---------------------------------------------------|
-| DietMaster Pro   | External App | Meal planner application integrating with AI Nutrition-Pro  | Sends dietitian samples and requests content    | API key, OAuth2                                    |
-| Nutritionist Pro | External App | Meal planner application integrating with AI Nutrition-Pro  | Sends dietitian samples and requests content    | API key, OAuth2                                    |
-| AI Nutrition-Pro | System       | Backend API service for generating personalized content     | Processes requests, interfaces with ChatGPT 3.5 | Encryption, access control, logging                |
-| ChatGPT 3.5      | External API | LLM API by OpenAI used for content generation               | Generates personalized content                  | OpenAI security practices, API key                 |
-
-### C4 CONTAINER
-
-```mermaid
-graph TB
-    subgraph AI_NutritionPro
-        APIService[API Service] --> ProcessingService[Processing Service]
-        ProcessingService --> DataStore[Data Store]
-        ProcessingService --> OpenAIConnector[OpenAI Connector]
-    end
-    OpenAIConnector --> ChatGPT35
-
-| Name             | Type          | Description                                        | Responsibilities                              | Security Controls                                 |
-|------------------|---------------|----------------------------------------------------|-----------------------------------------------|---------------------------------------------------|
-| API Service      | Container     | Handles incoming requests and responses            | Validates requests, manages authentication    | API gateway, rate limiting                        |
-| Processing Service| Container    | Processes data and interfaces with other services  | Applies business logic, manages data flow     | Data validation, logging                          |
-| Data Store       | Container     | Stores samples and generated content               | Data storage and retrieval                    | Encryption, access control                        |
-| OpenAI Connector | Container     | Manages communication with ChatGPT 3.5             | Handles API requests and responses            | API key, OpenAI security practices                |
-
-### C4 DEPLOYMENT
-
-```mermaid
-graph TB
-    subgraph AWS_Cloud
-        EC2Instance[EC2 Instance] --> APIService
-        EC2Instance --> ProcessingService
-        RDSInstance[RDS Instance] --> DataStore
-    end
-    OpenAICloud[OpenAI Cloud] --> ChatGPT35
-
-| Name            | Type       | Description                              | Responsibilities                          | Security Controls                                 |
-|-----------------|------------|------------------------------------------|-------------------------------------------|---------------------------------------------------|
-| EC2 Instance    | Node       | AWS compute resource for running services| Hosts API and Processing services         | Security groups, IAM roles                        |
-| RDS Instance    | Node       | AWS database service for data storage    | Hosts Data Store                          | Encryption, VPC isolation                         |
-| OpenAI Cloud    | External   | OpenAI's infrastructure for ChatGPT 3.5  | Hosts ChatGPT 3.5 API                     | Managed by OpenAI                                 |
+[...]
 
 ## RISK ASSESSMENT
 
@@ -123,20 +82,104 @@ graph TB
 - What data are we trying to protect, and what is their sensitivity?
   We are trying to protect PII and personal health data of customers, which are highly sensitive and subject to data protection regulations.
 
-## QUESTIONS & ASSUMPTIONS
+[...]
+```
 
-Questions:
-- What specific data protection regulations (e.g., HIPAA, GDPR) apply to AI Nutrition-Pro?
-- What are the expected volumes of data and requests, and how will scalability be managed?
+If you read carefully PROJECT.md you will notice that it didn't mention API keys or OAuth2, but in SECURITY POSTURE section you can find:
 
-Assumptions:
-- It is assumed that the meal planner applications will handle user consent and data collection in compliance with relevant regulations.
-- It is assumed that OpenAI's ChatGPT 3.5 will remain available and reliable for content generation tasks.
+> Existing Security Controls:
+>
+> - security control: API access will be secured using API keys and OAuth2.
+
+Both "SECURITY POSTURE" and "RISK ASSESSMENT" sections are meaningful, yet not detailed. For some people it can be enough as draft that can be enhanced with manual work. We will compare those sections to review and refined version - both created by next prompts. Stay tuned!
+
+
+## review_design
+
+This pattern takes several aspects into consideration and review provided design document.
+
+Usage:
+
+```bash
+cat design.md | fabric -p review_design > review.md
+```
+
+- **input** - design document
+- **output** - review, containing:
+  - Architecture Clarity and Component Design,
+  - External System Integrations, 
+  - **Security Architecture**,
+  - **Data Management and Storage Security**,
+  - Maintainability, Flexibility, and Future Growth,
+  - Potential Risks and Areas for Improvement,
+  - Document readability,
+  - Conclusion.
+
+Example of input: created in previous section by [create_design_document](#create_design_document) pattern.
+
+Example of output ([FULL](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3#file-review-md)) - generated with `-m openai/o1-preview`:
+
+```markdown
+## 1. Architecture Clarity and Component Design
+
+The architecture diagram provides a clear overview [...]
+
+## 3. Security Architecture
+
+**Current security mechanisms**:
+
+- **Authentication**: Each Meal Planner application uses an individual API key.
+- **Authorization**: API Gateway utilizes ACL rules to allow or deny actions.
+- **Encryption**: All network traffic between clients and the API Gateway is encrypted using TLS.
+
+**Potential weaknesses**:
+
+- API keys can be compromised; lacking mechanisms for rotation or expiration.
+- No mention of security measures for communication between internal components.
+- Data at rest encryption is not specified for the databases.
+
+**Improvements**:
+
+- Adopt token-based authentication (e.g., OAuth 2.0) for enhanced security and easier key management.
+- Implement mutual TLS or internal API keys for secure communication between internal services.
+- Enable encryption at rest for databases to protect sensitive data.
+- Establish a security monitoring and incident response plan to detect and handle breaches.
+
+[...]
+
+## 5. Data Management and Storage Security
+
+**Data handling and storage**:
+
+- **API Database**: Stores dietitians' content samples, LLM requests, and responses.
+- **Control Plane Database**: Contains control plane data, tenant information, and billing details.
+
+**Security considerations**:
+
+- No explicit mention of data encryption at rest or in backups.
+- Potential risk of data leaks if client data is not properly segregated.
+
+**Data flow optimization**:
+
+- All data exchanges occur over TLS, securing data in transit.
+- The efficiency of data flow between components is not addressed.
+
+**Improvements**:
+
+- Implement database encryption to secure data at rest.
+- Enforce strict access controls and auditing on database operations.
+- Use tenant-specific schemas or databases to ensure data segregation and client isolation.
+- Regularly update and maintain database indexes for optimized performance.
+
+[...]
 ```
 
 
 
-## Beginning of the Story - Creating a New Pattern
+
+
+
+
 
 Before we jump into the results, I first needed to create a new pattern in Fabric. To do that, I used three baseline threat models created for the same input file. This allowed me to compare results with already existing and tested solutions:
 
