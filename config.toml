@@ -5,7 +5,6 @@ theme = "archie"
 pygmentsstyle = "monokai"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
-paginate=4
 googleAnalytics="G-YHETMXZXMZ"
 [params]
 favicon = "/favicon.png"
