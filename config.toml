@@ -9,7 +9,7 @@ paginate=4
 googleAnalytics="G-YHETMXZXMZ"
 [params]
 favicon = "/favicon.png"
-mode = "toggle"
+mode = "auto"
 useCDN=false
 subtitle = "hacking, bug bounty, appsec"
 googleAnalytics = "G-YHETMXZXMZ"
