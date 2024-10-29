@@ -3,28 +3,138 @@ title: "Create design documents with Fabric"
 date: 2024-10-29T16:59:02+01:00
 draft: true
 tags: [design, security, fabric, llm, gpt]
-description: "How I use Fabric patterns to create, review and refine design documents"
+description: "How I use Fabric patterns to create, review and refine design documents."
 ---
 
-I stumbled 
+I stumbled into a problem of creating high quality design documents for my threat modelling research. About 1.5 years ago, I created [AI Nutrition-Pro](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) architecture and have been using it since then. What if it's already in LLMs training data 🤔? Testing threat modelling capabilities could give me false results.
 
-[Fabric](https://github.com/danielmiessler/fabric) is a framework that puts AI at your fingertips. Instead of diving into chat interfaces (e.g., ChatGPT) or writing custom programs that consume APIs, you can create prompts as markdown text and receive output in markdown. Fabric also maintains a database of prompts called [patterns](https://github.com/danielmiessler/fabric/tree/main/patterns).
+I decided to create few prompts that will help me in daunting task of creating design documents. I coded those as [Fabric](https://github.com/danielmiessler/fabric) patterns so everyone can benefit. If you don't know Fabric - it's great cli tool created by [Daniel Miessler](https://danielmiessler.com).
 
 {{< figure src="https://github.com/user-attachments/assets/df07a470-769e-48e6-ac79-3584c9e8bb22" class="image-center" width=300 >}}
 
-With the new pattern [create_stride_threat_model](https://github.com/danielmiessler/fabric/blob/main/patterns/create_stride_threat_model/system.md), you can easily create threat models. Let's dive deeper into how to use this new pattern and evaluate the quality of the results.
+## create_design_document
 
-## New Pattern in Action
+`create_design_document` - as name suggest it can be used to create design document. It takes description of idea or system and provides well written, detailed design document.
 
-From my [previous post]({{< ref "/posts/leveraging-llms-for-threat-modelling-claude-3-vs-gpt-4.md" >}}), you can learn about my experiment on using Large Language Models for threat modeling. In this article, we will use the architecture document of a fictional project called "AI Nutrition-Pro" as input:
-
-```
-# Get Fabric installed - https://github.com/danielmiessler/fabric
-$ wget https://raw.githubusercontent.com/xvnpw/fabric-stride-threat-model/main/INPUT.md
-$ cat INPUT.md | fabric --pattern create_stride_threat_model -m claude-3-opus-20240229
+```bash
+cat PROJECT.md | fabric -p create_design_document > design.md
 ```
 
-In this case, I use the `claude-3-opus-20240229` model. At the time of writing, Claude 3 Opus represents the best model for threat modeling in my opinion.
+Example of input ([FULL](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/PROJECT.md)): 
+
+```markdown
+# AI Nutrition-Pro
+
+## Business background
+
+Dietitians use online applications to create meals, diets and calculate calories called meal planners. Different professionals have different ways of creating diets, which gives a personal style to it. LLMs can reproduce this personal style of writing based on samples of already created content. Meal planners can use LLMs to speed up diet creation for dietitians.
+...
+```
+
+Example of output ([FULL](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3#file-design-md)):
+
+```markdown
+## BUSINESS POSTURE
+
+The business priorities and goals for AI Nutrition-Pro are to enhance the efficiency and personalization of diet creation for dietitians by integrating with existing meal planner applications. The key objectives are to provide a seamless and secure backend API service that can reproduce the personal style of nutrition specialists using LLMs. 
+
+Most important business risks include:
+1. Ensuring data privacy and protection, especially concerning PII and personal health data.
+2. Maintaining high availability and reliability of the API service.
+3. Ensuring scalability to handle multiple tenants and large volumes of data.
+
+## SECURITY POSTURE
+
+Existing Security Controls:
+- security control: Use of AWS cloud services with built-in security features for data storage and processing.
+- security control: Integration with ChatGPT 3.5 will be secured using OpenAI's recommended practices.
+- security control: API access will be secured using API keys and OAuth2.
+
+Accepted Risks:
+- accepted risk: Dependency on third-party services like OpenAI for LLM functionality, which may introduce latency or service outages.
+
+Recommended Security Controls:
+- Implement encryption for data at rest and in transit.
+- Establish a comprehensive logging and monitoring system to detect and respond to security incidents.
+- Conduct regular security audits and vulnerability assessments.
+
+Security Requirements:
+- The system must comply with data protection regulations such as GDPR and HIPAA.
+- Role-based access control should be implemented to restrict access to sensitive data.
+- Data anonymization techniques should be applied to reduce the risk of exposing PII.
+
+## DESIGN
+
+### C4 CONTEXT
+
+```mermaid
+graph TB
+    DietMasterPro[DietMaster Pro] -->|Integrates with| AI_NutritionPro[AI Nutrition-Pro]
+    NutritionistPro[Nutritionist Pro] -->|Integrates with| AI_NutritionPro
+    AI_NutritionPro -->|Requests content from| ChatGPT35[ChatGPT 3.5]
+
+| Name             | Type         | Description                                                 | Responsibilities                                | Security Controls                                 |
+|------------------|--------------|-------------------------------------------------------------|-------------------------------------------------|---------------------------------------------------|
+| DietMaster Pro   | External App | Meal planner application integrating with AI Nutrition-Pro  | Sends dietitian samples and requests content    | API key, OAuth2                                    |
+| Nutritionist Pro | External App | Meal planner application integrating with AI Nutrition-Pro  | Sends dietitian samples and requests content    | API key, OAuth2                                    |
+| AI Nutrition-Pro | System       | Backend API service for generating personalized content     | Processes requests, interfaces with ChatGPT 3.5 | Encryption, access control, logging                |
+| ChatGPT 3.5      | External API | LLM API by OpenAI used for content generation               | Generates personalized content                  | OpenAI security practices, API key                 |
+
+### C4 CONTAINER
+
+```mermaid
+graph TB
+    subgraph AI_NutritionPro
+        APIService[API Service] --> ProcessingService[Processing Service]
+        ProcessingService --> DataStore[Data Store]
+        ProcessingService --> OpenAIConnector[OpenAI Connector]
+    end
+    OpenAIConnector --> ChatGPT35
+
+| Name             | Type          | Description                                        | Responsibilities                              | Security Controls                                 |
+|------------------|---------------|----------------------------------------------------|-----------------------------------------------|---------------------------------------------------|
+| API Service      | Container     | Handles incoming requests and responses            | Validates requests, manages authentication    | API gateway, rate limiting                        |
+| Processing Service| Container    | Processes data and interfaces with other services  | Applies business logic, manages data flow     | Data validation, logging                          |
+| Data Store       | Container     | Stores samples and generated content               | Data storage and retrieval                    | Encryption, access control                        |
+| OpenAI Connector | Container     | Manages communication with ChatGPT 3.5             | Handles API requests and responses            | API key, OpenAI security practices                |
+
+### C4 DEPLOYMENT
+
+```mermaid
+graph TB
+    subgraph AWS_Cloud
+        EC2Instance[EC2 Instance] --> APIService
+        EC2Instance --> ProcessingService
+        RDSInstance[RDS Instance] --> DataStore
+    end
+    OpenAICloud[OpenAI Cloud] --> ChatGPT35
+
+| Name            | Type       | Description                              | Responsibilities                          | Security Controls                                 |
+|-----------------|------------|------------------------------------------|-------------------------------------------|---------------------------------------------------|
+| EC2 Instance    | Node       | AWS compute resource for running services| Hosts API and Processing services         | Security groups, IAM roles                        |
+| RDS Instance    | Node       | AWS database service for data storage    | Hosts Data Store                          | Encryption, VPC isolation                         |
+| OpenAI Cloud    | External   | OpenAI's infrastructure for ChatGPT 3.5  | Hosts ChatGPT 3.5 API                     | Managed by OpenAI                                 |
+
+## RISK ASSESSMENT
+
+- What are critical business processes we are trying to protect?
+  The critical business processes include secure data handling, content generation, and maintaining service availability for meal planner integrations.
+
+- What data are we trying to protect, and what is their sensitivity?
+  We are trying to protect PII and personal health data of customers, which are highly sensitive and subject to data protection regulations.
+
+## QUESTIONS & ASSUMPTIONS
+
+Questions:
+- What specific data protection regulations (e.g., HIPAA, GDPR) apply to AI Nutrition-Pro?
+- What are the expected volumes of data and requests, and how will scalability be managed?
+
+Assumptions:
+- It is assumed that the meal planner applications will handle user consent and data collection in compliance with relevant regulations.
+- It is assumed that OpenAI's ChatGPT 3.5 will remain available and reliable for content generation tasks.
+```
+
+
 
 ## Beginning of the Story - Creating a New Pattern
 
