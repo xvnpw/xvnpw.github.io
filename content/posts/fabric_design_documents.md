@@ -10,7 +10,7 @@ I stumbled
 
 [Fabric](https://github.com/danielmiessler/fabric) is a framework that puts AI at your fingertips. Instead of diving into chat interfaces (e.g., ChatGPT) or writing custom programs that consume APIs, you can create prompts as markdown text and receive output in markdown. Fabric also maintains a database of prompts called [patterns](https://github.com/danielmiessler/fabric/tree/main/patterns).
 
-{{< figure src="https://github.com/xvnpw/xvnpw.github.io/assets/17719543/4fe91d36-3736-4cbf-9835-edfa3943116e" class="image-center" width=300 >}}
+{{< figure src="https://github.com/user-attachments/assets/df07a470-769e-48e6-ac79-3584c9e8bb22" class="image-center" width=300 >}}
 
 With the new pattern [create_stride_threat_model](https://github.com/danielmiessler/fabric/blob/main/patterns/create_stride_threat_model/system.md), you can easily create threat models. Let's dive deeper into how to use this new pattern and evaluate the quality of the results.
 
