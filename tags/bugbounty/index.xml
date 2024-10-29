@@ -1,17 +1,44 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Bugbounty on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/bugbounty/</link><description>Recent content in Bugbounty on xvnpw personal blog</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/bugbounty/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s $request_uri variable.
-APIs This vulnerability is for APIs. Best scenario are microservice deployed to Kubernetes and exposed by ingress controller.
-Using paths API that you are playing with, need to use paths to address services, e.g.:
-OK! https://api.example.com/user-service https://api.example.com/customer-service ... NOT OK! https://user.example.com/ https://customer.example.com/ First set of URLs is good for exploitation, as you can try sending request with https://api.</description></item><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>This story will explain how to find and exploit SpEL parser in web applications based on Java language.
-What is SpEL ? From Spring documentation:
-The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.
-Where is it used ?
-Spring Framework: Security, Data, … Any place developers use it by SpEL API For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.</description></item><item><title>From . in regex to SSRF - part 3</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</link><pubDate>Tue, 07 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</guid><description>This is last part of my stories about exploiting service with SSRF bug. Part 1 is available here, and part 2 here.
-This part is focused on abusing Node.js and node-fetch library. I will try to &amp;ldquo;talk&amp;rdquo; with Redis service using CRLF injection in http parser.
-For convenience Redis service will be simulated by nc -vvlp 6379.
-Test environment from my Kali 2020.1b:
-Node.js version 10.19.0 node-fetch version 2.6.0 CRLF Injection Lets start with PayloadsAllTheThings.</description></item><item><title>From . in regex to SSRF - part 2</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</link><pubDate>Tue, 14 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</guid><description>In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available here.
-What is state of the game up to now? I have found service that is vulnerable to SSRF by executing the REST call and by passing domain name check:
-https://api.example.org/image-converter/https://www-example.org
-I have registered domain name: www-example.org and add for it CNAME record to my EC2 server.
-But wait a second. This is not yet &amp;ldquo;SSRF&amp;rdquo;.</description></item><item><title>From . in regex to SSRF - part 1</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</link><pubDate>Sun, 05 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</guid><description>In test of one application I have encountered bug in regex that leaded to Server Side Request Forgery (SSRF). Way of finding it was huge fun and excitement. It was also my first bug on production system ever.
-During a recon I have found service called image-converter. It was definitely interesting, but not straight forward to exploit. I had no example of usage it and on simple GET request I was just getting:</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Bugbounty on xvnpw personal blog</title><link>https://xvnpw.github.io/tags/bugbounty/</link><description>Recent content in Bugbounty on xvnpw personal blog</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 27 Nov 2021 22:59:05 +0100</lastBuildDate><atom:link href="https://xvnpw.github.io/tags/bugbounty/index.xml" rel="self" type="application/rss+xml"/><item><title>Bug bounty tips for nginx $request_uri path traversal bypass</title><link>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</link><pubDate>Sat, 27 Nov 2021 22:59:05 +0100</pubDate><guid>https://xvnpw.github.io/posts/bug_bounty_tips_for_nginx_request_uri_path_traversal_bypass/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png">
+&lt;/figure>
+
+&lt;p>In this article, I will extend topic by bug bounty tips for weaknesses in authentication/authorization implementation in relation to nginx&amp;rsquo;s &lt;code>$request_uri&lt;/code> variable.&lt;/p>
+&lt;h2 id="apis">APIs&lt;/h2>
+&lt;p>This vulnerability is for APIs. Best scenario are &lt;strong>microservice&lt;/strong> deployed to Kubernetes and exposed by ingress controller.&lt;/p>
+&lt;h2 id="using-paths">Using paths&lt;/h2>
+&lt;p>API that you are playing with, need to use paths to address services, e.g.:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>OK!
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>https://api.example.com/user-service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>https://api.example.com/customer-service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>...
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>NOT OK!
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>https://user.example.com/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>https://customer.example.com/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>First set of URLs is good for exploitation, as you can try sending request with &lt;code>https://api.example.com/user-service/..%2F/customer-service/endpoint1&lt;/code>&lt;/p></description></item><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>&lt;p>This story will explain how to find and exploit SpEL parser in web applications based on Java language.&lt;/p>
+&lt;p>What is SpEL ? From Spring documentation:&lt;/p>
+&lt;blockquote>
+&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>
+&lt;/blockquote>
+&lt;p>Where is it used ?&lt;/p>
+&lt;ol>
+&lt;li>Spring Framework: Security, Data, …&lt;/li>
+&lt;li>&lt;strong>Any place developers use it by SpEL API&lt;/strong>&lt;/li>
+&lt;li>For languages it can be used in Java, Kotlin, Scala, and other JVM based technologies.&lt;/li>
+&lt;/ol>
+&lt;p>First point is known by issues in past like: &lt;a href="https://tanzu.vmware.com/security/cve-2018-1273">CVE-2018–1273&lt;/a>, &lt;a href="https://tanzu.vmware.com/security/cve-2017-8046">CVE-2017–8046&lt;/a> or CVE-2011–2730. I will not talk about them, I will focus on point number two.&lt;/p></description></item><item><title>From . in regex to SSRF - part 3</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</link><pubDate>Tue, 07 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-3/</guid><description>&lt;p>This is last part of my stories about exploiting service with SSRF bug. Part 1 is available &lt;a href="https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/">here&lt;/a>, and part 2 &lt;a href="https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/">here&lt;/a>.&lt;/p>
+&lt;p>This part is focused on abusing Node.js and &lt;em>node-fetch&lt;/em> library. I will try to &amp;ldquo;talk&amp;rdquo; with Redis service using CRLF injection in http parser.&lt;/p>
+&lt;p>For convenience Redis service will be simulated by &lt;code>nc -vvlp 6379&lt;/code>.&lt;/p>
+&lt;p>Test environment from my Kali 2020.1b:&lt;/p>
+&lt;ul>
+&lt;li>Node.js version 10.19.0&lt;/li>
+&lt;li>node-fetch version 2.6.0&lt;/li>
+&lt;/ul>
+&lt;h2 id="crlf-injection">CRLF Injection&lt;/h2>
+&lt;p>Lets start with PayloadsAllTheThings. It contains couple of CRLF Injection payloads. I will loop over them and check result in second console:&lt;/p></description></item><item><title>From . in regex to SSRF - part 2</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</link><pubDate>Tue, 14 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-2/</guid><description>&lt;p>In this story I will continue my journey to exploit Server Side Request Forgery (SSRF). Part 1 is available &lt;a href="https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/">here&lt;/a>.&lt;/p>
+&lt;p>What is state of the game up to now? I have found service that is vulnerable to SSRF by executing the REST call and by passing domain name check:&lt;/p>
+&lt;p>&lt;code>https://api.example.org/image-converter/https://www-example.org&lt;/code>&lt;/p>
+&lt;p>I have registered domain name: &lt;code>www-example.org&lt;/code> and add for it &lt;code>CNAME&lt;/code> record to my EC2 server.&lt;/p>
+&lt;p>But wait a second. &lt;strong>This is not yet &amp;ldquo;SSRF&amp;rdquo;&lt;/strong>. For now I could call specific domain, but didn&amp;rsquo;t prove ability to scan internal ports or execute requests to internal services.&lt;/p></description></item><item><title>From . in regex to SSRF - part 1</title><link>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</link><pubDate>Sun, 05 Jan 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/from-dot-in-regex-to-ssrf-part-1/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139576912-865d0f16-6dc3-4af9-8a39-5e77d7b236c3.png">
+&lt;/figure>
+
+&lt;p>In test of one application I have encountered bug in regex that leaded to Server Side Request Forgery (SSRF). Way of finding it was huge fun and excitement. It was also my first bug on production system ever.&lt;/p>
+&lt;p>During a recon I have found service called &lt;em>image-converter&lt;/em>. It was definitely interesting, but not straight forward to exploit. I had no example of usage it and on simple GET request I was just getting:&lt;/p></description></item></channel></rss>
