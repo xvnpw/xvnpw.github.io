@@ -1,20 +1,20 @@
 ---
 title: "Create design documents with Fabric"
-date: 2024-10-29T16:59:02+01:00
+date: 2024-10-30T13:59:02+01:00
 draft: true
 tags: [design, security, fabric, llm, gpt]
 description: "How I use Fabric patterns to create, review and refine design documents."
 ---
 
-I stumbled into a problem of creating high quality design documents for my threat modelling research. About one and half years ago, I created [AI Nutrition-Pro](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) architecture and have been using it since then. What if it's already in LLMs training data 🤔? Testing threat modelling capabilities could give me false results.
+I encountered a challenge in creating high-quality design documents for my threat modeling research. About a year and a half ago, I created [AI Nutrition-Pro](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5/blob/main/ARCHITECTURE.md) architecture and have been using it since then. What if it's already in LLMs' training data? Testing threat modeling capabilities could give me false results.
 
-I decided to create few prompts that will help me in daunting task of creating design documents. I coded those as [Fabric](https://github.com/danielmiessler/fabric) patterns so everyone can benefit. If you don't know Fabric - it's great cli tool created by [Daniel Miessler](https://danielmiessler.com).
+I developed several prompts to assist with the challenging task of creating design documents. I implemented these as [Fabric](https://github.com/danielmiessler/fabric) patterns for everyone's benefit. If you're unfamiliar with Fabric - it's an excellent CLI tool created by [Daniel Miessler](https://danielmiessler.com).
 
-You can use my prompts not only for fictional projects but also real ones.
+You can use my prompts for both fictional and real projects.
 
-🔒 In this article I will especially focus on security part of prompts and AI generated output.
+🔒 In this article, I will focus particularly on the security aspects of prompts and AI-generated output.
 
-Considering current level of LLM models, it's clear that complete automation is not possible if we have some chunk of text on input and some chunk of text on output. That's why I put information about 🪄 recommended automation for prompts and patterns.
+Given the current capabilities of LLM models, complete automation isn't feasible when dealing with text input and output. That's why I've included information about 🪄 recommended automation for prompts and patterns.
 
 {{< figure src="https://github.com/user-attachments/assets/df07a470-769e-48e6-ac79-3584c9e8bb22" class="image-center" width=500 >}}
 
@@ -88,16 +88,15 @@ Security Requirements:
 [...]
 ```
 
-👁 hallucination: if you read carefully PROJECT.md you will notice that it didn't mention API keys or OAuth2, but in SECURITY POSTURE section you can find:
+👁 hallucination: if you read carefully, PROJECT.md you will notice that it didn't mention API keys or OAuth2, but in the SECURITY POSTURE section you can find:
 
-> Existing Security Controls:
->
+> Existing Security Controls:  
+>  
 > - security control: API access will be secured using API keys and OAuth2.
 
-Model decided to fill existing security controls with something that was not in input. It's expected behavior of current LLM models.
+The model decided to fill existing security controls with something that was not in the input.
 
-Apart of hallucination, both "SECURITY POSTURE" and "RISK ASSESSMENT" sections are meaningful, yet not detailed. For some people it can be enough as draft that can be enhanced with manual work. We will compare those sections to review and refined version - both created by next prompts. Stay tuned!
-
+Apart from hallucination, both the "SECURITY POSTURE" and "RISK ASSESSMENT" sections are meaningful, yet not detailed. For some people, it can be enough as a draft that can be enhanced with manual work. We will compare those sections to review and refine versions - both created by the next prompts. Stay tuned!
 
 ## review_design
 
@@ -169,19 +168,19 @@ The architecture diagram provides a clear overview [...]
 [...]
 ```
 
-👁 hallucination: it's not mention that API Gateway do some sort if authorization of access control. In contrary, it's mention that access control is performed by backend.
+👁 hallucination: it's not mentioned that the API Gateway does some sort of authorization or access control. In contrast, it's mentioned that access control is performed by the backend.
 
-> 3. Security Architecture
->
-> **Current security mechanisms**:
->
+> 3. Security Architecture  
+>  
+> **Current security mechanisms**:  
+>  
 > **Authorization**: API Gateway utilizes ACL rules to allow or deny actions.
 
-One more time we got hallucinations, but as previously - it's expected. Apart from that, current LLMs put high emphasis on data encryption at rest. From AppSec/CloudSec perspective it's easy to turn it on and usually not being so much considered during design review. Nevertheless, we can find interesting points to make design better.
+Once more, we encounter hallucinations. Apart from that, current LLMs put a high emphasis on data encryption at rest. From an AppSec/CloudSec perspective, it's easy to turn it on and usually not considered much during design review. Nevertheless, we can find interesting points to make the design better.
 
 ## `refine_design_document`
 
-`refine_design_document` ([source](https://github.com/danielmiessler/fabric/blob/5373345a3cc77c7dacee78ea2139e303a3389166/patterns/refine_design_document/system.md)) - if we already have design document and its review, we can try with yet another prompt that will take those and refine design document so it will be align with review.
+`refine_design_document` ([source](https://github.com/danielmiessler/fabric/blob/5373345a3cc77c7dacee78ea2139e303a3389166/patterns/refine_design_document/system.md)) - if we already have a design document and its review, we can try another prompt that will take those and refine the design document so it aligns with the review.
 
 Usage:
 
@@ -250,9 +249,9 @@ There are also minor improvements in wording and formatting.
 
 ## Summary
 
-Giving LLM bigger chunk of text on input and requesting to give back bigger chunk of text on output is leading to hallucinations. At current state of models, we cannot get ride of it. Maybe in future those will be gone. 
+Giving LLM a bigger chunk of text as input and requesting some sort of "thinking" leads to hallucinations. At the current state of models, we cannot get rid of it. Maybe in the future, those will be gone.
 
-Does it mean that LLMs are useless? Certainly not. Can we replace job function with my prompts? Not for sure. Can we replace task of creating design document? Also not. So what can we do? We can automate some of sub-tasks. And that is perfect application for LLM. We don't need to suffer rigor of blank page, we can get draft with some sections needed rewrite, and some being ok. 
+Does it mean that LLMs are useless? Certainly not. Can we replace a job function with my prompts? Not for sure. Can we replace the task of creating a design document? Also not. So what can we do? We can automate some sub-tasks. And that is a perfect application for LLM. We don't need to suffer the rigor of a blank page; we can get a draft with some sections needing a rewrite, and some being okay.
 
 {{< figure src="https://github.com/user-attachments/assets/0615074e-1b92-4b87-b4e2-e1580f760430" class="image-center" >}}
 
