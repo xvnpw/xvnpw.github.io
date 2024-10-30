@@ -1,6 +1,6 @@
 ---
 title: "Create design documents with Fabric"
-date: 2024-10-30T13:59:02+01:00
+date: 2024-10-30T11:59:02+01:00
 draft: true
 tags: [design, security, fabric, llm, gpt]
 description: "How I use Fabric patterns to create, review and refine design documents."
