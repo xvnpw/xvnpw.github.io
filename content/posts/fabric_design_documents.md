@@ -20,7 +20,7 @@ Considering current level of LLM models, it's clear that complete automation is 
 
 ## create_design_document
 
-`create_design_document` - as name suggests, can be used to create design document. It takes description of idea, project or system and provides well written, detailed design document.
+`create_design_document` ([source](https://github.com/danielmiessler/fabric/blob/5373345a3cc77c7dacee78ea2139e303a3389166/patterns/create_design_document/system.md)) - as name suggests, can be used to create design document. It takes description of idea, project or system and provides well written, detailed design document.
 
 Usage:
 
@@ -47,7 +47,7 @@ Example of input ([FULL](https://github.com/xvnpw/ai-nutrition-pro-design-gpt3.5
 ## Business background
 
 Dietitians use online applications to create meals, diets and calculate calories called meal planners. Different professionals have different ways of creating diets, which gives a personal style to it. LLMs can reproduce this personal style of writing based on samples of already created content. Meal planners can use LLMs to speed up diet creation for dietitians.
-...
+[...]
 ```
 
 Example of output ([FULL](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3#file-design-md)) - generated with `-m openai/o1-preview`:
@@ -77,8 +77,6 @@ Security Requirements:
 - Role-based access control should be implemented to restrict access to sensitive data.
 - Data anonymization techniques should be applied to reduce the risk of exposing PII.
 
-[...]
-
 ## RISK ASSESSMENT
 
 - What are critical business processes we are trying to protect?
@@ -103,7 +101,7 @@ Apart of hallucination, both "SECURITY POSTURE" and "RISK ASSESSMENT" sections a
 
 ## review_design
 
-This pattern takes several aspects into consideration and review provided design document.
+`review_design` ([source](https://github.com/danielmiessler/fabric/blob/5373345a3cc77c7dacee78ea2139e303a3389166/patterns/review_design/system.md)) pattern takes several aspects into consideration and review provided design document.
 
 Usage:
 
@@ -154,24 +152,12 @@ The architecture diagram provides a clear overview [...]
 - Enable encryption at rest for databases to protect sensitive data.
 - Establish a security monitoring and incident response plan to detect and handle breaches.
 
-[...]
-
 ## 5. Data Management and Storage Security
-
-**Data handling and storage**:
-
-- **API Database**: Stores dietitians' content samples, LLM requests, and responses.
-- **Control Plane Database**: Contains control plane data, tenant information, and billing details.
 
 **Security considerations**:
 
 - No explicit mention of data encryption at rest or in backups.
 - Potential risk of data leaks if client data is not properly segregated.
-
-**Data flow optimization**:
-
-- All data exchanges occur over TLS, securing data in transit.
-- The efficiency of data flow between components is not addressed.
 
 **Improvements**:
 
@@ -191,12 +177,88 @@ The architecture diagram provides a clear overview [...]
 >
 > **Authorization**: API Gateway utilizes ACL rules to allow or deny actions.
 
-One more time we got hallucinations, but as previously - it's expected. Apart from that, current LLMs are putting high emphasis on data encryption at rest. From AppSec/CloudSec perspective it's easy to turn it on and usually not being so much considered during design review. Still valid and interesting review.
+One more time we got hallucinations, but as previously - it's expected. Apart from that, current LLMs put high emphasis on data encryption at rest. From AppSec/CloudSec perspective it's easy to turn it on and usually not being so much considered during design review. Nevertheless, we can find interesting points to make design better.
 
+## `refine_design_document`
+
+`refine_design_document` ([source](https://github.com/danielmiessler/fabric/blob/5373345a3cc77c7dacee78ea2139e303a3389166/patterns/refine_design_document/system.md)) - if we already have design document and its review, we can try with yet another prompt that will take those and refine design document so it will be align with review.
+
+Usage:
+
+```bash
+echo "DESIGN DOCUMENT" > design-document.md
+cat PROJECT.md | fabric -p create_design_document >> design-document.md
+
+echo "DESIGN REVIEW" > design-review.md
+cat design-document.md | fabric -p review_design >> design-review.md
+
+cat design-document.md design-review.md | fabric -p refine_design_document >> design-document-refined.md
+```
+
+- **input** - design document, design review
+- **output** - refined design document
+- 🪄 recommended automation - careful review of output with input
+- ✨ recommended models - Anthropic Claude 3.5 Sonnet, OpenAI o1-preview
+
+Example of input: created in previous sections by [create_design_document](#create_design_document) and [review_design](#review_design) patterns.
+
+Example of output ([FULL](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3#file-design-refined-md)) - generated with `-m openai/o1-preview`:
+
+```markdown
+## SECURITY POSTURE
+
+### Existing Security Controls
+
+- **Use of AWS Cloud Services**: Leveraging AWS cloud services with built-in security features for data storage and processing.
+- **Secure Integration with ChatGPT 3.5**: Integration with ChatGPT 3.5 secured using OpenAI's recommended practices and API key management.
+- **API Access Security**: API access secured using **OAuth 2.0** for enhanced security and easier key management.
+
+### Accepted Risks
+
+- **Dependency on Third-party Services**: Dependency on third-party services like OpenAI for LLM functionality, which may introduce latency or service outages.
+
+### Recommended Security Controls
+
+- **Encryption**: Implement encryption for data at rest and in transit, including internal communications between components.
+- **Logging and Monitoring**: Establish a comprehensive logging and monitoring system to detect and respond to security incidents.
+- **Regular Security Audits**: Conduct regular security assessments, vulnerability scans, and penetration testing.
+- **Data Anonymization**: Apply data anonymization techniques to reduce the risk of exposing PII.
+
+### Security Requirements
+
+- **Regulatory Compliance**: The system must comply with data protection regulations such as GDPR and HIPAA.
+- **Role-Based Access Control (RBAC)**: Implement RBAC to restrict access to sensitive data based on user roles.
+- **Tenant Data Isolation**: Enforce strict data segregation to ensure client data remains isolated and secure.
+
+## RISK ASSESSMENT
+
+- **Critical Business Processes**: Protecting sensitive data (PII, health information), ensuring reliable content generation, and maintaining service availability for clients.
+- **Data Sensitivity**: High sensitivity due to handling of PII and personal health information, requiring strict compliance with GDPR, HIPAA, and other regulations.
+
+[...]
+
+```
+
+Comparing original version with refined, we can notice that review was applied in few places:
+
+| Original | Review | Refined |
+| --- | --- | ---|
+| security control: API access will be secured using API keys and OAuth2. | Adopt token-based authentication (e.g., OAuth 2.0) for enhanced security and easier key management. | **API Access Security**: API access secured using **OAuth 2.0** for enhanced security and easier key management. | 
+| - | Use tenant-specific schemas or databases to ensure data segregation and client isolation. | **Tenant Data Isolation**: Enforce strict data segregation to ensure client data remains isolated and secure. |
+
+There are also minor improvements in wording and formatting. 
+
+## Summary
+
+Giving LLM bigger chunk of text on input and requesting to give back bigger chunk of text on output is leading to hallucinations. At current state of models, we cannot get ride of it. Maybe in future those will be gone. 
+
+Does it mean that LLMs are useless? Certainly not. Can we replace job function with my prompts? Not for sure. Can we replace task of creating design document? Also not. So what can we do? We can automate some of sub-tasks. And that is perfect application for LLM. We don't need to suffer rigor of blank page, we can get draft with some sections needed rewrite, and some being ok. 
+
+{{< figure src="https://github.com/user-attachments/assets/0615074e-1b92-4b87-b4e2-e1580f760430" class="image-center" >}}
 
 ---
 
-[Code](https://github.com/xvnpw/fabric-stride-threat-model) used in this experiment is published on GitHub.
+[Code](https://gist.github.com/xvnpw/1b57a2594790b94bfca58e3bf32be7d3) used in this experiment is published on GitHub.
 
 ---
 
