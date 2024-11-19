@@ -3,6 +3,10 @@
 	width: 100%;
   }
 
-img.no-border {
-	border: none;
+figure.no-border > img {
+	border: 0;
+}
+
+figure.no-border {
+	margin-top: 10px
 }
