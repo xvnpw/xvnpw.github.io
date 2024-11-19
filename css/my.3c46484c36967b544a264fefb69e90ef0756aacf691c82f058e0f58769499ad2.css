@@ -1,0 +1,12 @@
+.image-center {
+	text-align: center;
+	width: 100%;
+  }
+
+figure.no-border > img {
+	border: 0;
+}
+
+figure.no-border {
+	margin-top: 10px
+}
