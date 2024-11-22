@@ -1,5 +1,5 @@
 ---
-title: "Automating Workflows with Fabric Agent Action"
+title: "Automating GitHub Workflows with Fabric Agent Action"
 date: 2024-11-22T13:59:02+01:00
 draft: false
 tags: [security, fabric, llm, gpt, ai, github, langchain]
