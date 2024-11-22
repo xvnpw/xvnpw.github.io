@@ -1,7 +1,7 @@
 ---
 title: "Automating Workflows with Fabric Agent Action"
-date: 2024-11-19T19:59:02+01:00
-draft: true
+date: 2024-11-22T13:59:02+01:00
+draft: false
 tags: [security, fabric, llm, gpt, ai, github, langchain]
 description: "Introducing the Fabric Agent Action - a GitHub Action that automates complex workflows using AI-powered agents and Fabric Patterns."
 ---
@@ -11,6 +11,9 @@ description: "Introducing the Fabric Agent Action - a GitHub Action that automat
 {{< figure src="https://github.com/user-attachments/assets/14110f11-1250-4792-8d1a-4da3fd85197e" class="image-center" width=200 >}}
 
 The action introduces different types of agents, each designed for specific use cases, from simple pattern execution to complex reasoning about GitHub issues and pull requests. Let's explore how these agents work and evaluate their effectiveness.
+
+**Watch demo:**
+{{< twitter user="xvnpw" id="1859981296774316495" >}}
 
 ## Agents in Action
 
