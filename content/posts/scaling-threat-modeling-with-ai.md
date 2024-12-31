@@ -161,7 +161,7 @@ To keep things navigable, the repository is structured by programming language, 
 
 ## Reflecting on the Journey: Evaluating the Results
 
-While I haven't yet conducted an exhaustive review of all 1,000 threat models 😅, initial assessments are promising. The methodology demonstrates significant potential in producing valuable security documentation at scale. some interesting patterns emerged:
+While I haven't yet conducted an exhaustive review of all 1,000 threat models 😅, initial assessments are promising. The methodology demonstrates significant potential in producing valuable security documentation at scale. Some interesting patterns emerged:
 
 - **Holistic Insights**: Having all four documents provides different perspectives and insights. Individually, none are perfect, but together they offer a comprehensive view of the project's security posture.
 - **Solid Threats**: The threats identified are solid — not mind-blowing, but relevant and actionable.
