@@ -32,7 +32,7 @@ To my surprise, Gemini didn't play well with my existing prompts:
 - **Inconsistent Markdown Generation**: The model struggled to produce valid and consistent Markdown, which was crucial for documentation.
 - **Less Effective Prompts**: My go-to prompts yielded erratic results, lacking the determinism I needed.
 
-It was clear that I couldn't just copy my methods—I had to rethink my approach.
+It became clear that I couldn't just copy and paste my methods — I had to rethink my approach.
 
 ## The Journey to Better Prompts
 
@@ -48,7 +48,7 @@ Too Simple        <---|--------------|---> Too Complex
                     Where magic happens
 ```
 
-I needed a balanced approach—a "sweet spot" where the prompts were sufficiently detailed to guide the model but not so complex that they overwhelmed it.
+I needed a balanced approach — a "sweet spot" where the prompts were sufficiently detailed to guide the model but not so complex that they overwhelmed it.
 
 ## Crafting Effective Prompts: The Game Changer
 
@@ -69,7 +69,7 @@ GITHUB2_THREAT_MODELING_PROMPTS = [
 **Key elements of this strategy:**
 
 - **Sequential Guidance**: Each prompt builds upon the previous response, allowing the model to refine and focus its output incrementally.
-- **Dynamic Placeholders**: The `{}` placeholders are dynamically replaced with the specific GitHub repository URL and name, tailoring the prompts to each project. I don't analyze code from the repository, but relay on the model knowledge 🧠 (btw. AI Security Analyzer is able to analyze code from the repository in `dir` mode).
+- **Dynamic Placeholders**: The `{}` placeholders are dynamically replaced with the specific GitHub repository URL and name, tailoring the prompts to each project. I don't analyze code from the repository but rely on the model's knowledge 🧠 (by the way, AI Security Analyzer is able to analyze code from the repository in `dir` mode).
 - **Focused Filtering**: By instructing the model to "Return only high and critical threats," we ensure the output is relevant and actionable.
 
 ## An Example Output
@@ -163,18 +163,18 @@ To keep things navigable, the repository is structured by programming language, 
 
 While I haven't yet conducted an exhaustive review of all 1,000 threat models 😅, initial assessments are promising. The methodology demonstrates significant potential in producing valuable security documentation at scale. some interesting patterns emerged:
 
-- it's worth to have all 4 documents - they provide different perspectives and insights - none of them is perfect alone, but together they provide a comprehensive view of the security posture of the project
-- **threats** are solid - not mind-blowing, but solid and relevant
-- relying on model knowledge base is a drawback - we don't know what version of the code was used for the analysis
-- focusing on high and critical threats is a good idea - documents are shorter and easier to comprehend
+- **Holistic Insights**: Having all four documents provides different perspectives and insights. Individually, none are perfect, but together they offer a comprehensive view of the project's security posture.
+- **Solid Threats**: The threats identified are solid — not mind-blowing, but relevant and actionable.
+- **Knowledge Base Limitations**: Relying on the model's knowledge base is a drawback — we don't always know what version of the code was used for the analysis.
+- **Focused Priorities**: Concentrating on high and critical threats makes the documents shorter and easier to comprehend.
 
 **Future posts will delve deeper into analysis and refinement.**
 
 ## Closing Thoughts
 
-This experiment has been both challenging and thrilling. It highlights the transformative potential of AI models like Gemini 2.0 in automating and scaling critical cybersecurity processes. I would definitely check generated documentation when working on new technology. It will serve as a good starting point. Not replacing human security experts, but making easier to navigate complexities.
+This experiment has been both challenging and thrilling. It highlights the transformative potential of AI models like Gemini 2.0 in automating and scaling critical cybersecurity processes. I would definitely consider using the generated documentation when working on new technology. It serves as a valuable starting point — not replacing human security experts, but making it easier to navigate complexities.
 
-I would love to generate 1000 threat models using different LLM models, especially final version of Gemini 2.0 and new OpenAI o1, o1-pro and upcoming o3.
+I would love to generate 1,000 threat models using different LLM models, especially the final version of Gemini 2.0 and the new OpenAI o1, o1-pro, and the upcoming o3.
 
 ## Want to Try It Yourself?
 
@@ -182,4 +182,4 @@ I would love to generate 1000 threat models using different LLM models, especial
 
 ---
 
-Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw).
+Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](www.linkedin.com/in/marcin-niemiec-304349104).
