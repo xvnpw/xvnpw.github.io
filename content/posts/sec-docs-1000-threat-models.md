@@ -6,50 +6,57 @@ tags: [security, llm, gpt, ai, github, langchain, gemini]
 description: "An in-depth look at how I leveraged Gemini 2.0 to create a massive security documentation repository, complete with practical examples and lessons learned."
 ---
 
-With the creation of the [AI Security Analyzer]({{< ref "/posts/ai-security-analyzer-all-in-one-tool-preview.md" >}}), I embarked on an ambitious project: generating 1000 threat models using Google's Gemini 2.0 Flash Thinking Experimental model. This post details the technical journey, challenges faced, and solutions crafted to make this possible.
+"Can AI help us scale security analysis?" This question led me down a fascinating path of experimenting with Google's Gemini 2.0 to generate threat models at an unprecedented scale. In this post, I'll share how I turned this ambitious idea into reality, complete with code samples, real outputs, and valuable lessons learned along the way.
 
-## Exploring Gemini 2.0 Flash Thinking Experimental
+## The Challenge: Automating Security Analysis at Scale
 
-At the end of 2024, Google released Gemini 2.0 Flash Thinking Experimental for free. Despite its limitations:
+Security documentation is crucial but often becomes a bottleneck in fast-moving development cycles. With the release of Google's Gemini 2.0 Flash Thinking Experimental model, I saw an opportunity to tackle this challenge head-on, despite some notable limitations:
 
-- **8k output token limit**
-- **Issues with generating correct Markdown**
-- **Knowledge cutoff at the end of October 2023**
+```
+Model Constraints:
+✗ 8k output token limit
+✗ Markdown formatting issues
+✗ Knowledge cutoff (Oct 2023)
+```
 
-The model presented an opportunity due to its "thinking" capabilities, utilizing chain-of-thought reasoning to tackle complex problems.
+The model presented an opportunity due to its "thinking" capabilities, utilizing chain-of-thought reasoning to tackle complex problems. And it's free 💸...
 
-I was particularly interested in evaluating its potential in automating threat modeling processes.
+## The Quest to Leverage Gemini for Threat Modeling
 
-## Leveraging Gemini for Threat Modeling
+Building upon my previous work like [Threat Modeling with Fabric Framework]({{< ref "/posts/threat_modelling_with_fabric_framework.md" >}}), I've been a long-time advocate for the STRIDE methodology. I had a finely tuned [prompt](https://github.com/danielmiessler/fabric/blob/main/patterns/create_stride_threat_model/system.md) that performed exceptionally with OpenAI's o1-preview model. Naturally, I was eager to see how it fared with Gemini 2.0.
 
-Building on my previous work, such as [Threat Modelling with Fabric Framework]({{< ref "/posts/threat_modelling_with_fabric_framework.md" >}}), I have been an advocate for the STRIDE methodology in threat modeling. I had developed a specific [prompt](https://github.com/danielmiessler/fabric/blob/main/patterns/create_stride_threat_model/system.md) tailored for STRIDE, which performed well with OpenAI's o1-preview model.
+### Hitting the Initial Roadblocks
 
-However, initial experiments with Gemini 2.0 revealed challenges:
+To my surprise, Gemini didn't play well with my existing prompts:
 
-- The model struggled with generating consistent and accurate Markdown.
-- My existing prompts were less effective, with the model often producing non-deterministic results.
+- **Inconsistent Markdown Generation**: The model struggled to produce valid and consistent Markdown, which was crucial for documentation.
+- **Less Effective Prompts**: My go-to prompts yielded erratic results, lacking the determinism I needed.
 
-It became evident that to harness Gemini's capabilities, I needed to adapt my approach.
+It was clear that I couldn't just copy my methods—I had to rethink my approach.
 
-### Finding the Sweet Spot in Prompt Engineering
+## The Journey to Better Prompts
 
-I observed that simple prompts like "Create threat model for X" yielded inconsistent results with Gemini. However, overly complex, multi-step prompts seemed to overload the model, leading to collapses where it would produce irrelevant outputs.
+My initial attempts were... interesting, to say the least. Simple prompts like "Create threat model for X" produced wildly inconsistent results, while complex prompts often led to the AI equivalent of a deer in headlights. 
+
+Here's what I learned about prompt engineering through trial and error:
+
+```
+Effectiveness Spectrum:
+Too Simple        <---|--------------|---> Too Complex
+"Create threat model" |  Sweet Spot  | Multi-page instructions
+                             ↑
+                    Where magic happens
+```
 
 I needed a balanced approach—a "sweet spot" where the prompts were sufficiently detailed to guide the model but not so complex that they overwhelmed it.
 
-```
-Not repeatable results      |    Sweet spot    |   Generic threat model
-                            |    ⊂(◉‿◉)つ   |
-"Create threat model for X" |                  |   <complex, multi-step prompt>            
-```
+## Crafting Effective Prompts: The Game Changer
 
-## Designing Effective Prompts
+The breakthrough came when I shifted from single, complex prompts to a sequence of targeted prompts. I developed a new agent, [Github2Agent](https://github.com/xvnpw/ai-security-analyzer/blob/main/ai_security_analyzer/github2_agents.py), to facilitate a multi-turn conversation with Gemini.
 
-To achieve more consistent and useful outputs, I experimented with prompt structures and interactions. This led to the creation of a new agent, [Github2Agent](https://github.com/xvnpw/ai-security-analyzer/blob/main/ai_security_analyzer/github2_agents.py), designed to engage in a multi-turn conversation with the Gemini model.
+### The Multi-Step Prompt Strategy
 
-### The Multi-Step Prompt Approach
-
-Instead of a single, complex prompt, I devised a series of prompts to guide the model through the threat modeling process incrementally. The prompts, defined in [prompts.py](https://github.com/xvnpw/ai-security-analyzer/blob/main/ai_security_analyzer/prompts.py#L757-L761), are as follows:
+Here's the refined set of prompts:
 
 ```python
 GITHUB2_THREAT_MODELING_PROMPTS = [
@@ -59,11 +66,11 @@ GITHUB2_THREAT_MODELING_PROMPTS = [
 ]
 ```
 
-Key aspects of the prompt design:
+**Key elements of this strategy:**
 
-- **Sequential Prompts**: The prompts are used sequentially, each building upon the previous response. This breaks down the task into manageable steps for the model.
-- **Placeholder Usage**: `{}` placeholders are used to insert the specific GitHub repository URL and name dynamically.
-- **Filtering for Severity**: The instruction to "Return only high and critical threats" helps focus the model on the most significant issues, improving the relevancy of the output.
+- **Sequential Guidance**: Each prompt builds upon the previous response, allowing the model to refine and focus its output incrementally.
+- **Dynamic Placeholders**: The `{}` placeholders are dynamically replaced with the specific GitHub repository URL and name, tailoring the prompts to each project. I don't analyze code from the repository, but relay on the model knowledge (btw. AI Security Analyzer is able to analyze code from the repository in `dir` mode).
+- **Focused Filtering**: By instructing the model to "Return only high and critical threats," we ensure the output is relevant and actionable.
 
 ## An Example Output
 
@@ -122,43 +129,49 @@ Here are the high and critical threats that directly involve the Flask framework
 These threats directly involve the core components and functionalities provided by the Flask framework itself. Remember to also consider general web application security best practices.
 ```
 
-While not perfect, the output provided valuable insights and demonstrated the potential of this method.
+The output was surprisingly detailed and relevant, though not perfect. It highlighted critical security concerns while providing actionable mitigation strategies.
 
 ## Expanding to Four Document Types
 
 Encouraged by the success with threat modeling, I extended the approach to generate four different types of security documents:
 
 - 🔒 **Security Design Documentation**: Generating detailed security design documents.
-- 🎯 **Threat Modeling**: Performing comprehensive threat modeling analyses.
+- 🎯 **Threat Modeling**: Performing threat modeling analyses.
 - 🔍 **Attack Surface Analysis**: Identifying potential entry points and vulnerabilities in the project's attack surface.
 - 🌳 **Attack Tree Analysis**: Visualizing potential attack vectors and their hierarchies through attack trees.
 
 The specific prompts for these documents are defined in the [prompts.py](https://github.com/xvnpw/ai-security-analyzer/blob/dabfc57b6e5da9d99b3df5229fd496a224dac862/ai_security_analyzer/prompts.py#L763) file.
 
-## Generating 1000 Threat Models
+## Scaling to 1000: The Infrastructure
 
-With the framework in place, I aimed to scale up the process. By leveraging GitHub Actions, I implemented a queue system to manage the generation of threat models across numerous projects. The results are available in the [sec-docs](https://github.com/xvnpw/sec-docs) repository.
+To achieve the goal of 1000 threat models, I needed more than just good prompts. I built a pipeline using GitHub Actions that could:
 
-### Repository Organization
+1. Queue and process repositories
+2. Generate four types of security documentation using my [AI Security Analyzer](https://github.com/xvnpw/ai-security-analyzer)
 
-The `sec-docs` repository is structured by programming language, with folders for each major open-source project. Each project contains subfolders with detailed analyses performed on specific dates using particular LLM models.
+### Organizing the Treasure Trove
 
-The list of projects analyzed is available [here](https://github.com/xvnpw/sec-docs/blob/main/.data/origin_repos.txt). This list was compiled from several sources, including:
+To keep things navigable, the repository is structured by programming language, with folders for each major project. Each project contains subfolders with detailed analyses, organized by date and the specific LLM model used.
 
-- Generative AI suggestions (with some manual corrections).
-- The [GitHub Rankings](https://github.com/EvanLi/Github-Ranking/tree/master), providing a list of the most popular projects.
+**The full list of projects analyzed is [available here](https://github.com/xvnpw/sec-docs/blob/main/.data/origin_repos.txt).** This compilation draws from:
 
-## Evaluating the Results
+- **Generative AI Suggestions**: Enhanced with manual curation to ensure relevance.
+- **[GitHub Rankings](https://github.com/EvanLi/Github-Ranking/tree/master)**: Leveraging popularity metrics to select impactful projects.
+- **[Set of Critical Open Source Projects](https://github.com/ossf/wg-securing-critical-projects/tree/main/Initiatives/Identifying-Critical-Projects/Version-1.1)**: Identifying critical projects that are important for the security of the software supply chain.
 
-At this stage, I have not conducted a comprehensive evaluation of all the generated threat models. Initial reviews suggest that the methodology can produce valuable security documentation, but there is more work to be done to assess the accuracy and usefulness of the outputs.
+## Reflecting on the Journey: Evaluating the Results
 
-I plan to share more detailed analyses and findings in future posts.
+While I haven't yet conducted an exhaustive review of all 1,000 threat models 😅, initial assessments are promising. The methodology demonstrates significant potential in producing valuable security documentation at scale. It has also clear drawback - relying on model knowledge base.
 
-## Conclusion and Call for Feedback
+**Future posts will delve deeper into analysis and refinement.**
 
-This experiment demonstrates the potential of using AI models like Gemini 2.0 to automate and scale threat modeling efforts. While there are challenges and limitations, particularly regarding prompt design and model constraints, the results are promising.
+## Closing Thoughts: A Call to the Community
 
-I invite you to explore the [sec-docs](https://github.com/xvnpw/sec-docs) repository, review the generated documents, and share your thoughts. Your feedback will be invaluable in refining the approach and improving the quality of automated security analyses.
+This experiment has been both challenging and thrilling. It highlights the transformative potential of AI models like Gemini 2.0 in automating and scaling critical cybersecurity processes. 
+
+But this is just the beginning.
+
+**I invite you to explore the [sec-docs](https://github.com/xvnpw/sec-docs) repository.** Review the generated documents, scrutinize the analyses, and share your insights. Your feedback is crucial in refining this approach and enhancing the quality of automated security assessments.
 
 ---
 
