@@ -25,7 +25,7 @@ The model presented an opportunity due to its "thinking" capabilities, utilizing
 
 Building upon my previous work like [Threat Modeling with Fabric Framework]({{< ref "/posts/threat_modelling_with_fabric_framework.md" >}}), I've been a long-time advocate for the STRIDE methodology. I had a finely tuned [prompt](https://github.com/danielmiessler/fabric/blob/main/patterns/create_stride_threat_model/system.md) that performed exceptionally with OpenAI's o1-preview model. Naturally, I was eager to see how it fared with Gemini 2.0.
 
-### Hitting the Initial Roadblocks
+## Hitting the Initial Roadblocks
 
 To my surprise, Gemini didn't play well with my existing prompts:
 
@@ -54,7 +54,7 @@ I needed a balanced approach—a "sweet spot" where the prompts were sufficientl
 
 The breakthrough came when I shifted from single, complex prompts to a sequence of targeted prompts. I developed a new agent, [Github2Agent](https://github.com/xvnpw/ai-security-analyzer/blob/main/ai_security_analyzer/github2_agents.py), to facilitate a multi-turn conversation with Gemini.
 
-### The Multi-Step Prompt Strategy
+## The Multi-Step Prompt Strategy
 
 Here's the refined set of prompts:
 
@@ -69,7 +69,7 @@ GITHUB2_THREAT_MODELING_PROMPTS = [
 **Key elements of this strategy:**
 
 - **Sequential Guidance**: Each prompt builds upon the previous response, allowing the model to refine and focus its output incrementally.
-- **Dynamic Placeholders**: The `{}` placeholders are dynamically replaced with the specific GitHub repository URL and name, tailoring the prompts to each project. I don't analyze code from the repository, but relay on the model knowledge (btw. AI Security Analyzer is able to analyze code from the repository in `dir` mode).
+- **Dynamic Placeholders**: The `{}` placeholders are dynamically replaced with the specific GitHub repository URL and name, tailoring the prompts to each project. I don't analyze code from the repository, but relay on the model knowledge 🧠 (btw. AI Security Analyzer is able to analyze code from the repository in `dir` mode).
 - **Focused Filtering**: By instructing the model to "Return only high and critical threats," we ensure the output is relevant and actionable.
 
 ## An Example Output
@@ -135,10 +135,10 @@ The output was surprisingly detailed and relevant, though not perfect. It highli
 
 Encouraged by the success with threat modeling, I extended the approach to generate four different types of security documents:
 
-- 🔒 **Security Design Documentation**: Generating detailed security design documents.
-- 🎯 **Threat Modeling**: Performing threat modeling analyses.
+- 🔒 **Security Design Documentation**: Generating detailed security design review.
+- 🎯 **Threat Modeling**: Performing threat modeling analysis.
 - 🔍 **Attack Surface Analysis**: Identifying potential entry points and vulnerabilities in the project's attack surface.
-- 🌳 **Attack Tree Analysis**: Visualizing potential attack vectors and their hierarchies through attack trees.
+- 🌳 **Attack Tree Analysis**: Visualizing potential attack vectors and their hierarchies through attack tree.
 
 The specific prompts for these documents are defined in the [prompts.py](https://github.com/xvnpw/ai-security-analyzer/blob/dabfc57b6e5da9d99b3df5229fd496a224dac862/ai_security_analyzer/prompts.py#L763) file.
 
@@ -149,7 +149,7 @@ To achieve the goal of 1000 threat models, I needed more than just good prompts.
 1. Queue and process repositories
 2. Generate four types of security documentation using my [AI Security Analyzer](https://github.com/xvnpw/ai-security-analyzer)
 
-### Organizing the Treasure Trove
+## Organizing the Results
 
 To keep things navigable, the repository is structured by programming language, with folders for each major project. Each project contains subfolders with detailed analyses, organized by date and the specific LLM model used.
 
@@ -161,15 +161,22 @@ To keep things navigable, the repository is structured by programming language, 
 
 ## Reflecting on the Journey: Evaluating the Results
 
-While I haven't yet conducted an exhaustive review of all 1,000 threat models 😅, initial assessments are promising. The methodology demonstrates significant potential in producing valuable security documentation at scale. It has also clear drawback - relying on model knowledge base.
+While I haven't yet conducted an exhaustive review of all 1,000 threat models 😅, initial assessments are promising. The methodology demonstrates significant potential in producing valuable security documentation at scale. some interesting patterns emerged:
+
+- it's worth to have all 4 documents - they provide different perspectives and insights - none of them is perfect alone, but together they provide a comprehensive view of the security posture of the project
+- **threats** are solid - not mind-blowing, but solid and relevant
+- relying on model knowledge base is a drawback - we don't know what version of the code was used for the analysis
+- focusing on high and critical threats is a good idea - documents are shorter and easier to comprehend
 
 **Future posts will delve deeper into analysis and refinement.**
 
-## Closing Thoughts: A Call to the Community
+## Closing Thoughts
 
-This experiment has been both challenging and thrilling. It highlights the transformative potential of AI models like Gemini 2.0 in automating and scaling critical cybersecurity processes. 
+This experiment has been both challenging and thrilling. It highlights the transformative potential of AI models like Gemini 2.0 in automating and scaling critical cybersecurity processes. I would definitely check generated documentation when working on new technology. It will serve as a good starting point. Not replacing human security experts, but making easier to navigate complexities.
 
-But this is just the beginning.
+I would love to generate 1000 threat models using different LLM models, especially final version of Gemini 2.0 and new OpenAI o1, o1-pro and upcoming o3.
+
+## Want to Try It Yourself?
 
 **I invite you to explore the [sec-docs](https://github.com/xvnpw/sec-docs) repository.** Review the generated documents, scrutinize the analyses, and share your insights. Your feedback is crucial in refining this approach and enhancing the quality of automated security assessments.
 
