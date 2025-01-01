@@ -1,7 +1,7 @@
 ---
 title: "Scaling Threat Modeling with AI: Generating 1000 Threat Models Using Gemini 2.0 and AI Security Analyzer"
-date: 2025-01-01T08:59:02+01:00
-draft: true
+date: 2025-01-01T12:19:02+01:00
+draft: false
 tags: [security, llm, gpt, ai, github, langchain, gemini]
 description: "An in-depth look at how I leveraged Gemini 2.0 to create a massive security documentation repository, complete with practical examples and lessons learned."
 ---
