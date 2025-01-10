@@ -1,8 +1,8 @@
 ---
 title: "Deep Analysis Mode in AI Security Analyzer"
-date: 2025-01-05T14:00:00+01:00
-draft: true
-tags: [security, ai, gemini, threat modeling, cilium, github]
+date: 2025-01-10T20:00:00+01:00
+draft: false
+tags: [security, ai, gemini, threat modeling, flask, github, llm]
 description: "Discover how the new Deep Analysis Mode in AI Security Analyzer provides in-depth security insights, with practical examples using Google's Gemini 2.0 Flash Thinking Experimental model."
 ---
 
@@ -50,7 +50,7 @@ While Deep Analysis Mode provides richer insights, it's essential to be mindful 
 - **Currently limited to `github` mode**
 - **Outputs require careful verification**
 - **Potential for AI hallucinations**
-- **Cost Implications**: Currently, using Gemini 2.0 Flash is free (as of January 5, 2025), but this might change. Deep Analysis Mode doesn't support the `--dry-run` flag, so you can't get an estimated cost upfront. However, you can refer to the [output-metadata.json](https://github.com/xvnpw/sec-docs/blob/0fb6183ff9d58e719685fd498efeffdea370fe98/go/cilium/cilium/2025-01-05-gemini-2.0-flash-thinking-exp/output-metadata.json) from previous executions to gauge potential costs. For instance, analyzing Flask cost around 180,000 tokens (`"actual_token_usage": "175994"`).
+- **Cost Implications**: Currently, using Gemini 2.0 Flash is free (as of January, 2025), but this might change. Deep Analysis Mode doesn't support the `--dry-run` flag, so you can't get an estimated cost upfront. However, you can refer to the [output-metadata.json](https://github.com/xvnpw/sec-docs/blob/0fb6183ff9d58e719685fd498efeffdea370fe98/go/cilium/cilium/2025-01-05-gemini-2.0-flash-thinking-exp/output-metadata.json) from previous executions to gauge potential costs. For instance, analyzing Flask cost around 180,000 tokens (`"actual_token_usage": "175994"`).
 
 ## Comparing Normal vs Deep Analysis
 
