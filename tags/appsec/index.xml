@@ -8,8 +8,8 @@
 &lt;p>We ended up &lt;a href="https://xvnpw.github.io/posts/mitigating_ssrf_vulnerabilities_in_go_a_practical_guide_part_1/#exploit-3">previous part&lt;/a> with following Public API code and exploit that works:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-go" data-lang="go">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#a6e22e">router&lt;/span>.&lt;span style="color:#a6e22e">GET&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;/debug&amp;#34;&lt;/span>, &lt;span style="color:#66d9ef">func&lt;/span>(&lt;span style="color:#a6e22e">context&lt;/span> &lt;span style="color:#f92672">*&lt;/span>&lt;span style="color:#a6e22e">gin&lt;/span>.&lt;span style="color:#a6e22e">Context&lt;/span>) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">urlFromUser&lt;/span> &lt;span style="color:#f92672">:=&lt;/span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">Query&lt;/span>(&lt;span style="color:#e6db74">&amp;#34;url&amp;#34;&lt;/span>)
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// validation because world is full of mean people :(
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&lt;/span> &lt;span style="color:#66d9ef">if&lt;/span> !&lt;span style="color:#a6e22e">validateTargetUrl&lt;/span>(&lt;span style="color:#a6e22e">urlFromUser&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#75715e">// validation because world is full of mean people :(&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> !&lt;span style="color:#a6e22e">validateTargetUrl&lt;/span>(&lt;span style="color:#a6e22e">urlFromUser&lt;/span>) {
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#a6e22e">context&lt;/span>.&lt;span style="color:#a6e22e">String&lt;/span>(&lt;span style="color:#a6e22e">http&lt;/span>.&lt;span style="color:#a6e22e">StatusBadRequest&lt;/span>, &lt;span style="color:#e6db74">&amp;#34;Bad url&amp;#34;&lt;/span>)
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">return&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
@@ -23,11 +23,9 @@
 &lt;p>What is it?&lt;/p></description></item><item><title>Security Coding in Go. Input validation</title><link>https://xvnpw.github.io/posts/security-coding-in-go-input-validation/</link><pubDate>Tue, 01 Aug 2023 15:59:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/security-coding-in-go-input-validation/</guid><description>&lt;p>Input validation is one of most important technique in secure coding. Deep dive into it for Go language.&lt;/p>
 &lt;p>From &lt;a href="https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html">OWASP&lt;/a>:&lt;/p>
 &lt;blockquote>
-&lt;p>Input validation is performed to ensure only properly formed data is entering the workflow in an information system.&lt;/p>
-&lt;/blockquote>
+&lt;p>Input validation is performed to ensure only properly formed data is entering the workflow in an information system.&lt;/p>&lt;/blockquote>
 &lt;blockquote>
-&lt;p>Input validation should happen as early as possible in the data flow, preferably as soon as the data is received from the external party.&lt;/p>
-&lt;/blockquote>
+&lt;p>Input validation should happen as early as possible in the data flow, preferably as soon as the data is received from the external party.&lt;/p>&lt;/blockquote>
 &lt;blockquote>
 &lt;p>Data from all &lt;strong>potentially untrusted sources&lt;/strong> should be subject to input validation, including not only Internet-facing web clients but also backend feeds over extranets, from suppliers, partners, vendors or regulators, each of which may be compromised on their own and start sending malformed data.&lt;/p></description></item><item><title>Mitigating SSRF vulnerabilities in Go. A practical guide. Part 1</title><link>https://xvnpw.github.io/posts/mitigating_ssrf_vulnerabilities_in_go_a_practical_guide_part_1/</link><pubDate>Sat, 29 Jul 2023 18:59:02 +0100</pubDate><guid>https://xvnpw.github.io/posts/mitigating_ssrf_vulnerabilities_in_go_a_practical_guide_part_1/</guid><description>&lt;p>Server-Side Request Forgery (SSRF) vulnerabilities have been around for a long time, and they still pose a significant threat to web applications, so much so this kind of vulnerability has been included in OWASP TOP 10. This type of attack allows an attacker to send unauthorized requests from a vulnerable application, which can lead to data leakage, server-side request smuggling, and even full-scale remote code execution.&lt;/p>
 &lt;h2 id="basic-example-of-ssrf-in-go">Basic example of SSRF in Go&lt;/h2>
@@ -40,8 +38,7 @@
 &lt;p>Number of resources to check may vary from project to project. For me best approach is to mix automated tools with manual work. If it&amp;rsquo;s possible I&amp;rsquo;m using two tools for same purpose. It makes my life easier as I don&amp;rsquo;t need to choose best tool 🙂 It&amp;rsquo;s also improving results.&lt;/p></description></item><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>&lt;p>This story will explain how to find and exploit SpEL parser in web applications based on Java language.&lt;/p>
 &lt;p>What is SpEL ? From Spring documentation:&lt;/p>
 &lt;blockquote>
-&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>
-&lt;/blockquote>
+&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>&lt;/blockquote>
 &lt;p>Where is it used ?&lt;/p>
 &lt;ol>
 &lt;li>Spring Framework: Security, Data, …&lt;/li>

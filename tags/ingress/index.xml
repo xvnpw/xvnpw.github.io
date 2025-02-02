@@ -23,8 +23,7 @@
 &lt;p>After checking Apache APISIX and Traefik, for path traversal in authZ context, now I will research Emissary ingress.&lt;/p>
 &lt;p>In Emissary there is feature called &lt;a href="https://www.getambassador.io/docs/emissary/latest/howtos/basic-auth/">Basic authentication&lt;/a>, which is very similar to forward authentication discussed in Traefik.&lt;/p>
 &lt;blockquote>
-&lt;p>Emissary-ingress can authenticate incoming requests before routing them to a backing service.&lt;/p>
-&lt;/blockquote>
+&lt;p>Emissary-ingress can authenticate incoming requests before routing them to a backing service.&lt;/p>&lt;/blockquote>
 &lt;p>&lt;strong>I can already tell you that Emissary is secure and you cannot bypass using path traversal&lt;/strong>. What is even better, it&amp;rsquo;s (and envoy) aware of this kind of security concern. There is full description in documentation. I encourage you to read it:&lt;/p></description></item><item><title>Path traversal in authorization context in Traefik and HAProxy</title><link>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/</link><pubDate>Tue, 23 Nov 2021 22:38:58 +0100</pubDate><guid>https://xvnpw.github.io/posts/path_traversal_in_authorization_context_in_traefik_and_haproxy/</guid><description>&lt;figure class="image-center">&lt;img src="https://user-images.githubusercontent.com/17719543/139592951-0fafc921-437e-4bb7-b0ee-199dd72b36c3.png">
 &lt;/figure>
 

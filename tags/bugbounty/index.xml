@@ -16,8 +16,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>First set of URLs is good for exploitation, as you can try sending request with &lt;code>https://api.example.com/user-service/..%2F/customer-service/endpoint1&lt;/code>&lt;/p></description></item><item><title>Hacking SpEL</title><link>https://xvnpw.github.io/posts/hacking-spel/</link><pubDate>Fri, 17 Jul 2020 10:14:47 +0100</pubDate><guid>https://xvnpw.github.io/posts/hacking-spel/</guid><description>&lt;p>This story will explain how to find and exploit SpEL parser in web applications based on Java language.&lt;/p>
 &lt;p>What is SpEL ? From Spring documentation:&lt;/p>
 &lt;blockquote>
-&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>
-&lt;/blockquote>
+&lt;p>The Spring Expression Language (SpEL for short) is a powerful expression language that supports querying and manipulating an object graph at runtime.&lt;/p>&lt;/blockquote>
 &lt;p>Where is it used ?&lt;/p>
 &lt;ol>
 &lt;li>Spring Framework: Security, Data, …&lt;/li>
