@@ -8,7 +8,7 @@ description: "A practical perspective shift for security professionals: Learn wh
 
 Ever feel like you're speaking a different language when you talk to developers about security? You're buzzing with threat models, attack vectors, and vulnerabilities, while they're focused on features, deadlines, and, well, *making things work*. I get it. I've been there. And recently, I had a bit of an "aha!" moment that completely shifted my perspective on security discussions.
 
-It happened during a review of security analysis with my colleagues at Form3. We were diving deep into the [terraform-provider-chronicle](https://github.com/form3tech-oss/terraform-provider-chronicle) project (you can see analysis [here](https://github.com/xvnpw/ai-security-analyzer/tree/main/examples/form3tech-oss/README.md), using my [ai-security-analyzer](https://github.com/xvnpw/ai-security-analyzer) tool). As we talked through AI generated threats, it struck me: to make AI tools useful for developers, we need to focus on mitigations, not threats. Developers are less interested in abstract threats and far more engaged when you talk about **mitigations** – concrete steps to *fix* things.
+It happened during a review of security analysis with my colleagues at Form3. We were diving deep into the [terraform-provider-chronicle](https://github.com/form3tech-oss/terraform-provider-chronicle) project (you can see analysis [here](https://github.com/xvnpw/ai-security-analyzer/tree/main/examples/form3tech-oss/README.md), using my [ai-security-analyzer](https://github.com/xvnpw/ai-security-analyzer) tool). As we talked through AI generated threats, it struck me: to make AI tools useful for developers, we need to focus on mitigations, not threats. Developers are less interested in abstract threats and far more engaged when you talk about **mitigations** - concrete steps to *fix* things.
 
 This wasn't a completely new idea, but this time it really clicked. I'd been using AI to generate threat models, asking Large Language Models (LLMs) to identify threats and *then* suggest mitigations. But a question popped into my head: What if I flipped the script? What if I asked the LLM for **mitigations directly**, and *then* explored the threats those mitigations address?
 
@@ -99,6 +99,10 @@ For those building application security programs, I offer two key suggestions:
 2. Read "Application Security Program Handbook" by Derek Fisher for practical program management advice.
 
 Ultimately, security isn't about finding all the threats; it's about building robust defenses. 
+
+## Post Scriptum
+
+This article is not to spark holly war ⚔️ on what is more important - threats or mitigations. Primarily, I want to share my personal experience and shift in perspective. If you struggle on your cybersecurity journey, I hope this article will help you to find a new way to approach threat modeling.
 
 ---
 
