@@ -10,3 +10,11 @@ figure.no-border > img {
 figure.no-border {
 	margin-top: 10px
 }
+
+code[data-lang=text] {
+    text-wrap: wrap;
+}
+
+code[data-lang=markdown] {
+    text-wrap: wrap;
+}
