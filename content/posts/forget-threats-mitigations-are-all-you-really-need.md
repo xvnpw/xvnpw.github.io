@@ -102,7 +102,7 @@ Ultimately, security isn't about finding all the threats; it's about building ro
 
 ## Post Scriptum
 
-This article is not to spark holly war ⚔️ on what is more important - threats or mitigations. Primarily, I want to share my personal experience and shift in perspective. If you struggle on your cybersecurity journey, I hope this article will help you to find a new way to approach threat modeling.
+This article should have been about AI-powered security analysis tools 🤖. However, I wanted to share my personal experience and shift in perspective. If you struggle on your cybersecurity journey, I hope this article will help you to find a new way to approach it. I was not aim to spark holly war ⚔️ on what is more important - threats or mitigations. 
 
 ---
 
