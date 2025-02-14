@@ -68,6 +68,21 @@ No magic here. Very straight forward prompt. Few notes:
 
 Every good benchmark for finding vulnerabilities in source code would include true/false positives/negatives. I'm not able to spent so much time on it, so I will use very simple approach. Will run my prompt with different models on single project that I know: [screenshot-to-code](https://github.com/abi/screenshot-to-code). Then I will follow steps to reproduce vulnerabilities and see if those are valid or not. In the end, we will see how much true and false positives we got per model.
 
+### Ai-security-analyzer
+
+```bash
+python ai_security_analyzer/app.py \
+    dir \
+    -t ../screenshot-to-code/ \
+    -o examples/dir-vulnerabilities-screenshot-to-code-${safe_agent_model}.md \
+    --agent-model $agent_model \
+    --agent-temperature ${temperatures[$agent_model]} \
+    --agent-prompt-type vulnerabilities \
+    --agent-provider $agent_provider
+```
+
+More details in my testing [script](https://github.com/xvnpw/ai-security-analyzer/blob/main/create_examples.sh).
+
 ### Models
 
 I will use those models:
@@ -98,7 +113,7 @@ Detail output: [vulnerabilities.md](https://github.com/xvnpw/ai-security-analyze
 | Vulnerability | Valid | Comment |
 | --- | --- | --- |
 | Unauthenticated and Rate‑Limit‑Free WebSocket Code Generation Abuse | 🤔 | (Same as for o1) Screenshot to Code project was created as unauthenticated application. In that sense it's not a vulnerability. But in case someone will put it in public with own API key, it will be a vulnerability. |
-| Arbitrary File Disclosure in Evaluation Endpoints | ✅ | o1 also returned this vulnerability, but with different description. o3-mini-high didn't point out that it's only affecting `.html` files. |
+| Arbitrary File Disclosure in Evaluation Endpoints | 🤔 | o1 also returned this vulnerability, but with different description. o3-mini-high didn't point out that it's only affecting `.html` files. Also it's not file disclosure, but arbitrary file reading (attacker cannot see content of file, but application can read it). |
 | CORS Misconfiguration Allowing Wildcard with Credentials | ✅ | CORS misconfiguration is valid, but impact is low. |
 | Insufficient Input Validation in the Screenshot API (Potential SSRF) | 🤔 | (Same as for o1) In true it's not vulnerability for Screenshot to Code project, but for ScreenshotOne.com service. It's valid threat and possibly should be mitigated, but rather as nice to have than a must-have. |
 | Lack of Authentication and Authorization on Sensitive Endpoints | 🤔 | As described in WebSocket Code Generation Abuse vulnerability, it's only vulnerability in case of public instance. |
@@ -122,10 +137,10 @@ Detail output: [vulnerabilities.md](https://github.com/xvnpw/ai-security-analyze
 | Arbitrary File Write | ❌ | It's not valid vulnerability. It's just debug mode that need to be explicitly enabled. |
 | Insecure Direct Object Reference (IDOR) in run_evals.py | ❌ | It's not valid vulnerability. Description is not matching name of vulnerability. |
 | Lack of Input Validation for LLM Model Selection | ❌ | It might be bug, but it's not vulnerability. There is no impact on security. |
-| Potential Path Traversal in image_to_data_url | ❌ | One of preconditions is that user need to create directory on server. I guess bar is already high like for path traversal 😅 |
+| Potential Path Traversal in image_to_data_url | ❌ | One of preconditions is that attacker needs to create directory on server. I guess bar is already high like for path traversal 😅 |
 ...
 
-And there are could more false positives. I will not list them all here.
+And there are couple more false positives. I will not list them all here.
 
 #### DeepSeek R1
 
@@ -136,25 +151,45 @@ Detail output: [vulnerabilities.md](https://github.com/xvnpw/ai-security-analyze
 | Server-Side Request Forgery (SSRF) in Screenshot Endpoint | 🤔 | (Same as before) In true it's not vulnerability for Screenshot to Code project, but for ScreenshotOne.com service. It's valid threat and possibly should be mitigated, but rather as nice to have than a must-have. |
 | Insecure CORS Configuration | ✅ | CORS misconfiguration is valid, but impact is low. |
 | XSS Risk in AI-Generated HTML Output | ✅ | It's valid vulnerability. |
-| Image Processing Vulnerabilities | 🤔 | It's valid vulnerability, but description is not good. It even contains hallucinations of source code! |
+| Image Processing Vulnerabilities | 🤔 | It's valid vulnerability, but description is not good. It even contains **hallucinations of source code!** |
 | API Key Exposure Risk | 🤔 | It's valid risk, but not vulnerability. By default application is storing API key in environment variable, which is not bad. But can be improved with secure storage. |
 | Insecure Defaults in Docker Configuration | ❌ | It's not valid vulnerability. docker-compose.yml is for local usage not production. |
 
 ### Key takeaways
 
 - Reasoning models are good in finding vulnerabilities in source code. Definitely better than previous models.
-- OpenAI o1 model is better then o3-mini-high. For example, pointed out `.html` files in Arbitrary File Disclosure in Evaluation Endpoints vulnerability.
-- Surprisingly free and open DeepSeek R1 model is better than Gemini 2.0 Pro.
+- OpenAI o1 model is better then o3-mini-high. And best overall. For example, pointed out `.html` files in _Arbitrary Local File Reading Through Evals Endpoints_ vulnerability.
+- Surprisingly, free and open DeepSeek R1 model is better than Gemini 2.0 Pro. But as only model returned really bad hallucination.
+
+## Comparison with SAST (Semgrep)
+
+I decided to compare results with Semgrep. It's popular SAST tool and I'm curious how it will perform is comparison with AI.
+
+Running Semgrep 1.93.0 on Screenshot to Code project gave 3 vulnerabilities:
+
+| Vulnerability | Valid | Comment |
+| --- | --- | --- |
+| CORS Misconfiguration | ✅ | CORS misconfiguration is valid, but impact is low. |
+| Missing User in Dockerfile | 🤔 | It's misconfiguration that can be exploited in specific case. |
+| XSS in EJS Template | ❌ | It's not valid vulnerability. Semgrep didn't found same XSS as o1 model. Value injected into EJS Template is [static](https://github.com/abi/screenshot-to-code/blob/a240914b93d35ce17bc2263e2f9924b473e8bfa5/frontend/vite.config.ts#L18) and cannot be exploited. |
+
+Detail output: [vulnerabilities.txt](https://github.com/xvnpw/ai-security-analyzer/blob/main/examples/dir-vulnerabilities-screenshot-to-code-semgrep.txt)
+
+### Key takeaways
+
+- Semgrep proposed to use AI as assistant to help in triaging vulnerabilities. This works very well per their [testing](https://semgrep.dev/blog/2025/building-an-appsec-ai-that-security-researchers-agree-with-96-of-the-time/). But it looks like new reasoning models are able to find other types of vulnerabilities.
 
 ## Context windows
 
-Latest models are able to take a lot input and put it in context. But it's not working that good in code analysis. If you have been using LLMs as coding assistant, you probably know what I'm talking about. I would recommend not to set context windows too high. It's better to split code into smaller chunks and loop through them.
+Latest models are able to take a lot input and put it in context. But it's not working that good in code analysis. If you have been using LLMs as coding assistant, you probably know what I'm talking about. I would recommend not to set context windows too high. It's better to split code into smaller chunks and loop through them. In ai-security-analyzer I'm using ~100k context windows.
 
 ## Summary
 
-My experiment is kind of "vibe testing". I know it. It's not scientific. But it shows a way for future experiments for me. Before reasoning models I wasn't motivated to use LLMs for finding vulnerabilities. It was always hit or miss. Now it has much more sense to use them. Results returned by OpenAI o1 and Gemini 2.0 Flash Thinking Experimental are interesting. I would like to future add custom input context with additional information about project. As well as classes of vulnerabilities that should be excluded (or included). 
+My experiment is kind of "vibe testing". I know it. It's not scientific. But it shows a way for future experiments for me. Before reasoning models I wasn't motivated to use LLMs for finding vulnerabilities. It was always hit or miss. Now it has much more sense to use them. Results returned by OpenAI o1 and Gemini 2.0 Flash Thinking Experimental are interesting. I would like in future to add custom input context with additional information about project. As well as classes of vulnerabilities that should be excluded (or included). 
 
-From security analysis perspective, I recommend to generate different types of documents available in ai-security-analyzer. LLMs are not precise tools, and having more different documents will help to get better understanding of project. In the end, LLM should be helper and not a replacement for human.
+From security analysis perspective, I recommend to generate different types of documents available in ai-security-analyzer. LLMs are not precise tools, and having more different documents will help to get better understanding of project.
+
+I encourage you to try it yourself. Especially as Gemini 2.0 Flash Thinking Experimental is **free** and available for everyone.
 
 ---
 
