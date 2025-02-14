@@ -1,7 +1,7 @@
 ---
 title: "Can AI Actually Find Real Security Bugs? Testing the New Wave of AI Models"
 date: 2025-02-14T16:00:00+01:00
-draft: true
+draft: false
 tags: [security, ai, vulnerabilities, screenshot-to-code, github, llm]
 description: "A practical exploration of how well reasoning LLMs identify vulnerabilities in real-world code, comparing results across models and against a traditional SAST tool (Semgrep)."
 ---
