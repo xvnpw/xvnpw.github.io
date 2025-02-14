@@ -18,3 +18,11 @@ code[data-lang=text] {
 code[data-lang=markdown] {
     text-wrap: wrap;
 }
+
+code[data-lang=python] {
+    text-wrap: wrap;
+}
+
+code[data-lang=bash] {
+    text-wrap: wrap;
+}
