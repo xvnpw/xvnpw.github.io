@@ -66,7 +66,7 @@ It's important to note that Deep Analysis Mode starts with the same initial step
 
 Prompts are very simple. For example, for threat modeling, we use the following prompt:
 
-```
+```text
 GITHUB2_GET_THREAT_DETAILS_PROMPT = """You are cybersecurity expert, working with development team. Your task is to create deep analysis of particular threat from threat model for application that is using {}.
 
 THREAT:
