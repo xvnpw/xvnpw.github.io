@@ -25,6 +25,7 @@ Previous work on this topic:
 | VSCode Extension | vulnerability | PoC | AI vulnerability description |
 | --- | --- | --- | --- |
 | `amir9480/vscode-laravel-extra-intellisense` ([GitHub](https://github.com/amir9480/vscode-laravel-extra-intellisense)) | RCE on Eloquent model open | [xvnpw/vscode-laravel-extra-intellisense-example-app](https://github.com/xvnpw/vscode-laravel-extra-intellisense-example-app) | [Arbitrary Code Execution via Automatic Inclusion in Eloquent Provider](https://github.com/xvnpw/sec-docs/blob/main/typescript/amir9480/vscode-laravel-extra-intellisense/2025-02-26-gemini-2.0-flash-thinking-exp/vulnerabilities-workflow-1.md#vulnerability-name-arbitrary-code-execution-via-automatic-inclusion-in-eloquent-provider) |
+| `estruyf/vscode-front-matter` ([GitHub](https://github.com/estruyf/vscode-front-matter)) | RCE on executing custom script |  | [Remote Code Execution via Custom Scripts](https://github.com/xvnpw/sec-docs/blob/main/typescript/estruyf/vscode-front-matter/2025-02-28-gemini-2.0-flash-thinking-exp/vulnerabilities-workflow-1.md#remote-code-execution-via-custom-scripts) |
 
 ## Other vulnerabilities
 
@@ -119,3 +120,11 @@ python ai_security_analyzer/app.py dir \
 
 Some of RCE vulnerabilities can be mitigated by using `capabilities` field in `package.json`. For example in `vscode-intelephense` extension: [package.json](https://github.com/bmewburn/vscode-intelephense/blob/8546446e2ebab310181434df91748aba2a5419ac/package.json#L60C6-L60C18)
 
+### Hallucinations
+
+- Sonnet 3.7 Thinking -Inventing vulnerabilities only to return something - [editorconfig-vscode](https://github.com/xvnpw/sec-docs/blob/main/typescript/editorconfig/editorconfig-vscode/2025-02-28-anthropic-claude-3.7-sonnet-thinking/vulnerabilities-workflow-1.md) - vulnerability in final output is not in any [intermediate files](https://github.com/xvnpw/sec-docs/tree/main/typescript/editorconfig/editorconfig-vscode/2025-02-28-anthropic-claude-3.7-sonnet-thinking/vulnerabilities-workflow)
+- Asking to create new malicious VSCode extension - 
+
+
+### more
+- https://github.com/xvnpw/sec-docs/blob/main/typescript/godotengine/godot-vscode-plugin/2025-02-28-anthropic-claude-3.7-sonnet-thinking/vulnerabilities-workflow-1.md
