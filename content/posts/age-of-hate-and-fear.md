@@ -8,7 +8,7 @@ description: "Today's social feeds are engineered to amplify two powerful emotio
 
 I decided to write this post to be yet another reminder how current world is influencing our emotions and behavior.
 
-We live in an era where two powerful emotions - hate and fear - are amplified online. Algorithms reward outrage, and disinformation campaigns stoke panic. The result is a constant barrage of content designed to make us click, share, and worry. Here's a clearer look at the facts - and six simple ways you can fight back.
+We live in an era where two powerful emotions - hate and fear - are amplified online. Algorithms reward outrage, and disinformation campaigns stoke panic. The result is a constant barrage of content designed to make us click, share, and worry. Here's a clearer look at the facts - and some simple ways you can fight back.
 
 {{< figure src="https://xvnpw.github.io/aohaf-1.png" class="image-center" width=400 >}}
 
