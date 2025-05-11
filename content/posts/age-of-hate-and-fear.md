@@ -15,7 +15,7 @@ We live in an era where two powerful emotions - hate and fear - are amplified on
 ## Hate in the News Feed
 - In 2018, Facebook researchers found that posts triggering the "angry" reaction were shown about five times more often than those earning a simple "like."
 - The Facebook whistleblower Frances Haugen testified that Facebook's algorithm favored content that elicited strong emotional reactions, which often included outrage.
-- A 2020 New York University study found that Facebook pages known for disseminating misinformation - including some featuring extremist or hateful content - garnered up to six times more interactions than reputable news sources of comparable size."
+- A 2020 New York University study found that Facebook pages known for disseminating misinformation - including some featuring extremist or hateful content - garnered up to six times more interactions than reputable news sources of comparable size.
 
 When hate drives more comments, shares, and time spent, the platform's bottom line benefits - even if trust and civility suffer.
 
