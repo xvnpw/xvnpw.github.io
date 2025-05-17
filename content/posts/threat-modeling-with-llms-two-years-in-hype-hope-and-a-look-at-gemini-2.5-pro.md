@@ -149,7 +149,7 @@ In one of my early [experiments](https://github.com/xvnpw/ai-nutrition-pro-desig
 
 ### Growing Capabilities of LLMs (since GPT-3.5)
 
-{{< figure src="https://xvnpw.github.io/llm-history.png" class="image-center" width=auto >}}
+{{< figure src="https://xvnpw.github.io/llms-history.png" class="image-center" width=auto >}}
 
 <details>
 <summary>Mermaid flowchart</summary>
@@ -167,7 +167,7 @@ flowchart TB
 </details>
 
 **Key capabilities of LLMs for threat modeling:**
-- **Reasoning**: Kind of like a human's ability to follow conditional logic. You can see it in intermediate steps of reasoning models. They are trying to find out if they meet the conditions and criteria in instruction or not.
+- **Reasoning**: Kind of like a human's ability to follow conditional logic. You can see it in intermediate steps of reasoning models. They are trying to find out if they met the conditions and criteria in instruction or not.
 - **Knowledge**: Sometimes we can say that LLMs doesn't have knowledge, but only weights. I'm not sure about that. I think that they have knowledge, but it's encoded in weights. See my [sec-docs](https://github.com/xvnpw/sec-docs) project. I generated security documentation for different OSS projects without any additional context. Just asking LLM to generate documentation for given project.
 
 ### Looking Forward
@@ -180,24 +180,19 @@ Let's remind ourselves what is the goal of threat modeling:
 
 In fact, we don't need threat model at all. We need to give our developers list of things that they should implement.
 
-In the past, I was working on github action that was generating **security** acceptance criteria for given user story:
+In the past, I was working on github action that was generating **security** acceptance criteria for given user story. For example:
 
 {{< figure src="https://xvnpw.github.io/ac-opus.png" class="image-center" width=auto >}}
 
 You can find the [full example here](https://github.com/xvnpw/ai-nutrition-pro-design-claude3-opus/issues/1).
 
-Are we able to reach this point with current LLMs? Maybe yes. Let's explore that.
+Are we able to reach this point with current LLMs? Maybe yes. Let's explore that:
 
+- **Larger, more capable models?** Since ChatGPT's emergence, I've anticipated models that could consume an organization's entire context (repositories, JIRA tickets, Confluence documentation) and deliver reliable, consistent answers. Are we there yet? My experience suggests not. Even recent tests of Microsoft Copilot with SharePoint for HR inquiries in my organization yielded frequent inaccuracies.
+- **Smaller, faster, specialized models?** These could support the decomposed prompt approach and potentially serve as a foundation for AI-enhanced tools like Jira, Confluence, and GitHub. Such models could continuously evaluate targeted contexts and generate **intermediate data** (on top of source data) that reflects company-specific factors when creating threat models.
+- **Multi-agent systems with specialized tools?** While agents might improve LLM reliability similar to Chain of Thought (CoT) or reasoning capabilities, they may not be the ultimate solution. An agent creating a threat model could search various systems for additional information, but this might result in context overload for the LLM's limited reasoning capacity.
 
-
-
-
-
-
-
-
-
-
+Even if one of the approaches will be successful, we will still miss one big thing. We don't keep all the information in the IT systems. This is were human person comes into the picture. Security people doing threat modeling are in not only looking at architecture, but are trying to understand the business, priorities, risks, etc. Until we don't transcript every discussion, every meeting and we don't combine it with emails, documents, IM messages, etc. we will not be able to remove human from the loop.
 
 ### Refined Expectations for LLMs in Threat Modeling (Mid-2025)
 
@@ -217,14 +212,6 @@ After examining dozens of AI-generated threat models over the past six months, I
 How do I reconcile my cautious perspective with the impressive results from Gemini 2.5 Pro Preview? While the model performed exceptionally well on my test case, I question whether such performance would generalize across diverse scenarios. A comprehensive benchmark like the one mentioned earlier could help answer this question.
 
 To be clear: LLMs can absolutely enhance threat modeling workflows today. We don't need to wait for bigger, better models. We just need to understand their current limitations and design workflows accordingly.
-
-Looking forward, I wonder which approach will bring us closer to truly effective threat modeling automation:
-
-- **Larger, more capable models?** Since ChatGPT's emergence, I've anticipated models that could consume an organization's entire context (repositories, JIRA tickets, Confluence documentation) and deliver reliable, consistent answers. Are we there yet? My experience suggests not. Even recent tests of Microsoft Copilot with SharePoint for HR inquiries in my organization yielded frequent inaccuracies.
-- **Smaller, faster, specialized models?** These could support the decomposed prompt approach and potentially serve as a foundation for AI-enhanced tools like Jira, Confluence, and GitHub. Such models could continuously evaluate targeted contexts and generate intermediate data that reflects company-specific factors when creating threat models.
-- **Multi-agent systems with specialized tools?** While agents might improve LLM reliability similar to Chain of Thought (CoT) or reasoning capabilities, they may not be the ultimate solution. An agent creating a threat model could search various systems for additional information, but this might result in context overload for the LLM's limited reasoning capacity.
-
-I'm interested in your thoughts on these approaches. You can most easily reach me on [LinkedIn](https://www.linkedin.com/in/marcin-niemiec-304349104/).
 
 ---
 
