@@ -130,20 +130,11 @@ However, can they truly replace human intelligence in security analysis? My rese
 
 ### Comparison with Traditional Automation Tools
 
-Traditional threat modeling tools like [pytm](https://github.com/OWASP/pytm) operate on predefined rules and conditions:
+Traditional automation tools for threat modeling, such as [pytm](https://github.com/OWASP/pytm), typically rely on predefined rulesets and require users to describe their system architecture using a specific, formal syntax (e.g., `isPII=False`, `classification=Classification.PUBLIC`). These tools execute based on explicit programming: if certain conditions are met, specific threats are flagged.
 
-```python
-isPII=False,
-isCredentials=False,
-classification=Classification.PUBLIC,
-...
-```
+LLMs present a stark contrast. Their ability to understand natural language means we can describe systems more intuitively, without being constrained by rigid syntaxes. This dramatically lowers the barrier to entry for threat modeling, making it more accessible to individuals who aren't deeply familiar with formal threat modeling methodologies or specialized tooling.
 
-These tools require us to formally describe our architecture using their specific syntax.
-
-LLMs offer a significant advantage here: they understand natural language (and increasingly, visual information), allowing us to provide architecture descriptions without specialized syntax. This significantly lowers the barrier to entry.
-
-There is one more significant advantage of LLMs: they don't need threat library to generate meaningful threats. They can reason about the input and generate threats based on the input and their knowledge. `pytm` with default ruleset is limited in this regard.
+Furthermore, LLMs possess a crucial advantage: they don't solely depend on pre-programmed threat libraries. Instead, they can reason from the provided system description and their vast training data to identify potential threats, even those not explicitly cataloged. Traditional tools, often limited by their configured rulesets (like `pytm` with its default set), may miss novel or context-specific threats that an LLM can infer based on broader patterns and knowledge.
 
 In one of my early [experiments](https://github.com/xvnpw/ai-nutrition-pro-design-claude3-opus/blob/main/ARCHITECTURE_SECURITY.md), I explored a pipeline approach - breaking the process into smaller steps by first asking the LLM about threat modeling plan and data flows, then generating threats for each flow separately. This approach seems more promising for achieving consistent, high-quality results than single massive prompts.
 
@@ -151,63 +142,43 @@ In one of my early [experiments](https://github.com/xvnpw/ai-nutrition-pro-desig
 
 {{< figure src="https://xvnpw.github.io/llms-history.png" class="image-center" width=auto >}}
 
-<details>
-<summary>Mermaid flowchart</summary>
-```mermaid
-flowchart TB
-    A[GPT-3.5] -.- B["Next token generation included a primitive 'condition' mechanism - producing high randomness, yet not total nonsense."]
-    A --> C[GPT-4.0]
-    C -.- D["Larger model with extended context handling. Improved conditional prediction made output more coherent"]
-    C --> E[o1-preview]
-    E -.- F["First model optimized for reasoning - dramatically improved conditional understanding and instruction following"]
-    E --> G[What next?]
-    classDef special fill:#f9f,stroke:#333,stroke-width:2px;
-    class B,D,F special
-```
-</details>
-
-**Key capabilities of LLMs for threat modeling:**
-- **Reasoning**: Kind of like a human's ability to follow conditional logic. You can see it in intermediate steps of reasoning models. They are trying to find out if they met the conditions and criteria in instruction or not.
-- **Knowledge**: Sometimes we can say that LLMs doesn't have knowledge, but only weights. I'm not sure about that. I think that they have knowledge, but it's encoded in weights. See my [sec-docs](https://github.com/xvnpw/sec-docs) project. I generated security documentation for different OSS projects without any additional context. Just asking LLM to generate documentation for given project.
+This evolution has equipped LLMs with key capabilities crucial for threat modeling:
+- **Enhanced Reasoning:** Modern LLMs exhibit an improved ability to follow complex instructions and apply conditional logic, parallel to a basic form of analytical thinking. This is evident in models that can expose their 'thought process', showing steps taken to meet criteria outlined in a prompt. For threat modeling, this translates to a better capacity to evaluate 'if-then' scenarios, understand nuanced system interactions, and connect disparate pieces of information to identify potential vulnerabilities.
+- **Broad Knowledge Base:** While technically represented as weights within a neural network, the extensive training data of LLMs effectively equips them with a vast knowledge base encompassing common software patterns, attack vectors, and security principles. This allows them to generate relevant information even with minimal context, as demonstrated in my [sec-docs](https://github.com/xvnpw/sec-docs) project where LLMs produced security documentation for open-source software based solely on the project's name. In threat modeling, this broad knowledge enables them to suggest threats or consider attack vectors that a human analyst might overlook if unfamiliar with a specific technology, domain, or emerging threat landscape.
 
 ### Looking Forward
 
-LLMs as Gemini 2.5 Pro Preview are already having key capabilities to be useful in automating threat modeling. LLMs can lower the barrier of entry by providing flexibility in understanding human language and by having knowledge.
+Models like Gemini 2.5 Pro demonstrate that current LLMs possess foundational capabilities that make them increasingly useful in the threat modeling lifecycle. Their flexibility in processing natural language and their embedded knowledge significantly lower the barrier to initiating threat modeling activities.
 
-Let's remind ourselves what is the goal of threat modeling:
-
+Ultimately, the goal of threat modeling is not just to produce a document, but to drive concrete actions:
 > The goal of threat modeling is to identify and mitigate threats to the system.
 
-In fact, we don't need threat model at all. We need to give our developers list of things that they should implement.
-
-In the past, I was working on github action that was generating **security** acceptance criteria for given user story. For example:
+In essence, we need to provide developers with actionable guidance on what to implement or fix. My past work on a GitHub Action generating **security** acceptance criteria for user stories (see [full example here](https://github.com/xvnpw/ai-nutrition-pro-design-claude3-opus/issues/1)) hinted at this ideal. 
 
 {{< figure src="https://xvnpw.github.io/ac-opus.png" class="image-center" width=auto >}}
 
-You can find the [full example here](https://github.com/xvnpw/ai-nutrition-pro-design-claude3-opus/issues/1).
+But can current LLMs consistently deliver such actionable, context-aware security requirements? The path forward likely involves several interconnected developments:
 
-Are we able to reach this point with current LLMs? Maybe yes. Let's explore that:
+- **Omniscient Models:** The dream of a single, massive LLM that consumes an organization's entire context (code repositories, issue trackers, documentation) to provide consistently reliable security insights remains largely aspirational. My own experience, including recent tests with tools like Microsoft Copilot for enterprise search, indicates that even advanced models struggle with accuracy and consistency when faced with vast, diverse internal datasets. The challenge of true comprehension and reliable reasoning across such breadth is immense.
+- **Specialized and Embedded Models:** An alternative, perhaps more pragmatic, approach involves smaller, faster, and more specialized LLMs. These could excel at the decomposed prompting strategies mentioned earlier and become integral components of existing developer tools (e.g., Jira, Confluence, GitHub). Such models could continuously analyze specific contexts (like a user story or a code commit) and generate 'intermediate' security-relevant data or suggestions, potentially fine-tuned on company-specific standards and previously identified issues to improve relevance.
+- **Multi-Agent Systems:** The concept of multi-agent systems, where different AI agents specialize in sub-tasks (e.g., one agent analyzes code, another queries documentation, a third synthesizes findings), could enhance reliability, similar to how Chain-of-Thought prompting improves reasoning in single models. However, orchestrating these agents effectively and avoiding context overload for the synthesizing LLM (given its current reasoning limitations) remains a significant challenge. The risk is that an agent tasked with comprehensive information gathering might overwhelm the core LLM, diminishing the quality of the final threat model.
 
-- **Larger, more capable models?** Since ChatGPT's emergence, I've anticipated models that could consume an organization's entire context (repositories, JIRA tickets, Confluence documentation) and deliver reliable, consistent answers. Are we there yet? My experience suggests not. Even recent tests of Microsoft Copilot with SharePoint for HR inquiries in my organization yielded frequent inaccuracies.
-- **Smaller, faster, specialized models?** These could support the decomposed prompt approach and potentially serve as a foundation for AI-enhanced tools like Jira, Confluence, and GitHub. Such models could continuously evaluate targeted contexts and generate **intermediate data** (on top of source data) that reflects company-specific factors when creating threat models.
-- **Multi-agent systems with specialized tools?** While agents might improve LLM reliability similar to Chain of Thought (CoT) or reasoning capabilities, they may not be the ultimate solution. An agent creating a threat model could search various systems for additional information, but this might result in context overload for the LLM's limited reasoning capacity.
-
-Even if one of the approaches will be successful, we will still miss one big thing. We don't keep all the information in the IT systems. This is were human person comes into the picture. Security people doing threat modeling are in not only looking at architecture, but are trying to understand the business, priorities, risks, etc. Until we don't transcript every discussion, every meeting and we don't combine it with emails, documents, IM messages, etc. we will not be able to remove human from the loop.
+However, even with advancements in these areas, a crucial gap will likely persist: the "unwritten context". So much vital information for comprehensive threat modeling: business priorities, risk appetite, nuanced architectural decisions made in informal discussions, evolving team dynamics, etc. resides outside formal IT systems. Security professionals synthesize this by observing, discussing, and understanding the broader organizational landscape. Until we can effectively capture and integrate this vast, unstructured human context (from meetings, emails, informal chats), the human expert will remain indispensable in the threat modeling progress.
 
 ### Refined Expectations for LLMs in Threat Modeling (Mid-2025)
 
 Based on my research, here are my current views on leveraging LLMs for threat modeling:
 
-- ⭐️⭐️ **Learning Aid**: LLMs significantly flatten the learning curve for threat modeling newcomers.
+- ⭐️⭐️ **Learning Aid**: LLMs help flatten the learning curve for threat modeling newcomers.
 - ⭐️⭐️ **Idea Generation**: LLMs excel as inspiration tools. Developers can use them to create initial threat models before consulting security specialists. Matthew Adams highlights this approach in his [STRIDE GPT presentation](https://www.youtube.com/watch?v=q5hMF46vgWE).
 - ⭐️ **Rule-Based Alternative**: LLMs might replicate deterministic tools like `pytm` when using a decomposed approach with smaller, focused prompts. Think of LLMs as having limited brain. They handle simple tasks reasonably well but struggle with complex reasoning that requires maintaining numerous dependencies. While they occasionally produce surprisingly good results (much like our pets can surprise us!), **consistent performance** remains elusive.
 - ⭐️⭐️ **Context Enrichment**: LLMs can identify threats and risks implied by context. It's something deterministic tools cannot do. This capability extends beyond threat modeling to vulnerability research, as discussed in my previous post: [Can AI Actually Find Real Security Bugs? Testing the New Wave of AI Models]({{< ref "/posts/can-ai-actually-find-real-security-bugs-testing-the-new-wave-of-ai-models.md" >}})
 - ⭐️ **Domain-Specific Training**: Training LLMs on architecture examples paired with expert-created threat models could improve their generalization capabilities. Threat modeling is a verifiable domain where we can score model performance and incorporate feedback into the learning process.
-- ❌ **Full Automation**: I remain skeptical about using LLMs to completely automate threat modeling at this stage.
+- ❌ **Full Automation**: I remain skeptical about using LLMs to completely automate threat modeling in a way it will be presented to developers as acceptance criteria. At least at this stage.
 
 ## Conclusion
 
-After examining dozens of AI-generated threat models over the past six months, I've noticed my enthusiasm waning. Not because the results are poor, but because I've developed a more realistic view of their capabilities and limitations.
+After examining dozens of AI-generated threat models over the past six months, I've noticed a little burnout. Not because the results are poor, but because I've developed a more realistic view of their capabilities and limitations.
 
 How do I reconcile my cautious perspective with the impressive results from Gemini 2.5 Pro Preview? While the model performed exceptionally well on my test case, I question whether such performance would generalize across diverse scenarios. A comprehensive benchmark like the one mentioned earlier could help answer this question.
 
