@@ -207,4 +207,4 @@ Let me know what you think about it! I'm waiting for your feedback. Feel free to
 
 ---
 
-Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](www.linkedin.com/in/marcin-niemiec-304349104).
+Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](https://linkedin.com/in/marcin-niemiec-304349104).

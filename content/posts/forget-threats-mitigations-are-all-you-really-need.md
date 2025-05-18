@@ -106,4 +106,4 @@ This article should have been about AI-powered security analysis tools 🤖. How
 
 ---
 
-Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](www.linkedin.com/in/marcin-niemiec-304349104).
+Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](https://linkedin.com/in/marcin-niemiec-304349104).

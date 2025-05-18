@@ -182,4 +182,4 @@ I would love to generate 1,000 threat models using different LLM models, especia
 
 ---
 
-Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](www.linkedin.com/in/marcin-niemiec-304349104).
+Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](https://linkedin.com/in/marcin-niemiec-304349104).

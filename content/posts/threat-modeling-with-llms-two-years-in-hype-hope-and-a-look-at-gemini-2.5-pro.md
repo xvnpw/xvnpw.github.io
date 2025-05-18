@@ -1,7 +1,7 @@
 ---
 title: "Threat Modeling with LLMs: Two Years In - Hype, Hope, and a Look at Gemini 2.5 Pro"
-date: 2025-05-18T08:59:02+01:00
-draft: true
+date: 2025-05-18T07:59:02+01:00
+draft: false
 tags: [ai, llm, threat modeling, cybersecurity, chatgpt, gemini]
 description: "After two years of exploring AI for threat modeling, this post reviews the progress, tests Gemini 2.5 Pro, and reflects on the evolving potential and limitations of LLMs in cybersecurity."
 ---
@@ -12,9 +12,9 @@ It's been nearly two years since I began exploring how AI can enhance threat mod
 
 ## The Experiment: Testing Gemini 2.5 Pro
 
-As with my previous research, the goal is to assess how effectively LLMs can assist in threat modeling. For this, I used a deliberately underspecified architecture for a fictional project, "AI Nutrition Pro".
+As with my previous research, the goal is to assess how effectively LLMs can assist in threat modeling. For this, I used a deliberately underspecified architecture for a fictional project: "AI Nutrition Pro".
 
-{{< figure src="https://xvnpw.github.io/ai-nutrition-pro-arch.png" class="image-center" width=auto caption="Architecture diagram for the fictional AI Nutrition Pro project." >}}
+{{< figure src="https://xvnpw.github.io/ai-nutrition-pro-arch.png" class="image-center" width=auto >}}
 
 You can find the [architecture description here](https://github.com/xvnpw/ai-security-analyzer/blob/b7a9abde4f790da10c78f936d8e2161c125dfd4f/tests/EXAMPLE_ARCHITECTURE.md). I intentionally left it lacking detail to see how well the LLM could handle ambiguity and missing information.
 
@@ -132,9 +132,9 @@ However, can they truly replace human intelligence in security analysis? My rese
 
 Traditional automation tools for threat modeling, such as [pytm](https://github.com/OWASP/pytm), typically rely on predefined rulesets and require users to describe their system architecture using a specific, formal syntax (e.g., `isPII=False`, `classification=Classification.PUBLIC`). These tools execute based on explicit programming: if certain conditions are met, specific threats are flagged.
 
-LLMs present a stark contrast. Their ability to understand natural language means we can describe systems more intuitively, without being constrained by rigid syntaxes. This dramatically lowers the barrier to entry for threat modeling, making it more accessible to individuals who aren't deeply familiar with formal threat modeling methodologies or specialized tooling.
+LLMs present a clear contrast. Their ability to understand natural language means we can describe systems more intuitively, without being constrained by rigid syntaxes. This lowers the barrier to entry for threat modeling, making it more accessible to individuals who aren't deeply familiar with formal threat modeling methodologies or specialized tooling.
 
-Furthermore, LLMs possess a crucial advantage: they don't solely depend on pre-programmed threat libraries. Instead, they can reason from the provided system description and their vast training data to identify potential threats, even those not explicitly cataloged. Traditional tools, often limited by their configured rulesets (like `pytm` with its default set), may miss novel or context-specific threats that an LLM can infer based on broader patterns and knowledge.
+Furthermore, LLMs possess an advantage: they don't solely depend on pre-programmed threat libraries. Instead, they can reason from the provided system description and their training data to identify potential threats, even those not explicitly cataloged. Traditional tools, often limited by their configured rulesets (like `pytm` with its default set), may miss novel or context-specific threats that an LLM can infer based on broader patterns and knowledge.
 
 In one of my early [experiments](https://github.com/xvnpw/ai-nutrition-pro-design-claude3-opus/blob/main/ARCHITECTURE_SECURITY.md), I explored a pipeline approach - breaking the process into smaller steps by first asking the LLM about threat modeling plan and data flows, then generating threats for each flow separately. This approach seems more promising for achieving consistent, high-quality results than single massive prompts.
 
@@ -143,12 +143,12 @@ In one of my early [experiments](https://github.com/xvnpw/ai-nutrition-pro-desig
 {{< figure src="https://xvnpw.github.io/llms-history.png" class="image-center" width=auto >}}
 
 This evolution has equipped LLMs with key capabilities crucial for threat modeling:
-- **Enhanced Reasoning:** Modern LLMs exhibit an improved ability to follow complex instructions and apply conditional logic, parallel to a basic form of analytical thinking. This is evident in models that can expose their 'thought process', showing steps taken to meet criteria outlined in a prompt. For threat modeling, this translates to a better capacity to evaluate 'if-then' scenarios, understand nuanced system interactions, and connect disparate pieces of information to identify potential vulnerabilities.
-- **Broad Knowledge Base:** While technically represented as weights within a neural network, the extensive training data of LLMs effectively equips them with a vast knowledge base encompassing common software patterns, attack vectors, and security principles. This allows them to generate relevant information even with minimal context, as demonstrated in my [sec-docs](https://github.com/xvnpw/sec-docs) project where LLMs produced security documentation for open-source software based solely on the project's name. In threat modeling, this broad knowledge enables them to suggest threats or consider attack vectors that a human analyst might overlook if unfamiliar with a specific technology, domain, or emerging threat landscape.
+- **Enhanced Reasoning:** Modern LLMs show an improved ability to follow complex instructions and apply conditional logic, parallel to a basic form of analytical thinking. This is evident in models that can expose their 'thought process', showing steps taken to meet criteria outlined in a prompt. For threat modeling, this translates to a better capacity to evaluate 'if-then' scenarios and understand nuanced system interactions.
+- **Broad Knowledge Base:** While technically represented as weights within a neural network, the extensive training data of LLMs effectively equips them with a vast knowledge base encompassing common software patterns, attack vectors, and security principles. This allows them to generate relevant information even with minimal context, as demonstrated in my [sec-docs](https://github.com/xvnpw/sec-docs) project where LLMs produced security documentation for open-source software based solely on the project's name. In threat modeling, this broad knowledge enables them to suggest threats or consider attack vectors.
 
 ### Looking Forward
 
-Models like Gemini 2.5 Pro demonstrate that current LLMs possess foundational capabilities that make them increasingly useful in the threat modeling lifecycle. Their flexibility in processing natural language and their embedded knowledge significantly lower the barrier to initiating threat modeling activities.
+Models like Gemini 2.5 Pro demonstrate that current LLMs possess foundational capabilities that make them increasingly useful in the threat modeling lifecycle. Their flexibility in processing natural language and their embedded knowledge lower the barrier to initiating threat modeling activities.
 
 Ultimately, the goal of threat modeling is not just to produce a document, but to drive concrete actions:
 > The goal of threat modeling is to identify and mitigate threats to the system.
@@ -159,7 +159,7 @@ In essence, we need to provide developers with actionable guidance on what to im
 
 But can current LLMs consistently deliver such actionable, context-aware security requirements? The path forward likely involves several interconnected developments:
 
-- **Omniscient Models:** The dream of a single, massive LLM that consumes an organization's entire context (code repositories, issue trackers, documentation) to provide consistently reliable security insights remains largely aspirational. My own experience, including recent tests with tools like Microsoft Copilot for enterprise search, indicates that even advanced models struggle with accuracy and consistency when faced with vast, diverse internal datasets. The challenge of true comprehension and reliable reasoning across such breadth is immense.
+- **Bigger and Better Models:** The dream of a single, massive LLM that consumes an organization's entire context (code repositories, issue trackers, documentation) to provide consistently reliable security insights remains largely aspirational. My own experience, including recent tests with tools like Microsoft Copilot for enterprise search, indicates that even advanced models struggle with accuracy and consistency when faced with vast, diverse internal datasets.
 - **Specialized and Embedded Models:** An alternative, perhaps more pragmatic, approach involves smaller, faster, and more specialized LLMs. These could excel at the decomposed prompting strategies mentioned earlier and become integral components of existing developer tools (e.g., Jira, Confluence, GitHub). Such models could continuously analyze specific contexts (like a user story or a code commit) and generate 'intermediate' security-relevant data or suggestions, potentially fine-tuned on company-specific standards and previously identified issues to improve relevance.
 - **Multi-Agent Systems:** The concept of multi-agent systems, where different AI agents specialize in sub-tasks (e.g., one agent analyzes code, another queries documentation, a third synthesizes findings), could enhance reliability, similar to how Chain-of-Thought prompting improves reasoning in single models. However, orchestrating these agents effectively and avoiding context overload for the synthesizing LLM (given its current reasoning limitations) remains a significant challenge. The risk is that an agent tasked with comprehensive information gathering might overwhelm the core LLM, diminishing the quality of the final threat model.
 
@@ -178,12 +178,14 @@ Based on my research, here are my current views on leveraging LLMs for threat mo
 
 ## Conclusion
 
-After examining dozens of AI-generated threat models over the past six months, I've noticed a little burnout. Not because the results are poor, but because I've developed a more realistic view of their capabilities and limitations.
+After reviewing dozens of AI-generated threat models over the past six months, I've started to feel a bit of burnout 😅.
 
-How do I reconcile my cautious perspective with the impressive results from Gemini 2.5 Pro Preview? While the model performed exceptionally well on my test case, I question whether such performance would generalize across diverse scenarios. A comprehensive benchmark like the one mentioned earlier could help answer this question.
+How do I balance my doubts with the strong results from Gemini 2.5 Pro Preview? While the model performed exceptionally well on my test case, I still wonder whether that performance will hold up across a wide range of real-world scenarios. A comprehensive benchmark - like the one mentioned earlier - could help answer that.
 
-To be clear: LLMs can absolutely enhance threat modeling workflows today. We don't need to wait for bigger, better models. We just need to understand their current limitations and design workflows accordingly.
+To be clear: LLMs *can* significantly enhance threat modeling workflows today. We don't need to wait for newer, more powerful models. What we do need is a solid understanding of their current limitations and a thoughtful approach to designing workflows around them.
+
+If you're already successful using tools like `pytm` or other structured approaches to threat modeling, you'll likely find LLM-based automation helpful. But if you struggle with applying a rigid methodology, an LLM won't be a silver bullet.
 
 ---
 
-Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](www.linkedin.com/in/marcin-niemiec-304349104).
+Thanks for reading! You can contact me and/or follow me on [X](https://x.com/xvnpw) and [LinkedIn](https://linkedin.com/in/marcin-niemiec-304349104).
