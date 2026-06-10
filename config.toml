@@ -6,6 +6,7 @@ pygmentsstyle = "monokai"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 googleAnalytics="G-YHETMXZXMZ"
+ignoreLogs = ['warning-goldmark-raw-html']
 [params]
 favicon = "/favicon.png"
 mode = "auto"
@@ -13,6 +14,7 @@ useCDN=false
 subtitle = "hacking, bug bounty, appsec"
 googleAnalytics = "G-YHETMXZXMZ"
 customcss = ["css/my.css"]
+customJS = ['<script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/7d0c398fbad199e78ab1c05a/script.js"></script>']
 
 [[params.social]]
 name = "GitHub"

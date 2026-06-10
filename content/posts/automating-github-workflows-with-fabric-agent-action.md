@@ -13,7 +13,7 @@ description: "Introducing the Fabric Agent Action - a GitHub Action that automat
 The action introduces different types of agents, each designed for specific use cases, from simple pattern execution to complex reasoning about GitHub issues and pull requests. Let's explore how these agents work and evaluate their effectiveness.
 
 **Watch demo:**
-{{< twitter user="xvnpw" id="1859981296774316495" >}}
+{{< x user="xvnpw" id="1859981296774316495" >}}
 
 ## Agents in Action
 
